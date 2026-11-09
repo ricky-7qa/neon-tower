@@ -348,12 +348,15 @@
 /* Portrait phone: drawer and playfield move together to keep the action visible. */
 @media (orientation:portrait) and (pointer:coarse) {
   #gameCanvas {
-    transform:translateY(0) scale(1);
-    transform-origin:50% 44%;
+    transform:translateY(0) scale(1) translate(var(--shake-x, 0px), var(--shake-y, 0px));
+    transform-origin:50% 50%;
     transition:transform .42s cubic-bezier(.2,.8,.2,1);
     will-change:transform;
   }
-  #app.panel-open #gameCanvas { transform:translateY(-7dvh) scale(.91); }
+  /* Keep the full playfield centred in the 58dvh area above the drawer. */
+  #app.panel-open #gameCanvas {
+    transform:translateY(-21dvh) scale(.58) translate(var(--shake-x, 0px), var(--shake-y, 0px));
+  }
   #upg-panel {
     top:auto;
     right:0;
