@@ -302,3 +302,35 @@
   #touch-controls { right:10px; bottom:8px; }
   .touch-action { width:54px; height:54px; }
 }
+
+
+/* Dedicated portrait phone layout. Desktop/tablet landscape keeps the original wide game. */
+@media (max-width:700px) and (orientation:portrait) {
+  html, body { overscroll-behavior:none; }
+  #app { width:100vw; height:100dvh; }
+  #hud { overflow:hidden; }
+  .game-topbar { position:absolute; top:0; left:0; right:0; width:100%; min-height:62px; display:flex; justify-content:space-between; align-items:flex-start; padding:calc(7px + env(safe-area-inset-top)) 8px 7px; background:linear-gradient(180deg,rgba(0,10,25,.96),rgba(0,10,25,.45)); }
+  .topbar-left,.topbar-right { display:flex; align-items:center; gap:6px; }
+  .game-topbar .stat-box { min-width:54px; padding:5px 6px; border:1px solid rgba(0,255,255,.18); border-radius:7px; background:rgba(0,12,25,.65); }
+  .game-topbar .top-label { font-size:7px; letter-spacing:.7px; }
+  .game-topbar .stat-val { font-size:14px; line-height:1.2; }
+  #stats-ui { left:9px; bottom:calc(12px + env(safe-area-inset-bottom)); width:min(44vw,190px); padding:8px 9px; gap:5px; font-size:9px; background:rgba(0,12,27,.88); }
+  #stats-ui .stat-row { font-size:8px; letter-spacing:.2px; padding-bottom:3px; }
+  #target-ui { left:9px; bottom:155px; width:min(44vw,190px); padding:8px; }
+  #t-name { font-size:10px; }
+  #t-hp-bar { height:7px; }
+  #t-hp-text { font-size:9px; }
+  #touch-controls { right:12px; bottom:calc(14px + env(safe-area-inset-bottom)); flex-direction:column; gap:10px; }
+  .touch-action { width:58px; height:58px; }
+  #upg-panel { width:min(84vw,330px); }
+  .panel-side-toggle { left:-34px; padding:12px 7px; font-size:9px; }
+  #upg-content { padding-top:82px; }
+  #hud.upgrades-open .topbar-right { transform:none; }
+  #menu { overflow:hidden; }
+  #menu .menu-header { padding-top:calc(18px + env(safe-area-inset-top)); }
+  #menu .scroll-area { min-height:0; overflow-y:auto; }
+  #gameover h1 { font-size:clamp(34px,10vw,54px) !important; }
+  #gameover > div { margin:0 12px 20px !important; padding:18px !important; }
+  #gameover p { font-size:14px !important; }
+  #gameover .btn { font-size:14px !important; padding:13px 24px !important; }
+}
