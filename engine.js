@@ -253,8 +253,14 @@
     ctx.clearRect(0,0,canvas.width,canvas.height);
     drawGrid(game.dt);
     
-    if(game.shake > 0) { game.shake -= game.dt; let mx = (Math.random()-0.5)*4; let my = (Math.random()-0.5)*4; canvas.style.transform = `translate(${mx}px, ${my}px)`; } 
-    else { canvas.style.transform = "translate(0,0)"; }
+    if(game.shake > 0) {
+      game.shake -= game.dt;
+      canvas.style.setProperty('--shake-x', `${(Math.random()-0.5)*4}px`);
+      canvas.style.setProperty('--shake-y', `${(Math.random()-0.5)*4}px`);
+    } else {
+      canvas.style.setProperty('--shake-x', '0px');
+      canvas.style.setProperty('--shake-y', '0px');
+    }
 
     if(game.toSpawn <= 0 && game.ents.e.length === 0) {
       run.wave++; game.toSpawn = 10 + Math.floor(run.wave * 2);
