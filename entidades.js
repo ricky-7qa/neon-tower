@@ -117,8 +117,17 @@
 
   class Enemy {
     constructor(w) {
-      let a = Math.random()*Math.PI*2; let d = Math.max(canvas.width, canvas.height)/2 + 50;
-      this.x = game.cx + Math.cos(a)*d; this.y = game.cy + Math.sin(a)*d;
+      // Spawn immediately outside a real canvas edge, not hundreds of pixels away.
+      const a = Math.random() * Math.PI * 2;
+      const dx = Math.cos(a), dy = Math.sin(a);
+      const halfW = Math.max(1, canvas.width / 2);
+      const halfH = Math.max(1, canvas.height / 2);
+      const margin = 24;
+      const tx = Math.abs(dx) > 0.001 ? (halfW + margin) / Math.abs(dx) : Infinity;
+      const ty = Math.abs(dy) > 0.001 ? (halfH + margin) / Math.abs(dy) : Infinity;
+      const d = Math.min(tx, ty);
+      this.x = game.cx + dx * d;
+      this.y = game.cy + dy * d;
       
       let rand = Math.random(); this.type = "Minion"; this.c = "#ff0055"; this.r = 15;
       let hm = 1, sm = 1, cm = 1;
@@ -126,7 +135,7 @@
       if(game.toSpawn===1&&w%5===0){this.type='Boss';this.c='#9900ff';this.r=35;hm=25;sm=.4;cm=30;notify('WARNING','BOSS!');}else if(w>2&&rand<.15){this.type='Kamikaze';this.c='#ff3355';this.r=13;hm=.8;sm=2;cm=1.5;}else if(w>2&&rand<.3){this.type='Tank';this.c='#ffaa00';this.r=22;hm=4;sm=.5;cm=3;}else if(w>3&&rand<.45){this.type='Sniper';this.c='#b45cff';this.r=12;hm=.8;sm=.65;cm=2;}else if(w>4&&rand<.55){this.type='Scout';this.c='#0088ff';this.r=10;hm=.5;sm=2;cm=1.5;}this.fireCd=.8;this.phase=Math.random()*6.28;
 
       this.maxHp = (20 * Math.pow(1.2, w)) * hm; this.hp = this.maxHp;
-      this.dmg = (5 * Math.pow(1.15, w)) * hm; this.spd = (40 + (w*1.5)) * sm;
+      this.dmg = (5 * Math.pow(1.15, w)) * hm; this.spd = (75 + (w*2)) * sm;
       this.val = Math.floor(4 * Math.pow(1.1, w) * cm);
     }
     update(dt){const a=MathUtils.angle(this.x,this.y,tower.x,tower.y),d=MathUtils.dist(this.x,this.y,tower.x,tower.y);if(this.type==='Sniper'){if(d>300){this.x+=Math.cos(a)*this.spd*dt;this.y+=Math.sin(a)*this.spd*dt;}else if(d<210){this.x-=Math.cos(a)*this.spd*dt;this.y-=Math.sin(a)*this.spd*dt;}}else{let v=this.type==='Kamikaze'?this.spd*1.35:this.spd;this.x+=Math.cos(a)*v*dt;this.y+=Math.sin(a)*v*dt;}this.fireCd-=dt;this.phase+=dt;if(this.fireCd<=0){let aim=MathUtils.angle(this.x,this.y,tower.x,tower.y),bd=Math.max(3,this.dmg*.18);if(this.type==='Boss'){for(let k=0;k<12;k++)spawnBullet(this.x,this.y,this.phase+k*Math.PI/6,155,bd,'boss');this.fireCd=1;}else if(this.type==='Sniper'){spawnBullet(this.x,this.y,aim,520,bd,'sniper');this.fireCd=2;}else if(this.type==='Tank'){for(let k=0;k<8;k++)spawnBullet(this.x,this.y,aim+k*Math.PI/4,125,bd,'ring');this.fireCd=2.6;}else{for(let k=-1;k<=1;k++)spawnBullet(this.x,this.y,aim+k*.18,180,bd,'normal');this.fireCd=1.8;}}}
