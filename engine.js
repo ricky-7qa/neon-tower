@@ -181,7 +181,7 @@
     ctx.clearRect(0,0,canvas.width,canvas.height);
     drawGrid(game.dt);
     
-    if(game.shake > 0) { game.shake -= game.dt; let mx = (Math.random()-0.5)*20; let my = (Math.random()-0.5)*20; canvas.style.transform = `translate(${mx}px, ${my}px)`; } 
+    if(game.shake > 0) { game.shake -= game.dt; let mx = (Math.random()-0.5)*4; let my = (Math.random()-0.5)*4; canvas.style.transform = `translate(${mx}px, ${my}px)`; } 
     else { canvas.style.transform = "translate(0,0)"; }
 
     if(game.toSpawn <= 0 && game.ents.e.length === 0) {
