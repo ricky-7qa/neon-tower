@@ -58,29 +58,47 @@
 
   /** DATABASE EN **/
   const statDefs = {
-    damage: { n: "DAMAGE", d: "Base firepower.", b: 15, i: 5, c: 10, cm: 1.15, isD: false, col: "#0ff" },
-    speed:  { n: "FIRE RATE", d: "Shots per second.", b: 1.5, i: 0.2, c: 15, cm: 1.25, isD: true, col: "#0ff" },
-    hp:     { n: "ARMOR", d: "Max tower health.", b: 200, i: 30, c: 10, cm: 1.15, isD: false, col: "#0f0" },
-    regen:  { n: "REGEN", d: "Health recovery/sec.", b: 0, i: 1, c: 25, cm: 1.3, isD: true, col: "#0f0" },
-    critC:  { n: "CRIT CHANCE", d: "% to deal critical hit.", b: 0, i: 5, c: 50, cm: 1.4, isD: false, col: "#ff3366", max: 10 },
-    critD:  { n: "CRIT DMG", d: "Critical multiplier.", b: 1.5, i: 0.2, c: 50, cm: 1.4, isD: true, col: "#ff3366" },
-    range:  { n: "RADAR", d: "Detection range.", b: 300, i: 50, c: 30, cm: 1.2, isD: false, col: "#ffd700", max: 10 }
+    damage: { n: "DAMAGE", d: "Increases every projectile's base damage.", category:"ATTACK", b:15, i:5, c:10, cm:1.15, isD:false, col:"#0ff" },
+    speed: { n:"ATTACK SPEED", d:"More shots fired every second.", category:"ATTACK", b:1.5, i:.2, c:15, cm:1.25, isD:true, col:"#0ff" },
+    critC: { n:"CRITICAL CHANCE", d:"Chance for a critical hit.", category:"ATTACK", b:0, i:5, c:50, cm:1.4, isD:false, col:"#ff3366", max:15 },
+    critD: { n:"CRITICAL DAMAGE", d:"Multiplier applied to critical hits.", category:"ATTACK", b:1.5, i:.2, c:50, cm:1.4, isD:true, col:"#ff3366" },
+    multishot: { n:"MULTI-SHOT", d:"Fire additional projectiles in a spread.", category:"ATTACK", b:0, i:1, c:100, cm:1.42, isD:false, col:"#ff9b42", max:5 },
+    hp: { n:"MAX HEALTH", d:"Increases the tower's maximum health.", category:"DEFENSE", b:200, i:30, c:10, cm:1.15, isD:false, col:"#0f0" },
+    regen: { n:"HEALTH REGEN", d:"Restores health every second.", category:"DEFENSE", b:0, i:1, c:25, cm:1.3, isD:true, col:"#0f0" },
+    armor: { n:"DAMAGE REDUCTION", d:"Reduces damage from every hit.", category:"DEFENSE", b:0, i:2, c:35, cm:1.28, isD:false, col:"#53d6ff", max:20 },
+    dodge: { n:"DODGE CHANCE", d:"Chance to completely avoid a hit.", category:"DEFENSE", b:0, i:2, c:80, cm:1.38, isD:false, col:"#9b8cff", max:20 },
+    shieldRecharge: { n:"SHIELD RECHARGE", d:"Shortens the shield's cooldown.", category:"DEFENSE", b:0, i:1, c:90, cm:1.4, isD:false, col:"#55f5dc", max:8 },
+    range: { n:"TARGETING RANGE", d:"Detects enemies from farther away.", category:"UTILITY", b:300, i:50, c:30, cm:1.2, isD:false, col:"#ffd700", max:10 },
+    cashBonus: { n:"CASH BONUS", d:"Earn more cash for every enemy defeated.", category:"UTILITY", b:0, i:10, c:45, cm:1.25, isD:false, col:"#ffd700", max:10 },
+    waveBonus: { n:"WAVE INCOME", d:"Earn extra cash when a wave is cleared.", category:"UTILITY", b:0, i:5, c:55, cm:1.3, isD:false, col:"#ffd700", max:10 }
   };
 
   const skillDefs = {
-    'start':     { id: 'start', x: 500, y: 400, req: null, cost: 0, n: 'Core', d: 'Base system.' },
-    'multishot': { id: 'multishot', x: 500, y: 300, req: 'start', cost: 100, n: 'Multi-Shot', d: '+1 Projectile.' },
-    'missiles':  { id: 'missiles', x: 350, y: 300, req: 'multishot', cost: 500, n: 'Missiles', d: 'Guided AoE damage.' },
-    'lasers':    { id: 'lasers', x: 650, y: 300, req: 'multishot', cost: 500, n: 'Lasers', d: 'Piercing beam.' },
-    'shield':    { id: 'shield', x: 500, y: 500, req: 'start', cost: 200, n: 'Shield', d: 'Absorbs 1 hit/10s.' },
-    'thorn':     { id: 'thorn', x: 350, y: 500, req: 'shield', cost: 400, n: 'Thorns', d: 'Reflects 50% dmg.' }
+    start:{id:'start',req:null,cost:0,n:'Core Systems',d:'Unlocks the tower progression network.'},
+    multishot:{id:'multishot',req:'start',cost:100,n:'Multi-Shot Core',d:'Adds a bonus shot to each firing burst.'},
+    missiles:{id:'missiles',req:'multishot',cost:500,n:'Missile System',d:'Launches a homing blast every 2 seconds.'},
+    lasers:{id:'lasers',req:'multishot',cost:650,n:'Laser Array',d:'Fires a piercing beam every 4 seconds.'},
+    shield:{id:'shield',req:'start',cost:200,n:'Energy Shield',d:'Blocks one hit, then recharges.'},
+    thorn:{id:'thorn',req:'shield',cost:400,n:'Reactive Plating',d:'Reflects 50% of collision damage.'},
+    drone:{id:'drone',req:'missiles',cost:900,n:'Support Drone',d:'Fires an extra homing projectile every 3 seconds.'},
+    overdrive:{id:'overdrive',req:'lasers',cost:900,n:'Overdrive',d:'Permanently increases attack speed by 25%.'},
+    vampire:{id:'vampire',req:'shield',cost:750,n:'Nano-Repair',d:'Restores 2% of maximum health after each kill.'},
+    fortify:{id:'fortify',req:'thorn',cost:1000,n:'Fortified Core',d:'Reduces all incoming damage by 10%.'}
   };
 
+  const perkDefs = [
+    {id:'power',name:'Overcharged Core',desc:'+20% tower damage.',icon:'✦'},
+    {id:'rapid',name:'Rapid Calibration',desc:'+15% attack speed.',icon:'⚡'},
+    {id:'fortune',name:'Golden Core',desc:'+25% cash from enemy kills.',icon:'◈'},
+    {id:'repair',name:'Nanite Repair',desc:'+3 health regenerated per second.',icon:'✚'},
+    {id:'radar',name:'Extended Radar',desc:'+15% targeting range.',icon:'◎'}
+  ];
+
   const achvDefs = [
-    { id:'waves', n:'Conquistador', d:'Alcança waves cada vez mais altas.', metric:()=>player.highestWave, tiers:[5,10,20,35,50].map((v,i)=>({value:v,reward:[30,60,120,250,500][i]})) },
-    { id:'bosses', n:'Caçador de Bosses', d:'Derrota bosses ao longo das partidas.', metric:()=>player.bossKills, tiers:[1,3,5,10,20].map((v,i)=>({value:v,reward:[50,100,200,400,800][i]})) },
-    { id:'kills', n:'Exterminador', d:'Elimina inimigos.', metric:()=>player.totalKills, tiers:[50,100,250,500,1000].map((v,i)=>({value:v,reward:[25,50,100,250,500][i]})) },
-    { id:'time', n:'Tempo de Serviço', d:'Tempo total passado a jogar (acumulado).', metric:()=>Math.floor(player.playTime||0), tiers:[300,900,1800,3600,7200].map((v,i)=>({value:v,reward:[25,50,100,250,500][i]})), format:v=>v<3600?Math.floor(v/60)+' min':Math.floor(v/3600)+' h '+Math.floor((v%3600)/60)+' min' }
+    { id:'waves', n:'Wave Breaker', d:'Reach higher and higher waves.', metric:()=>player.highestWave, tiers:[5,10,20,35,50].map((v,i)=>({value:v,reward:[30,60,120,250,500][i]})) },
+    { id:'bosses', n:'Boss Hunter', d:'Defeat bosses across all runs.', metric:()=>player.bossKills, tiers:[1,3,5,10,20].map((v,i)=>({value:v,reward:[50,100,200,400,800][i]})) },
+    { id:'kills', n:'Enemy Eliminator', d:'Defeat enemies across all runs.', metric:()=>player.totalKills, tiers:[50,100,250,500,1000].map((v,i)=>({value:v,reward:[25,50,100,250,500][i]})) },
+    { id:'time', n:'Dedicated Defender', d:'Total time spent playing.', metric:()=>Math.floor(player.playTime||0), tiers:[300,900,1800,3600,7200].map((v,i)=>({value:v,reward:[25,50,100,250,500][i]})), format:v=>v<3600?Math.floor(v/60)+' min':Math.floor(v/3600)+' h '+Math.floor((v%3600)/60)+' min' }
   ];
 
   /** SAVE SYSTEM **/
@@ -91,7 +109,7 @@
   function saveGame() { localStorage.setItem(SAVE_KEY, btoa(JSON.stringify(player))); updateMenuUI(); }
   function loadGame() { 
     const s = localStorage.getItem(SAVE_KEY); 
-    if(s) { try { let p=JSON.parse(atob(s)); player={...player,...p}; player.ws={...player.ws,...(p.ws||{})}; } catch(err) { console.warn("Save inválida",err); localStorage.removeItem(SAVE_KEY); } }
+    if(s) { try { let p=JSON.parse(atob(s)); player={...player,...p}; player.ws={...player.ws,...(p.ws||{})}; } catch(err) { console.warn("Invalid save data",err); localStorage.removeItem(SAVE_KEY); } }
     Object.keys(statDefs).forEach(k => { if(player.ws[k]===undefined) player.ws[k]=0; });
     updateMenuUI(); buildSkillTree();
   }
@@ -109,11 +127,31 @@
           (a.id === 'kills' && index === 1 && player.achievements.includes('k100'));
         if(metric >= tier.value && !player.achievements.includes(key)) {
           player.achievements.push(key); player.coins += tier.reward; changed = true;
-          if(!legacy) notify('🏆 CONQUISTA · ' + a.n, '★ ' + (index+1) + ' · +' + tier.reward + ' Coins');
+          if(!legacy) notify('🏆 ACHIEVEMENT · ' + a.n, '★ ' + (index+1) + ' · +' + tier.reward + ' Coins');
         }
       });
     });
     if(changed) saveGame();
+  }
+
+  function showPerkChoice() {
+    if(!game || !game.running) return;
+    game.paused = true;
+    const panel = document.getElementById('perk-choice');
+    const picks = [...perkDefs].sort(()=>Math.random()-.5).slice(0,3);
+    panel.innerHTML = '<div class="perk-dialog"><span class="perk-eyebrow">MILESTONE REACHED</span><h2>CHOOSE A PERK</h2><p>Select one permanent bonus for this run.</p><div class="perk-options">'+picks.map(p=>'<button class="perk-option" onclick="choosePerk(\''+p.id+'\')"><span>'+p.icon+'</span><strong>'+p.name+'</strong><small>'+p.desc+'</small></button>').join('')+'</div></div>';
+    panel.classList.add('visible');
+  }
+
+  function choosePerk(id) {
+    if(!perkDefs.some(p=>p.id===id)) return;
+    run.perks=run.perks||{};
+    run.perks[id]=(run.perks[id]||0)+1;
+    const panel=document.getElementById('perk-choice');
+    panel.classList.remove('visible'); panel.innerHTML='';
+    if(id==='repair' && tower) tower.hp=Math.min(tower.maxHp,tower.hp+20);
+    game.paused=false; game.last=performance.now(); updateHUD();
+    const perk=perkDefs.find(p=>p.id===id); notify('PERK UNLOCKED',perk.name);
   }
 
   function notify(title, msg) {
@@ -122,7 +160,7 @@
     box.appendChild(el); setTimeout(() => { el.style.opacity = 0; setTimeout(()=>el.remove(), 300); }, 3000);
   }
 
-  function getVal(k, wsO=false) { const d=statDefs[k]; let l=player.ws[k]+(wsO?0:(run.stats[k]||0)); let v=d.b+(l*d.i); return d.isD?v.toFixed(2):Math.floor(v); }
+  function getVal(k, wsO=false) { const d=statDefs[k]; let l=(player.ws[k]||0)+(wsO?0:(run.stats[k]||0)); let v=d.b+(l*d.i); return d.isD?v.toFixed(2):Math.floor(v); }
   function getCost(k, isW) { const d=statDefs[k]; let l=isW?player.ws[k]:(run.stats[k]||0); return Math.floor(d.c*Math.pow(d.cm, l)); }
   function hasSkill(id) { return player.skills.includes(id); }
 
@@ -130,10 +168,10 @@
   function startGame() {
     AudioSys.init();
     document.getElementById('menu').classList.remove('active-layer'); document.getElementById('hud').classList.add('active-hud');
-    run = { stats: {}, cash: 0, coins: 0, wave: 1, kills: 0 };
+    run = { stats: {}, cash: 0, coins: 0, wave: 1, kills: 0, perks: {} };
     Object.keys(statDefs).forEach(k => run.stats[k]=0);
     
-    game = { running: true, dt: 0, last: performance.now(), shake: 0, playSaveT: 0, achievementCheckT: 0, spawnT: 0.25, toSpawn: 10, ents: { e:[], p:[], b:[], part:[], txt:[] }, cx: canvas.width/2, cy: canvas.height/2 };
+    game = { running: true, paused:false, dt: 0, last: performance.now(), shake: 0, playSaveT: 0, achievementCheckT: 0, spawnT: 0.25, toSpawn: 10, ents: { e:[], p:[], b:[], part:[], txt:[] }, cx: canvas.width/2, cy: canvas.height/2 };
     
     tower = new Tower(); 
     initUpgBar();
@@ -167,6 +205,7 @@
 
   function loop(ts) {
     if(!game.running) return; requestAnimationFrame(loop);
+    if(game.paused) { game.last = ts; return; }
     game.dt = (ts - game.last)/1000; if(game.dt > 0.1) game.dt = 0.1; game.last = ts;
     player.playTime = (player.playTime || 0) + game.dt;
     game.achievementCheckT += game.dt; game.playSaveT += game.dt;
@@ -202,7 +241,9 @@
 
     if(game.toSpawn <= 0 && game.ents.e.length === 0) {
       run.wave++; game.toSpawn = 10 + Math.floor(run.wave * 2);
-      run.coins += Math.floor(run.wave/2) + 2; updateHUD(); AudioSys.coin(); checkAchievements(); 
+      run.coins += Math.floor(run.wave/2) + 2 + Math.floor(parseFloat(getVal('waveBonus')));
+      updateHUD(); AudioSys.coin(); checkAchievements();
+      if((run.wave-1)%5===0) showPerkChoice(); 
     }
     game.spawnT -= game.dt;
     if(game.spawnT <= 0 && game.toSpawn > 0) { game.ents.e.push(new Enemy(run.wave)); game.toSpawn--; game.spawnT = Math.max(0.35, 0.7 - (run.wave*0.025)); updateHUD(); }
