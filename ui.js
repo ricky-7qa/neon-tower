@@ -16,11 +16,19 @@
 
     let ach = document.getElementById('achv-grid'); ach.innerHTML = "";
     achvDefs.forEach(a => {
-      let done = player.achievements.includes(a.id);
-      ach.innerHTML += `<div class="card" style="border-color:${done?'#0f0':'#333'}">
-        <h3 style="color:${done?'#0f0':'#fff'}">${a.n} ${done?'(DONE)':''}</h3>
-        <p>${a.d}</p><p class="c-gold">+${a.r} COINS</p>
-      </div>`;
+      const earned = a.tiers.filter((tier,i) => player.achievements.includes(a.id+'_'+(i+1)) || (a.id==='waves' && i===1 && player.achievements.includes('w10')) || (a.id==='waves' && i===2 && player.achievements.includes('w30')) || (a.id==='kills' && i===1 && player.achievements.includes('k100'))).length;
+      const next = a.tiers[earned];
+      const metric = a.metric();
+      const currentText = a.format ? a.format(metric) : metric.toLocaleString('pt-PT');
+      const targetText = next ? (a.format ? a.format(next.value) : next.value.toLocaleString('pt-PT')) : 'MAX';
+      const stars = '★'.repeat(earned) + '☆'.repeat(5-earned);
+      const progress = next ? Math.min(100, metric / next.value * 100) : 100;
+      ach.insertAdjacentHTML('beforeend', `<article class="card achievement-card ${earned===5?'achievement-max':''}">
+        <div class="achievement-head"><div><span class="achievement-kicker">PROGRESSO ${earned}/5</span><h3>${a.n}</h3></div><span class="achievement-stars" aria-label="${earned} de 5 estrelas">${stars}</span></div>
+        <p>${a.d}</p>
+        <div class="achievement-progress"><span style="width:${progress}%"></span></div>
+        <div class="achievement-foot"><span>${currentText} / ${targetText}</span><strong>${next ? '+'+next.reward+' COINS' : 'CONCLUÍDO'}</strong></div>
+      </article>`);
     });
   }
 
