@@ -36,8 +36,10 @@
     #upg-panel { position: absolute; top: 0; right: 0; width: 300px; height: 100%; background: rgba(0,5,15,0.95); border-left: 2px solid #0f0; transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); display: flex; flex-direction: column; z-index: 20; box-shadow: -10px 0 30px rgba(0,255,0,0.1); pointer-events: auto; transform: translateX(100%); }
     #upg-panel.open { transform: translateX(0); }
     
-    #upg-toggle { position: absolute; left: -45px; top: 50%; transform: translateY(-50%); background: rgba(0,5,15,0.95); border: 2px solid #0f0; border-right: none; color: #0f0; padding: 20px 10px; cursor: pointer; font-weight: bold; border-radius: 10px 0 0 10px; transition: 0.3s; writing-mode: vertical-rl; text-orientation: mixed; rotate: 180deg; letter-spacing: 2px; box-shadow: -5px 0 10px rgba(0,255,0,0.1); }
-    #upg-toggle:hover { background: #0f0; color: #000; box-shadow: -10px 0 20px rgba(0,255,0,0.4); }
+    .panel-side-toggle { position:absolute; left:-45px; top:40%; transform:translateY(-50%) rotate(180deg); background:rgba(0,5,15,.96); border:2px solid #0f0; border-right:none; color:#0f0; padding:17px 10px; cursor:pointer; font-weight:bold; border-radius:10px 0 0 10px; transition:.25s; writing-mode:vertical-rl; letter-spacing:2px; box-shadow:-5px 0 10px rgba(0,255,0,.1); z-index:3; }
+    .panel-side-toggle:hover,.panel-side-toggle.selected { background:#0f0; color:#000; box-shadow:-8px 0 18px rgba(0,255,0,.35); }
+    .perk-side-toggle { top:66%; border-color:#b66cff; color:#d6aaff; box-shadow:-5px 0 10px rgba(182,108,255,.12); }
+    .perk-side-toggle:hover,.perk-side-toggle.selected { background:#b66cff; border-color:#b66cff; color:#08000f; box-shadow:-8px 0 18px rgba(182,108,255,.35); }
     
     #upg-content { padding: 80px 20px 20px 20px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 15px; }
     .upg-btn { width: 100%; padding: 15px; font-size: 14px; display: flex; flex-direction: column; align-items: center; gap: 5px; }
@@ -215,3 +217,20 @@
   #upg-content .upg-btn { min-height:54px; font-size:10px; }
   #hud.upgrades-open .topbar-right { transform:translateX(calc(-1 * min(310px, 82vw))); }
 }
+
+/* In-run perk inventory panel */
+#upgrades-view,#perks-view { width:100%; height:100%; min-height:0; flex-direction:column; }
+#perks-view { padding:18px 14px; overflow-y:auto; gap:12px; }
+.perks-panel-heading { display:flex; flex-direction:column; align-items:center; gap:5px; padding:10px 0 15px; border-bottom:1px solid rgba(182,108,255,.25); color:#e4caff; font:700 15px Orbitron,sans-serif; letter-spacing:2px; }
+.perks-panel-heading span { color:#9b86ad; font:700 9px Orbitron,sans-serif; letter-spacing:2px; }
+#run-perks-content { display:flex; flex-direction:column; gap:10px; }
+.perks-empty { min-height:190px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; text-align:center; color:#b9a6c9; }
+.perks-empty span { font-size:34px; color:#b66cff; }
+.perks-empty strong { color:#e4caff; font:700 12px Orbitron,sans-serif; letter-spacing:1.5px; }
+.perks-empty small { max-width:230px; color:#8993a5; font:12px/1.5 Arial,sans-serif; }
+.run-perk-card { display:grid; grid-template-columns:38px 1fr auto; align-items:center; gap:10px; padding:13px 10px; border:1px solid rgba(182,108,255,.28); border-radius:10px; background:linear-gradient(110deg,rgba(55,25,80,.35),rgba(4,12,25,.85)); }
+.run-perk-icon { display:grid; place-items:center; width:34px; height:34px; border-radius:8px; color:#d6aaff; background:rgba(182,108,255,.12); font-size:20px; }
+.run-perk-info { display:flex; flex-direction:column; gap:5px; min-width:0; }
+.run-perk-info strong { color:#f0e4ff; font:700 10px Orbitron,sans-serif; }
+.run-perk-info small { color:#aab8c8; font:12px/1.4 Arial,sans-serif; }
+.run-perk-count { color:#e3c2ff; font:700 13px Orbitron,sans-serif; }
