@@ -148,6 +148,8 @@
 #hud.upgrades-open .topbar-right { transform: translateX(-310px); }
 #upg-content { padding: 66px 12px 12px; overflow: hidden; overflow-y: hidden; gap: 7px; justify-content: flex-start; }
 #upg-content .upg-btn { flex: 1 1 0; min-height: 0; padding: 7px 9px; gap: 3px; font-size: 12px; }
+#upg-content::-webkit-scrollbar { display:none; }
+#upg-content { scrollbar-width:none; }
 #notif-box { top: 14px; left: 50%; right: auto; transform: translateX(-50%); width: min(340px, calc(100vw - 32px)); align-items: center; z-index: 60; }
 #notif-box .notif { width: 100%; text-align: center; padding: 9px 14px; }
 .achievement-card { min-height: 190px; gap: 12px; }
@@ -161,7 +163,7 @@
 .achievement-foot strong { color:#ffd700; white-space:nowrap; font-family:Orbitron,sans-serif; font-size:10px; }
 .achievement-max { border-color:rgba(255,215,0,.55); }
 @media(max-width:700px) {
-  #hud.upgrades-open .topbar-right { transform:translateX(-300px); }
+  #hud.upgrades-open .topbar-right { transform:translateX(calc(-1 * min(300px, 78vw)); }
   #upg-panel { width: min(280px, 78vw); }
   #upg-content { padding-top:58px; gap:5px; }
   #upg-content .upg-btn { padding:6px; font-size:10px; }
