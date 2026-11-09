@@ -106,8 +106,8 @@
     hit(dmg, attacker) {
       if(this.invuln>0)return;
       run.combo=0;run.comboTimer=0;
-      if(this.shield) { this.shield = false; this.shieldCd = 10; game.shake = 0.3; createParts(this.x, this.y, "#0096ff", 20, 5); return; }
-      this.hp -= dmg; game.shake = 0.5; AudioSys.hit();
+      if(this.shield) { this.shield = false; this.shieldCd = 10; game.shake = 0.10; createParts(this.x, this.y, "#0096ff", 20, 5); return; }
+      this.hp -= dmg; game.shake = 0.14; AudioSys.hit();
       game.ents.txt.push(new FText(this.x, this.y-40, `-${Math.floor(dmg)}`, "#f00", 24));
       
       if(hasSkill('thorn') && attacker) { attacker.hit(dmg * 0.5); createParts(this.x, this.y, "#fff", 10, 3); }
