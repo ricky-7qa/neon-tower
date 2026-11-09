@@ -110,3 +110,34 @@
 .game-topbar .stat-box { min-width:76px; padding:7px 12px; border:1px solid rgba(0,220,255,.22); border-radius:9px; background:rgba(0,12,28,.72); backdrop-filter:blur(8px); }
 .game-topbar .top-label { color:#9db0c5; font-size:10px; letter-spacing:1.5px; }
 .game-topbar .stat-val { font-size:20px; }
+
+
+/* MENU LAYOUT FIX: keep the upgrade browser inside the screen and scroll its content */
+#menu { overflow: hidden; min-height: 0; }
+#menu .menu-header { flex: 0 0 auto; padding: 20px 0 10px; }
+#menu .menu-header h1 { font-size: clamp(30px, 4.5vw, 48px); letter-spacing: clamp(3px, .7vw, 8px); }
+#menu .menu-nav { flex: 0 0 auto; flex-wrap: wrap; gap: 10px; margin: 0 12px 10px; }
+#menu > .top-bar { flex: 0 0 auto; padding: 7px 16px; margin: 0 0 8px !important; }
+#menu .scroll-area { flex: 1 1 0; min-height: 0; width: 100%; overflow-y: auto; overscroll-behavior: contain; padding: 8px 24px 22px; }
+#menu > div:last-of-type { flex: 0 0 auto; padding: 10px !important; }
+#menu > div:last-of-type .btn { font-size: 16px !important; padding: 12px 34px !important; }
+#tab-skills { align-items: stretch; }
+#tab-skills .skill-tree { width: 100%; max-width: 1120px; margin: 0 auto; }
+.skill-wallet { display:inline-flex; align-items:center; gap:10px; margin-top:12px; padding:8px 12px; border:1px solid rgba(255,215,0,.3); border-radius:8px; background:rgba(255,215,0,.07); color:#c7d3df; font:11px Orbitron,sans-serif; letter-spacing:1px; }
+.skill-wallet strong { color:#ffd700; font-size:14px; }
+.skill-card { min-height:230px; }
+.skill-description { min-height:58px; }
+.skill-meta { flex-wrap:wrap; }
+@media(max-height:760px) {
+  #menu .menu-header { padding:10px 0 5px; }
+  #menu .menu-header h1 { font-size:32px; }
+  #menu .menu-nav { margin-bottom:5px; }
+  #menu > .top-bar { padding:4px 12px; }
+  #menu > div:last-of-type { padding:7px !important; }
+  #menu > div:last-of-type .btn { padding:9px 26px !important; }
+  .skill-card { min-height:205px; padding:13px; }
+}
+@media(max-width:600px) {
+  #menu .scroll-area { padding:6px 10px 16px; }
+  .skill-grid { grid-template-columns:1fr; }
+}
