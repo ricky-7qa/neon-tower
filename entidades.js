@@ -51,10 +51,18 @@
       this.cdBase-=dt;
       if(this.multiQueue){this.multiQueue.delay-=dt;if(this.multiQueue.delay<=0){game.ents.p.push(new Projectile(this.x,this.y,this.multiQueue.angle,this.multiQueue.damage,this.multiQueue.crit,'base'));this.multiQueue=null;}}
       if(this.cdBase<=0&&targetEnemy){
-        AudioSys.shoot();let dmg=parseFloat(getVal('damage'));let crit=(Math.random()*100)<parseFloat(getVal('critC'));let finalD=crit?dmg*parseFloat(getVal('critD')):dmg;
+        AudioSys.shoot();
+        let dmg=parseFloat(getVal('damage'))*(1+(run.perks?.power||0)*.2);
+        let crit=(Math.random()*100)<parseFloat(getVal('critC'));
+        let finalD=crit?dmg*parseFloat(getVal('critD')):dmg;
         game.ents.p.push(new Projectile(this.x,this.y,this.angle,finalD,crit,'base'));
+        const extra=Math.min(5,parseInt(getVal('multishot')));
+        for(let shot=1;shot<=extra;shot++){
+          const side=shot%2===0?1:-1, spread=Math.ceil(shot/2)*.13*side;
+          game.ents.p.push(new Projectile(this.x,this.y,this.angle+spread,finalD,crit,'base'));
+        }
         if(hasSkill('multishot'))this.multiQueue={delay:.12,angle:this.angle,damage:finalD,crit};
-        this.cdBase=1/parseFloat(getVal('speed'));
+        this.cdBase=1/(parseFloat(getVal('speed'))*(1+(run.perks?.rapid||0)*.15)*(hasSkill('overdrive')?1.25:1));
       }
 
       if(hasSkill('drone') && targetEnemy) {
