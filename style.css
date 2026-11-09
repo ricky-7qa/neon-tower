@@ -44,7 +44,7 @@
 
     /* BUTTONS & MENUS */
     .btn { background: rgba(0,0,0,0.8); border: 1px solid #0ff; color: #0ff; padding: 12px 25px; font-family: inherit; font-weight: bold; cursor: pointer; border-radius: 6px; transition: 0.2s; text-transform: uppercase; box-shadow: 0 4px 6px rgba(0,0,0,0.5), inset 0 0 15px rgba(0,255,255,0.1); }
-    /* PREVINE CLIQUES NOS TEXTOS DOS BOTÕES - BUG FIX */
+    /* Prevent clicks on button text */
     .btn * { pointer-events: none; } 
     
     .btn:hover:not(:disabled){background:rgba(0,255,255,.24);color:#fff;border-color:#fff;box-shadow:0 0 20px rgba(0,255,255,.65);transform:translateY(-2px) scale(1.025)}.btn:active:not(:disabled){transform:translateY(1px) scale(.98)}.btn{background:rgba(0,18,28,.58);backdrop-filter:blur(8px)}
