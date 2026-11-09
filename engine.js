@@ -9,6 +9,7 @@
 
   function toggleUpgPanel(view = 'upgrades') {
     const panel = document.getElementById('upg-panel');
+    const app = document.getElementById('app');
     const hud = document.getElementById('hud');
     const upgBtn = document.getElementById('upg-toggle');
     const perkBtn = document.getElementById('perk-toggle');
@@ -16,6 +17,7 @@
     if (isUpgOpen && activePanelView === view) {
       isUpgOpen = false;
       panel.classList.remove('open');
+      app.classList.remove('panel-open');
       hud.classList.remove('upgrades-open');
       upgBtn.classList.remove('selected');
       perkBtn.classList.remove('selected');
@@ -25,6 +27,7 @@
     isUpgOpen = true;
     activePanelView = view;
     panel.classList.add('open');
+    app.classList.add('panel-open');
     hud.classList.add('upgrades-open');
     document.getElementById('upgrades-view').style.display = view === 'upgrades' ? 'flex' : 'none';
     document.getElementById('perks-view').style.display = view === 'perks' ? 'flex' : 'none';
