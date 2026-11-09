@@ -45,14 +45,21 @@
 
     <!-- SLIDING UPGRADE PANEL -->
     <div id="upg-panel" class="closed">
-      <div id="upg-toggle" onclick="toggleUpgPanel()">UPGRADES &#9660;</div>
-      <div class="upg-tabs" role="tablist" aria-label="Upgrade categories">
-        <button class="upg-tab active attack-tab" data-category="ATTACK" onclick="switchUpgCategory('ATTACK')">ATTACK</button>
-        <button class="upg-tab defense-tab" data-category="DEFENSE" onclick="switchUpgCategory('DEFENSE')">DEFENSE</button>
-        <button class="upg-tab utility-tab" data-category="UTILITY" onclick="switchUpgCategory('UTILITY')">UTILITY</button>
+      <div id="upg-toggle" class="panel-side-toggle" onclick="toggleUpgPanel('upgrades')">UPGRADES</div>
+      <div id="perk-toggle" class="panel-side-toggle perk-side-toggle" onclick="toggleUpgPanel('perks')">PERKS</div>
+      <div id="upgrades-view">
+        <div class="upg-tabs" role="tablist" aria-label="Upgrade categories">
+          <button class="upg-tab active attack-tab" data-category="ATTACK" onclick="switchUpgCategory('ATTACK')">ATTACK</button>
+          <button class="upg-tab defense-tab" data-category="DEFENSE" onclick="switchUpgCategory('DEFENSE')">DEFENSE</button>
+          <button class="upg-tab utility-tab" data-category="UTILITY" onclick="switchUpgCategory('UTILITY')">UTILITY</button>
+        </div>
+        <div id="upg-category-title">ATTACK UPGRADES</div>
+        <div id="upg-content"></div>
       </div>
-      <div id="upg-category-title">ATTACK UPGRADES</div>
-      <div id="upg-content"></div>
+      <div id="perks-view" style="display:none;">
+        <div class="perks-panel-heading">YOUR PERKS <span>THIS RUN</span></div>
+        <div id="run-perks-content"></div>
+      </div>
     </div>
   </div>
 
