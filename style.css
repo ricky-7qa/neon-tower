@@ -375,7 +375,8 @@
   #upg-panel.open { transform:translateY(0); }
   .panel-side-toggle {
     top:-54px;
-    left:12px;
+    left:auto;
+    right:12px;
     transform:none;
     writing-mode:horizontal-tb;
     border:1px solid #0f0;
@@ -387,7 +388,7 @@
   }
   .perk-side-toggle {
     top:-54px;
-    left:112px;
+    right:112px;
     border-color:#b66cff;
     border-bottom:0;
   }
