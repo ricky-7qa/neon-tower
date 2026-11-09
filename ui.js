@@ -146,20 +146,6 @@
     if(k==='hp'){ let o=tower.maxHp; tower.maxHp=parseFloat(getVal('hp')); tower.hp+=(tower.maxHp-o); } updateHUD(); AudioSys.coin(); }
   }
 
-  function activateDash() {
-    if(!game || !game.running || game.paused || !tower || tower.dashCd>0) return;
-    tower.invuln=.5; tower.dashCd=3; notify('DASH','0.5 seconds of invulnerability');
-  }
-  function activateBomb() {
-    if(!game || !game.running || game.paused || game.bombCd>0) return;
-    game.ents.b.forEach(b=>bulletPool.release(b)); game.ents.b.length=0;
-    game.bombCd=12; AudioSys.explosion(); notify('SMART BOMB','Incoming projectiles cleared');
-  }
-  window.addEventListener('keydown',ev=>{
-    if(ev.code==='Space' && !ev.repeat) { ev.preventDefault(); activateDash(); }
-    if(ev.key.toLowerCase()==='b' && !ev.repeat) activateBomb();
-  });
-  document.getElementById('touch-dash').addEventListener('pointerdown',ev=>{ev.preventDefault();activateDash();});
-  document.getElementById('touch-bomb').addEventListener('pointerdown',ev=>{ev.preventDefault();activateBomb();});
+
 
   loadGame();
