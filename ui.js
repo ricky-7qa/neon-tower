@@ -30,7 +30,7 @@
       const stars = '★'.repeat(earned) + '☆'.repeat(5-earned);
       const progress = next ? Math.min(100, metric / next.value * 100) : 100;
       ach.insertAdjacentHTML('beforeend', `<article class="card achievement-card ${earned===5?'achievement-max':''}">
-        <div class="achievement-head"><div><span class="achievement-kicker">PROGRESSO ${earned}/5</span><h3>${a.n}</h3></div><span class="achievement-stars" aria-label="${earned} out of 5 stars">${stars}</span></div>
+        <div class="achievement-head"><div><span class="achievement-kicker">PROGRESS ${earned}/5</span><h3>${a.n}</h3></div><span class="achievement-stars" aria-label="${earned} out of 5 stars">${stars}</span></div>
         <p>${a.d}</p>
         <div class="achievement-progress"><span style="width:${progress}%"></span></div>
         <div class="achievement-foot"><span>${currentText} / ${targetText}</span><strong>${next ? '+'+next.reward+' COINS' : 'COMPLETED'}</strong></div>
@@ -40,7 +40,7 @@
 
   function buildSkillTree() {
     const container = document.getElementById('skill-tree-container');
-    container.innerHTML = '<div class="skill-intro"><span class="eyebrow">MELHORIAS PERMANENTES</span><h2>Árvore de competências</h2><p>Escolhe melhorias para a torre. Vê o efeito, o preço e os requisitos antes de comprar. As compras são permanentes.</p><div class="skill-wallet">AS TUAS COINS: <strong>' + player.coins.toLocaleString('pt-PT') + '</strong></div></div><div class="skill-grid" id="skill-grid"></div>';
+    container.innerHTML = '<div class="skill-intro"><span class="eyebrow">PERMANENT UPGRADES</span><h2>Skill Tree</h2><p>Choose upgrades for your tower. Check each effect, cost and requirement before buying. Purchases are permanent.</p><div class="skill-wallet">YOUR COINS: <strong>' + player.coins.toLocaleString('en-US') + '</strong></div></div><div class="skill-grid" id="skill-grid"></div>';
     const grid = document.getElementById('skill-grid');
     Object.values(skillDefs).forEach(s => {
       const unlocked = hasSkill(s.id);
@@ -66,7 +66,7 @@
       grid.insertAdjacentHTML('beforeend', `<article class="skill-card ${unlocked?'is-unlocked':''} ${locked?'is-locked':''}">
         <div class="skill-card-top"><span class="skill-icon">${s.id==='start'?'◆':s.id==='multishot'?'⟡':s.id==='missiles'?'➤':s.id==='lasers'?'ϟ':s.id==='shield'?'⬡':s.id==='drone'?'◉':s.id==='overdrive'?'⚡':s.id==='vampire'?'✚':'✧'}</span><span class="skill-status ${unlocked?'done':locked?'locked':'ready'}">${status}</span></div>
         <h3>${s.n}</h3><p class="skill-description">${effect}</p>
-        <div class="skill-meta"><span>${requirement}</span><strong>${s.cost === 0 ? 'FREE' : s.cost.toLocaleString('pt-PT') + ' COINS'}</strong></div>
+        <div class="skill-meta"><span>${requirement}</span><strong>${s.cost === 0 ? 'FREE' : s.cost.toLocaleString('en-US') + ' COINS'}</strong></div>
         ${action}
       </article>`);
     });
@@ -128,6 +128,6 @@
     if(k==='hp'){ let o=tower.maxHp; tower.maxHp=parseFloat(getVal('hp')); tower.hp+=(tower.maxHp-o); } updateHUD(); AudioSys.coin(); }
   }
 
-  window.addEventListener('keydown',ev=>{if(!game||!game.running||!tower)return;if(ev.code==='Space'&&!ev.repeat&&tower.dashCd<=0){tower.invuln=.5;tower.dashCd=3;notify('DASH','0,5 s invulnerável');}if(ev.key.toLowerCase()==='b'&&!ev.repeat&&game.bombCd<=0){game.ents.b.forEach(b=>bulletPool.release(b));game.ents.b.length=0;game.bombCd=12;AudioSys.explosion();notify('SMART BOMB','Balas removidas');}});
+  window.addEventListener('keydown',ev=>{if(!game||!game.running||!tower)return;if(ev.code==='Space'&&!ev.repeat&&tower.dashCd<=0){tower.invuln=.5;tower.dashCd=3;notify('DASH','0.5 seconds of invulnerability');}if(ev.key.toLowerCase()==='b'&&!ev.repeat&&game.bombCd<=0){game.ents.b.forEach(b=>bulletPool.release(b));game.ents.b.length=0;game.bombCd=12;AudioSys.explosion();notify('SMART BOMB','Incoming projectiles cleared');}});
 
   loadGame();
