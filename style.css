@@ -141,3 +141,29 @@
   #menu .scroll-area { padding:6px 10px 16px; }
   .skill-grid { grid-template-columns:1fr; }
 }
+
+
+/* Upgrade panel: make the whole HUD clear the panel's footprint */
+#hud .topbar-right { transition: transform .42s cubic-bezier(.2,.8,.2,1); }
+#hud.upgrades-open .topbar-right { transform: translateX(-310px); }
+#upg-content { padding: 66px 12px 12px; overflow: hidden; overflow-y: hidden; gap: 7px; justify-content: flex-start; }
+#upg-content .upg-btn { flex: 1 1 0; min-height: 0; padding: 7px 9px; gap: 3px; font-size: 12px; }
+#notif-box { top: 14px; left: 50%; right: auto; transform: translateX(-50%); width: min(340px, calc(100vw - 32px)); align-items: center; z-index: 60; }
+#notif-box .notif { width: 100%; text-align: center; padding: 9px 14px; }
+.achievement-card { min-height: 190px; gap: 12px; }
+.achievement-head { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+.achievement-kicker { color:#0ff; font:700 9px Orbitron,sans-serif; letter-spacing:1.4px; }
+.achievement-head h3 { margin-top:6px; color:#fff; }
+.achievement-stars { color:#ffd700; white-space:nowrap; font-size:20px; letter-spacing:1px; text-shadow:0 0 12px rgba(255,215,0,.28); }
+.achievement-progress { height:7px; border-radius:99px; overflow:hidden; background:rgba(255,255,255,.08); }
+.achievement-progress span { display:block; height:100%; border-radius:99px; background:linear-gradient(90deg,#00cfff,#35ff9a); box-shadow:0 0 12px rgba(0,255,220,.35); }
+.achievement-foot { display:flex; justify-content:space-between; gap:8px; color:#9aafc2; font:11px Arial,sans-serif; }
+.achievement-foot strong { color:#ffd700; white-space:nowrap; font-family:Orbitron,sans-serif; font-size:10px; }
+.achievement-max { border-color:rgba(255,215,0,.55); }
+@media(max-width:700px) {
+  #hud.upgrades-open .topbar-right { transform:translateX(-300px); }
+  #upg-panel { width: min(280px, 78vw); }
+  #upg-content { padding-top:58px; gap:5px; }
+  #upg-content .upg-btn { padding:6px; font-size:10px; }
+  .achievement-stars { font-size:16px; }
+}
