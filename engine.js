@@ -241,7 +241,7 @@
 
     if(game.toSpawn <= 0 && game.ents.e.length === 0) {
       run.wave++; game.toSpawn = 10 + Math.floor(run.wave * 2);
-      run.coins += Math.floor(run.wave/2) + 2 + Math.floor(parseFloat(getVal('waveBonus')));
+      run.coins += Math.floor(run.wave/2) + 2; run.cash += Math.floor(parseFloat(getVal('waveBonus')));
       updateHUD(); AudioSys.coin(); checkAchievements();
       if((run.wave-1)%5===0) showPerkChoice(); 
     }
