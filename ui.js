@@ -78,15 +78,33 @@
     if(player.coins >= s.cost) { player.coins -= s.cost; player.skills.push(id); saveGame(); buildSkillTree(); AudioSys.coin(); }
   }
 
+  let activeUpgCategory = 'ATTACK';
+
+  function switchUpgCategory(category) {
+    if (!['ATTACK','DEFENSE','UTILITY'].includes(category)) return;
+    activeUpgCategory = category;
+    document.querySelectorAll('.upg-tab').forEach(tab => {
+      const active = tab.dataset.category === category;
+      tab.classList.toggle('active', active);
+      tab.setAttribute('aria-selected', active ? 'true' : 'false');
+    });
+    document.getElementById('upg-category-title').innerText = category + ' UPGRADES';
+    document.querySelectorAll('.upg-btn').forEach(btn => {
+      btn.style.display = statDefs[btn.dataset.stat].category === category ? 'flex' : 'none';
+    });
+  }
+
   function initUpgBar() {
     let ub = document.getElementById('upg-content'); ub.innerHTML = "";
     Object.keys(statDefs).forEach(k => {
       let btn = document.createElement("button");
       btn.className = "btn upg-btn";
       btn.id = "btn-upg-" + k;
+      btn.dataset.stat = k;
       btn.onclick = () => buyRunUpg(k);
       ub.appendChild(btn);
     });
+    switchUpgCategory('ATTACK');
   }
 
   function updateHUD() {
