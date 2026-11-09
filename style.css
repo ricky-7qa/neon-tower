@@ -191,3 +191,27 @@
 .perk-option strong{font-size:12px}
 .perk-option small{font:12px/1.4 Arial,sans-serif;color:#aab8c8}
 @media(max-width:600px){.perk-dialog{padding:16px}.perk-options{grid-template-columns:1fr}.perk-option{min-height:90px}.workshop-grid{grid-template-columns:1fr}}
+
+
+/* Three in-game upgrade categories */
+#upg-panel { width:340px; }
+#upg-tabs { display:flex; }
+.upg-tabs { position:absolute; top:13px; left:18px; right:12px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; z-index:2; }
+.upg-tab { min-width:0; padding:10px 3px; border:1px solid rgba(0,220,255,.25); border-radius:7px; background:rgba(0,18,32,.9); color:#8da6b9; font:700 9px Orbitron,sans-serif; letter-spacing:.5px; cursor:pointer; transition:.2s; }
+.upg-tab:hover { color:#fff; border-color:#fff; }
+.upg-tab.active { color:#031018; background:#0ff; border-color:#0ff; box-shadow:0 0 16px rgba(0,255,255,.35); }
+.upg-tab.defense-tab.active { color:#031008; background:#35ff9a; border-color:#35ff9a; box-shadow:0 0 16px rgba(53,255,154,.3); }
+.upg-tab.utility-tab.active { color:#171000; background:#ffd45c; border-color:#ffd45c; box-shadow:0 0 16px rgba(255,212,92,.3); }
+#upg-category-title { position:absolute; top:54px; left:18px; right:12px; padding:7px 4px; color:#9db5c8; font:700 10px Orbitron,sans-serif; letter-spacing:1.8px; text-align:center; border-bottom:1px solid rgba(255,255,255,.1); }
+#upg-content { padding:88px 12px 14px; grid-template-columns:1fr; gap:8px; overflow-y:auto; align-content:start; }
+#upg-content .upg-btn { min-height:58px; padding:9px 10px; font-size:11px; }
+#hud.upgrades-open .topbar-right { transform:translateX(-350px); }
+@media(max-width:700px) {
+  #upg-panel { width:min(300px,82vw); }
+  #upg-tabs { left:12px; right:9px; gap:4px; }
+  .upg-tab { font-size:8px; padding:9px 1px; }
+  #upg-category-title { left:12px; right:9px; top:51px; font-size:9px; }
+  #upg-content { padding:82px 9px 12px; }
+  #upg-content .upg-btn { min-height:54px; font-size:10px; }
+  #hud.upgrades-open .topbar-right { transform:translateX(calc(-1 * min(310px, 82vw))); }
+}
