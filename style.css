@@ -343,3 +343,60 @@
   #app { position:fixed; inset:0; width:100vw !important; height:100dvh !important; min-width:0; min-height:0; max-width:none !important; max-height:none !important; aspect-ratio:auto !important; border:0; border-radius:0; }
   #gameCanvas { width:100% !important; height:100% !important; }
 }
+
+
+/* Portrait phone: upgrades and perk inventory slide up from the bottom. */
+@media (orientation:portrait) and (pointer:coarse) {
+  #upg-panel {
+    top:auto;
+    right:0;
+    bottom:0;
+    left:0;
+    width:100%;
+    height:min(42dvh,360px);
+    min-height:220px;
+    border-left:0;
+    border-top:2px solid #0f0;
+    border-radius:14px 14px 0 0;
+    transform:translateY(100%);
+    transition:transform .32s ease;
+    box-shadow:0 -10px 30px rgba(0,255,0,.14);
+  }
+  #upg-panel.open { transform:translateY(0); }
+  .panel-side-toggle {
+    top:-36px;
+    left:12px;
+    transform:none;
+    writing-mode:horizontal-tb;
+    border:1px solid #0f0;
+    border-bottom:0;
+    border-radius:9px 9px 0 0;
+    padding:9px 12px;
+    letter-spacing:1px;
+    font-size:9px;
+  }
+  .perk-side-toggle {
+    top:-36px;
+    left:112px;
+    border-color:#b66cff;
+    border-bottom:0;
+  }
+  #upgrades-view,#perks-view { height:100%; min-height:0; }
+  #upg-content {
+    padding:80px 10px 12px;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:7px;
+    overflow-y:auto;
+    align-content:start;
+  }
+  #upg-content .upg-btn { min-height:58px; }
+  #perks-view { padding:12px 10px 14px; overflow-y:auto; }
+  .perks-panel-heading { padding:5px 0 9px; font-size:12px; }
+  #run-perks-content { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+  .run-perk-card { grid-template-columns:27px 1fr; padding:8px 6px; gap:6px; }
+  .run-perk-icon { width:26px; height:26px; font-size:15px; }
+  .run-perk-info strong { font-size:9px; }
+  .run-perk-info small { font-size:10px; line-height:1.25; }
+  .run-perk-count { grid-column:2; justify-self:start; font-size:10px; }
+  .perks-empty { min-height:100px; }
+}
