@@ -215,7 +215,7 @@
     let panelWidth = 300;
     let targetCx = isUpgOpen ? (canvas.width - panelWidth) / 2 : canvas.width / 2;
     
-    // Deslize da câmara
+    // Smooth camera movement
     let prevCx = game.cx;
     game.cx += (targetCx - game.cx) * 6 * game.dt;
     let shiftX = game.cx - prevCx;
