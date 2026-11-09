@@ -1,5 +1,5 @@
   /** MENUS & HUD **/
-  function switchTab(t) { ['workshop', 'skills', 'achievements'].forEach(x => document.getElementById('tab-'+x).style.display = (x===t?'flex':'none')); }
+  function switchTab(t) { ['workshop', 'skills', 'achievements'].forEach(x => { const tab = document.getElementById('tab-'+x); tab.style.display = (x===t?'flex':'none'); if (x===t) tab.scrollTop = 0; }); if (t==='skills') buildSkillTree(); }
   
   function updateMenuUI() {
     document.getElementById('menu-coins').innerText = player.coins;
@@ -26,25 +26,25 @@
 
   function buildSkillTree() {
     const container = document.getElementById('skill-tree-container');
-    container.innerHTML = '<div class="skill-intro"><span class="eyebrow">PERMANENT UPGRADES</span><h2>Choose your technology</h2><p>Compra melhorias permanentes com Global Coins. Cada cartão mostra o efeito, custo e requisito.</p></div><div class="skill-grid" id="skill-grid"></div>';
+    container.innerHTML = '<div class="skill-intro"><span class="eyebrow">MELHORIAS PERMANENTES</span><h2>Árvore de competências</h2><p>Escolhe melhorias para a torre. Vê o efeito, o preço e os requisitos antes de comprar. As compras são permanentes.</p><div class="skill-wallet">AS TUAS COINS: <strong>' + player.coins.toLocaleString('pt-PT') + '</strong></div></div><div class="skill-grid" id="skill-grid"></div>';
     const grid = document.getElementById('skill-grid');
     Object.values(skillDefs).forEach(s => {
       const unlocked = hasSkill(s.id);
       const available = !unlocked && (s.req === null || hasSkill(s.req));
       const locked = !unlocked && !available;
-      const requirement = s.req ? 'Requer: ' + skillDefs[s.req].n : (s.id === 'start' ? 'Núcleo inicial' : 'Sem requisito');
+      const requirement = s.req ? 'Requisito: ' + skillDefs[s.req].n : (s.id === 'start' ? 'Competência inicial' : 'Sem requisito');
       const effect = {
         start: 'Desbloqueia o sistema base da torre.',
-        multishot: 'Dispara um segundo projétil logo após o primeiro, na mesma direção.',
-        missiles: 'Lança um míssil teleguiado a cada 2 segundos. Causa dano em área.',
-        lasers: 'Dispara um laser perfurante durante 0,5 s a cada 4 segundos.',
-        shield: 'Absorve um impacto. Recarrega após 10 segundos.',
+        multishot: 'Acrescenta 1 projétil ao disparo normal: passam a ser 2 tiros por rajada, em sequência e na mesma direção. Não são 3 tiros.',
+        missiles: 'Além dos tiros normais, lança 1 míssil teleguiado aproximadamente a cada 2 segundos. O míssil causa dano em área.',
+        lasers: 'Além dos tiros normais, dispara um laser que atravessa inimigos durante 0,5 s, a cada 4 segundos.',
+        shield: 'Bloqueia um impacto que atingiria a torre. Fica disponível novamente após 10 segundos.',
         thorn: 'Devolve 50% do dano quando um inimigo colide diretamente com a torre.'
       }[s.id] || s.d;
-      const status = unlocked ? 'DESBLOQUEADA' : locked ? 'BLOQUEADA' : 'DISPONÍVEL';
+      const status = unlocked ? 'ADQUIRIDA' : locked ? 'BLOQUEADA' : 'DISPONÍVEL';
       const action = unlocked ? '<span class="skill-status done">✓ ' + status + '</span>' :
         locked ? '<button class="btn skill-buy" disabled>' + status + '</button>' :
-        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\'' + s.id + '\')">' + (s.cost === 0 ? 'GRÁTIS' : 'DESBLOQUEAR · ' + s.cost + ' COINS') + '</button>';
+        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\'' + s.id + '\')">' + (s.cost === 0 ? 'GRÁTIS' : (player.coins < s.cost ? 'FALTAM ' + (s.cost-player.coins) + ' COINS' : 'COMPRAR · ' + s.cost + ' COINS')) + '</button>';
       grid.insertAdjacentHTML('beforeend', `<article class="skill-card ${unlocked?'is-unlocked':''} ${locked?'is-locked':''}">
         <div class="skill-card-top"><span class="skill-icon">${s.id==='start'?'◆':s.id==='multishot'?'⟡':s.id==='missiles'?'➤':s.id==='lasers'?'ϟ':s.id==='shield'?'⬡':'✦'}</span><span class="skill-status ${unlocked?'done':locked?'locked':'ready'}">${status}</span></div>
         <h3>${s.n}</h3><p class="skill-description">${effect}</p>
