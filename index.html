@@ -7,13 +7,17 @@
   <!-- Game favicon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' stroke='%230ff' stroke-width='10' fill='none'/><circle cx='50' cy='50' r='15' fill='%23ff3366'/></svg>">
   
-  <link rel="stylesheet" href="style.css?v=20261109-5">
+  <link rel="stylesheet" href="style.css?v=20261109-6">
 </head>
 <body>
 
 <div id="app">
   <canvas id="gameCanvas"></canvas>
   <div id="notif-box"></div>
+  <div id="touch-controls" aria-label="Touch controls">
+    <button id="touch-dash" class="touch-action dash-action" type="button"><span>⚡</span><small>DASH</small></button>
+    <button id="touch-bomb" class="touch-action bomb-action" type="button"><span>✦</span><small>BOMB</small></button>
+  </div>
   <div id="perk-choice" aria-live="polite"></div>
   
   <div id="hud" class="hud">
@@ -100,8 +104,8 @@
   </div>
 </div>
 
-<script src="entidades.js?v=20261109-5"></script>
-<script src="engine.js?v=20261109-5"></script>
-<script src="ui.js?v=20261109-5"></script>
+<script src="entidades.js?v=20261109-6"></script>
+<script src="engine.js?v=20261109-6"></script>
+<script src="ui.js?v=20261109-6"></script>
 </body>
 </html>
