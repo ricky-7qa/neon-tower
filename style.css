@@ -112,7 +112,7 @@
 .game-topbar .stat-val { font-size:20px; }
 
 
-/* MENU LAYOUT FIX: keep the upgrade browser inside the screen and scroll its content */
+/* MENU LAYOUT: keep the upgrade browser inside the screen */
 #menu { overflow: hidden; min-height: 0; }
 #menu .menu-header { flex: 0 0 auto; padding: 20px 0 10px; }
 #menu .menu-header h1 { font-size: clamp(30px, 4.5vw, 48px); letter-spacing: clamp(3px, .7vw, 8px); }
@@ -143,7 +143,7 @@
 }
 
 
-/* Upgrade panel: make the whole HUD clear the panel's footprint */
+/* Upgrade panel layout */
 #hud .topbar-right { transition: transform .42s cubic-bezier(.2,.8,.2,1); }
 #hud.upgrades-open .topbar-right { transform: translateX(-310px); }
 #upg-content { padding: 66px 12px 12px; overflow: hidden; overflow-y: hidden; gap: 7px; justify-content: flex-start; }
@@ -169,3 +169,25 @@
   #upg-content .upg-btn { padding:6px; font-size:10px; }
   .achievement-stars { font-size:16px; }
 }
+
+/* Workshop progression */
+.workshop-section{width:100%;max-width:1100px;margin:0 auto 24px}
+.workshop-heading{color:#0ff;font-size:17px;letter-spacing:3px;margin:8px 0 12px;padding-bottom:8px;border-bottom:1px solid rgba(0,255,255,.28)}
+.workshop-grid{max-width:none}
+#ws-grid{display:block}
+#upg-content{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-content:start;gap:8px;padding:66px 10px 12px;overflow-y:auto;scrollbar-width:none}
+#upg-content .upg-btn{min-height:54px;padding:6px;font-size:10px;line-height:1.35}
+#upg-content::-webkit-scrollbar{display:none}
+#perk-choice{position:absolute;inset:0;z-index:45;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.78);backdrop-filter:blur(8px);pointer-events:auto}
+#perk-choice.visible{display:flex}
+.perk-dialog{width:min(760px,100%);padding:26px;border:1px solid rgba(0,255,255,.6);border-radius:16px;background:linear-gradient(145deg,#071526,#02050c);box-shadow:0 0 45px rgba(0,220,255,.18);text-align:center}
+.perk-eyebrow{font-size:10px;letter-spacing:3px;color:#0ff}
+.perk-dialog h2{font-size:clamp(22px,4vw,34px);margin:10px 0}
+.perk-dialog p{color:#aab8c8;font:14px Arial,sans-serif;margin-bottom:20px}
+.perk-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.perk-option{min-height:150px;padding:16px 10px;border:1px solid rgba(0,255,255,.35);border-radius:12px;background:rgba(0,20,35,.85);color:#fff;font-family:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;transition:.2s}
+.perk-option:hover{border-color:#ffd700;background:rgba(0,80,100,.35);transform:translateY(-3px)}
+.perk-option span{font-size:28px;color:#0ff}
+.perk-option strong{font-size:12px}
+.perk-option small{font:12px/1.4 Arial,sans-serif;color:#aab8c8}
+@media(max-width:600px){.perk-dialog{padding:16px}.perk-options{grid-template-columns:1fr}.perk-option{min-height:90px}.workshop-grid{grid-template-columns:1fr}}
