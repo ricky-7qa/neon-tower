@@ -7,7 +7,7 @@
   <!-- Game favicon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' stroke='%230ff' stroke-width='10' fill='none'/><circle cx='50' cy='50' r='15' fill='%23ff3366'/></svg>">
   
-  <link rel="stylesheet" href="style.css?v=20261109-2">
+  <link rel="stylesheet" href="style.css?v=20261109-3">
 </head>
 <body>
 
@@ -46,6 +46,12 @@
     <!-- SLIDING UPGRADE PANEL -->
     <div id="upg-panel" class="closed">
       <div id="upg-toggle" onclick="toggleUpgPanel()">UPGRADES &#9660;</div>
+      <div class="upg-tabs" role="tablist" aria-label="Upgrade categories">
+        <button class="upg-tab active attack-tab" data-category="ATTACK" onclick="switchUpgCategory('ATTACK')">ATTACK</button>
+        <button class="upg-tab defense-tab" data-category="DEFENSE" onclick="switchUpgCategory('DEFENSE')">DEFENSE</button>
+        <button class="upg-tab utility-tab" data-category="UTILITY" onclick="switchUpgCategory('UTILITY')">UTILITY</button>
+      </div>
+      <div id="upg-category-title">ATTACK UPGRADES</div>
       <div id="upg-content"></div>
     </div>
   </div>
@@ -87,8 +93,8 @@
   </div>
 </div>
 
-<script src="entidades.js?v=20261109-2"></script>
-<script src="engine.js?v=20261109-2"></script>
-<script src="ui.js?v=20261109-2"></script>
+<script src="entidades.js?v=20261109-3"></script>
+<script src="engine.js?v=20261109-3"></script>
+<script src="ui.js?v=20261109-3"></script>
 </body>
 </html>
