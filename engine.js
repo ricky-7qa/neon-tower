@@ -122,7 +122,7 @@
     run = { stats: {}, cash: 0, coins: 0, wave: 1, kills: 0 };
     Object.keys(statDefs).forEach(k => run.stats[k]=0);
     
-    game = { running: true, dt: 0, last: performance.now(), shake: 0, spawnT: 0, toSpawn: 10, ents: { e:[], p:[], part:[], txt:[] }, cx: canvas.width/2, cy: canvas.height/2 };
+    game = { running: true, dt: 0, last: performance.now(), shake: 0, spawnT: 0.25, toSpawn: 10, ents: { e:[], p:[], b:[], part:[], txt:[] }, cx: canvas.width/2, cy: canvas.height/2 };
     
     tower = new Tower(); 
     initUpgBar();
@@ -189,7 +189,7 @@
       run.coins += Math.floor(run.wave/2) + 2; updateHUD(); AudioSys.coin(); checkAchievements(); 
     }
     game.spawnT -= game.dt;
-    if(game.spawnT <= 0 && game.toSpawn > 0) { game.ents.e.push(new Enemy(run.wave)); game.toSpawn--; game.spawnT = Math.max(0.1, 1.2 - (run.wave*0.05)); updateHUD(); }
+    if(game.spawnT <= 0 && game.toSpawn > 0) { game.ents.e.push(new Enemy(run.wave)); game.toSpawn--; game.spawnT = Math.max(0.35, 0.7 - (run.wave*0.025)); updateHUD(); }
 
     tower.update(game.dt); tower.draw();run.comboTimer=Math.max(0,run.comboTimer-game.dt);if(!run.comboTimer)run.combo=0;game.bombCd=Math.max(0,game.bombCd-game.dt);
 
