@@ -36,7 +36,7 @@
       let targets = game.ents.e.filter(e => MathUtils.dist(this.x, this.y, e.x, e.y) < range);
       
       if(targets.length > 0) {
-        // Ordenar os alvos pelo mais próximo para focar sempre no mais perto
+        // Prioritize the closest enemy.
         targets.sort((a, b) => {
            let distA = MathUtils.dist(this.x, this.y, a.x, a.y);
            let distB = MathUtils.dist(this.x, this.y, b.x, b.y);
@@ -121,7 +121,10 @@
       if(this.invuln>0)return;
       run.combo=0;run.comboTimer=0;
       if(this.shield) { this.shield = false; this.shieldCd = Math.max(2,10-parseFloat(getVal('shieldRecharge'))); game.shake = 0.10; createParts(this.x, this.y, "#0096ff", 20, 5); return; }
-      this.hp -= dmg; game.shake = 0.14; AudioSys.hit();
+      if(Math.random()*100<parseFloat(getVal('dodge'))) { createParts(this.x,this.y,"#9b8cff",12,4); return; }
+      let reduced=dmg*(hasSkill('fortify')?0.9:1);
+      reduced=Math.max(1,reduced-parseFloat(getVal('armor')));
+      this.hp -= reduced; game.shake = 0.14; AudioSys.hit();
       game.ents.txt.push(new FText(this.x, this.y-40, `-${Math.floor(reduced)}`, "#f00", 24));
       
       if(hasSkill('thorn') && attacker) { attacker.hit(reduced * 0.5); createParts(this.x, this.y, "#fff", 10, 3); }
