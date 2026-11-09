@@ -29,10 +29,11 @@
       this.shield = hasSkill('shield'); this.shieldCd = 0;
     }
     update(dt) {
-      let reg = parseFloat(getVal('regen')); if(reg>0 && this.hp<this.maxHp) this.hp = Math.min(this.maxHp, this.hp + reg*dt);
+      let reg = parseFloat(getVal('regen')) + (run.perks?.repair||0)*3; if(reg>0 && this.hp<this.maxHp) this.hp = Math.min(this.maxHp, this.hp + reg*dt);
       if(this.shieldCd > 0) this.shieldCd -= dt; else if(hasSkill('shield')) this.shield = true;
       
-      let targets = game.ents.e.filter(e => MathUtils.dist(this.x, this.y, e.x, e.y) < parseFloat(getVal('range')));
+      let range = parseFloat(getVal('range')) * (1+(run.perks?.radar||0)*.15);
+      let targets = game.ents.e.filter(e => MathUtils.dist(this.x, this.y, e.x, e.y) < range);
       
       if(targets.length > 0) {
         // Ordenar os alvos pelo mais próximo para focar sempre no mais perto
@@ -54,6 +55,11 @@
         game.ents.p.push(new Projectile(this.x,this.y,this.angle,finalD,crit,'base'));
         if(hasSkill('multishot'))this.multiQueue={delay:.12,angle:this.angle,damage:finalD,crit};
         this.cdBase=1/parseFloat(getVal('speed'));
+      }
+
+      if(hasSkill('drone') && targetEnemy) {
+        this.cdDrone=(this.cdDrone||0)-dt;
+        if(this.cdDrone<=0){game.ents.p.push(new Missile(this.x,this.y,this.angle,parseFloat(getVal('damage'))*1.5,targetEnemy));this.cdDrone=3;}
       }
 
       if(hasSkill('missiles') && targetEnemy) {
@@ -106,11 +112,11 @@
     hit(dmg, attacker) {
       if(this.invuln>0)return;
       run.combo=0;run.comboTimer=0;
-      if(this.shield) { this.shield = false; this.shieldCd = 10; game.shake = 0.10; createParts(this.x, this.y, "#0096ff", 20, 5); return; }
+      if(this.shield) { this.shield = false; this.shieldCd = Math.max(2,10-parseFloat(getVal('shieldRecharge'))); game.shake = 0.10; createParts(this.x, this.y, "#0096ff", 20, 5); return; }
       this.hp -= dmg; game.shake = 0.14; AudioSys.hit();
-      game.ents.txt.push(new FText(this.x, this.y-40, `-${Math.floor(dmg)}`, "#f00", 24));
+      game.ents.txt.push(new FText(this.x, this.y-40, `-${Math.floor(reduced)}`, "#f00", 24));
       
-      if(hasSkill('thorn') && attacker) { attacker.hit(dmg * 0.5); createParts(this.x, this.y, "#fff", 10, 3); }
+      if(hasSkill('thorn') && attacker) { attacker.hit(reduced * 0.5); createParts(this.x, this.y, "#fff", 10, 3); }
       if(this.hp <= 0) processGameOver();
     }
   }
@@ -153,7 +159,8 @@
     hit(dmg) {
       this.hp -= dmg;
       if(this.hp <= 0) {
-        AudioSys.explosion(); run.kills++; player.totalKills++; run.combo++; run.comboTimer=3; run.cash += Math.floor(this.val*(1+Math.min(run.combo,10)*.1));
+        AudioSys.explosion(); run.kills++; player.totalKills++; run.combo++; run.comboTimer=3; run.cash += Math.floor(this.val*(1+Math.min(run.combo,10)*.1)*(1+parseFloat(getVal('cashBonus'))/100)*(1+(run.perks?.fortune||0)*.25)); 
+        if(hasSkill('vampire') && tower) tower.hp=Math.min(tower.maxHp,tower.hp+tower.maxHp*.02);
         if(this.type === 'Boss') { player.bossKills++; run.coins += 15; game.shake = 1.0; createParts(this.x,this.y,this.c, 60, 8, 2); }
         else { createParts(this.x,this.y,this.c, 15, 4); if(Math.random() < 0.05) run.coins++; }
         checkAchievements(); return true; 
