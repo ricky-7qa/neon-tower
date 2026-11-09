@@ -414,3 +414,9 @@
   .run-perk-count { grid-column:2; justify-self:start; font-size:10px; }
   .perks-empty { min-height:100px; }
 }
+
+
+/* Removed mobile dash and bomb controls: no touch action buttons are displayed. */
+@media (orientation:portrait) and (pointer:coarse) {
+  #touch-controls { display:none !important; }
+}
