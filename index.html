@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Neon Tower: Apex - Top-Down 3D</title>
+  <title>Neon Tower: Apex - Idle Tower Defense</title>
   
   <!-- Ícone do jogo (Favicon SVG) -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' stroke='%230ff' stroke-width='10' fill='none'/><circle cx='50' cy='50' r='15' fill='%23ff3366'/></svg>">
@@ -14,6 +14,7 @@
 <div id="app">
   <canvas id="gameCanvas"></canvas>
   <div id="notif-box"></div>
+  <div id="perk-choice" aria-live="polite"></div>
   
   <div id="hud" class="hud">
     <div class="top-bar game-topbar">
@@ -27,15 +28,15 @@
       </div>
     </div>
     
-    <!-- STATS UI -->
+    <!-- TOWER STATS -->
     <div id="stats-ui">
       <div class="stat-row"><span>DAMAGE:</span> <span id="st-dmg" class="c-cyan">0</span></div>
       <div class="stat-row"><span>FIRE RATE:</span> <span id="st-spd" class="c-cyan">0/s</span></div>
-      <div class="stat-row"><span>ARMOR:</span> <span id="st-hp" class="c-green">0 / 0</span></div>
+      <div class="stat-row"><span>HEALTH:</span> <span id="st-hp" class="c-green">0 / 0</span></div>
       <div class="stat-row"><span>REGEN:</span> <span id="st-reg" class="c-green">0/s</span></div>
     </div>
 
-    <!-- TARGET UI -->
+    <!-- TARGET STATUS -->
     <div id="target-ui">
       <div id="t-name">TARGET: ---</div>
       <div id="t-hp-bar"><div id="t-hp-fill"></div></div>
