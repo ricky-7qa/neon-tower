@@ -5,18 +5,32 @@
   
   let tower = null; 
   let isUpgOpen = false;
+  let activePanelView = 'upgrades';
 
-  function toggleUpgPanel() {
-    isUpgOpen = !isUpgOpen;
+  function toggleUpgPanel(view = 'upgrades') {
     const panel = document.getElementById('upg-panel');
-    const toggleBtn = document.getElementById('upg-toggle');
-    if(isUpgOpen) {
-      panel.classList.add('open'); document.getElementById('hud').classList.add('upgrades-open');
-      toggleBtn.innerHTML = 'CLOSE &#9650;';
-    } else {
-      panel.classList.remove('open'); document.getElementById('hud').classList.remove('upgrades-open');
-      toggleBtn.innerHTML = 'UPGRADES &#9660;';
+    const hud = document.getElementById('hud');
+    const upgBtn = document.getElementById('upg-toggle');
+    const perkBtn = document.getElementById('perk-toggle');
+
+    if (isUpgOpen && activePanelView === view) {
+      isUpgOpen = false;
+      panel.classList.remove('open');
+      hud.classList.remove('upgrades-open');
+      upgBtn.classList.remove('selected');
+      perkBtn.classList.remove('selected');
+      return;
     }
+
+    isUpgOpen = true;
+    activePanelView = view;
+    panel.classList.add('open');
+    hud.classList.add('upgrades-open');
+    document.getElementById('upgrades-view').style.display = view === 'upgrades' ? 'flex' : 'none';
+    document.getElementById('perks-view').style.display = view === 'perks' ? 'flex' : 'none';
+    upgBtn.classList.toggle('selected', view === 'upgrades');
+    perkBtn.classList.toggle('selected', view === 'perks');
+    if (view === 'perks') renderRunPerks();
   }
 
   function resize() { 
@@ -143,10 +157,25 @@
     panel.classList.add('visible');
   }
 
+  function renderRunPerks() {
+    const container = document.getElementById('run-perks-content');
+    if (!container) return;
+    const owned = perkDefs.filter(perk => (run.perks && run.perks[perk.id]) > 0);
+    if (!owned.length) {
+      container.innerHTML = '<div class="perks-empty"><span>◇</span><strong>NO PERKS YET</strong><small>Reach milestone waves and choose perks to build your run.</small></div>';
+      return;
+    }
+    container.innerHTML = owned.map(perk => {
+      const count = run.perks[perk.id];
+      return '<div class="run-perk-card"><span class="run-perk-icon">' + perk.icon + '</span><div class="run-perk-info"><strong>' + perk.name + '</strong><small>' + perk.desc + '</small></div><span class="run-perk-count">×' + count + '</span></div>';
+    }).join('');
+  }
+
   function choosePerk(id) {
     if(!perkDefs.some(p=>p.id===id)) return;
     run.perks=run.perks||{};
     run.perks[id]=(run.perks[id]||0)+1;
+    renderRunPerks();
     const panel=document.getElementById('perk-choice');
     panel.classList.remove('visible'); panel.innerHTML='';
     if(id==='repair' && tower) tower.hp=Math.min(tower.maxHp,tower.hp+20);
