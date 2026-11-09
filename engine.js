@@ -11,10 +11,10 @@
     const panel = document.getElementById('upg-panel');
     const toggleBtn = document.getElementById('upg-toggle');
     if(isUpgOpen) {
-      panel.classList.add('open');
+      panel.classList.add('open'); document.getElementById('hud').classList.add('upgrades-open');
       toggleBtn.innerHTML = 'CLOSE &#9650;';
     } else {
-      panel.classList.remove('open');
+      panel.classList.remove('open'); document.getElementById('hud').classList.remove('upgrades-open');
       toggleBtn.innerHTML = 'UPGRADES &#9660;';
     }
   }
@@ -77,17 +77,18 @@
   };
 
   const achvDefs = [
-    { id: 'w10', n: 'Survivor', d: 'Reach Wave 10.', req: () => player.highestWave >= 10, r: 100 },
-    { id: 'w30', n: 'Veteran', d: 'Reach Wave 30.', req: () => player.highestWave >= 30, r: 500 },
-    { id: 'k100', n: 'Hunter', d: 'Kill 100 Enemies.', req: () => player.totalKills >= 100, r: 50 }
+    { id:'waves', n:'Conquistador', d:'Alcança waves cada vez mais altas.', metric:()=>player.highestWave, tiers:[5,10,20,35,50].map((v,i)=>({value:v,reward:[30,60,120,250,500][i]})) },
+    { id:'bosses', n:'Caçador de Bosses', d:'Derrota bosses ao longo das partidas.', metric:()=>player.bossKills, tiers:[1,3,5,10,20].map((v,i)=>({value:v,reward:[50,100,200,400,800][i]})) },
+    { id:'kills', n:'Exterminador', d:'Elimina inimigos.', metric:()=>player.totalKills, tiers:[50,100,250,500,1000].map((v,i)=>({value:v,reward:[25,50,100,250,500][i]})) },
+    { id:'time', n:'Tempo de Serviço', d:'Tempo total passado a jogar (acumulado).', metric:()=>Math.floor(player.playTime||0), tiers:[300,900,1800,3600,7200].map((v,i)=>({value:v,reward:[25,50,100,250,500][i]})), format:v=>v<3600?Math.floor(v/60)+' min':Math.floor(v/3600)+' h '+Math.floor((v%3600)/60)+' min' }
   ];
 
   /** SAVE SYSTEM **/
-  let player = { coins: 0, highestWave: 1, totalKills: 0, bossKills: 0, ws: {}, skills: ['start'], achievements: [] };
+  let player = { coins: 0, highestWave: 1, totalKills: 0, bossKills: 0, playTime: 0, ws: {}, skills: ['start'], achievements: [] };
   let run = {stats:{},cash:0,coins:0,wave:1,kills:0,combo:0,comboTimer:0,graze:0};
   let targetEnemy = null; 
 
-  function saveGame() { localStorage.setItem(SAVE_KEY, btoa(JSON.stringify(player))); checkAchievements(); updateMenuUI(); }
+  function saveGame() { localStorage.setItem(SAVE_KEY, btoa(JSON.stringify(player))); updateMenuUI(); }
   function loadGame() { 
     const s = localStorage.getItem(SAVE_KEY); 
     if(s) { try { let p=JSON.parse(atob(s)); player={...player,...p}; player.ws={...player.ws,...(p.ws||{})}; } catch(err) { console.warn("Save inválida",err); localStorage.removeItem(SAVE_KEY); } }
@@ -97,12 +98,22 @@
   function resetSave() { if(confirm("Delete all progress?")) { localStorage.removeItem(SAVE_KEY); location.reload(); } }
 
   function checkAchievements() {
+    let changed = false;
     achvDefs.forEach(a => {
-      if(!player.achievements.includes(a.id) && a.req()) {
-        player.achievements.push(a.id); player.coins += a.r;
-        notify("🏆 ACHIEVEMENT!", `${a.n} (+${a.r} Coins)`); saveGame();
-      }
+      const metric = a.metric();
+      a.tiers.forEach((tier, index) => {
+        const key = a.id + '_' + (index + 1);
+        // Preserve the three legacy achievements as their first star.
+        const legacy = (a.id === 'waves' && index === 1 && player.achievements.includes('w10')) ||
+          (a.id === 'waves' && index === 2 && player.achievements.includes('w30')) ||
+          (a.id === 'kills' && index === 1 && player.achievements.includes('k100'));
+        if(metric >= tier.value && !player.achievements.includes(key)) {
+          player.achievements.push(key); player.coins += tier.reward; changed = true;
+          if(!legacy) notify('🏆 CONQUISTA · ' + a.n, '★ ' + (index+1) + ' · +' + tier.reward + ' Coins');
+        }
+      });
     });
+    if(changed) saveGame();
   }
 
   function notify(title, msg) {
@@ -122,7 +133,7 @@
     run = { stats: {}, cash: 0, coins: 0, wave: 1, kills: 0 };
     Object.keys(statDefs).forEach(k => run.stats[k]=0);
     
-    game = { running: true, dt: 0, last: performance.now(), shake: 0, spawnT: 0.25, toSpawn: 10, ents: { e:[], p:[], b:[], part:[], txt:[] }, cx: canvas.width/2, cy: canvas.height/2 };
+    game = { running: true, dt: 0, last: performance.now(), shake: 0, playSaveT: 0, achievementCheckT: 0, spawnT: 0.25, toSpawn: 10, ents: { e:[], p:[], b:[], part:[], txt:[] }, cx: canvas.width/2, cy: canvas.height/2 };
     
     tower = new Tower(); 
     initUpgBar();
@@ -134,7 +145,7 @@
     if(!game || !game.running) return;
     game.running = false; document.getElementById('hud').classList.remove('active-hud'); document.getElementById('gameover').classList.add('active-layer');
     document.getElementById('go-wave').innerText = run.wave; document.getElementById('go-kills').innerText = run.kills; document.getElementById('go-coins').innerText = "+"+run.coins+" COINS";
-    player.coins += run.coins; if(run.wave > player.highestWave) player.highestWave = run.wave; saveGame();
+    player.coins += run.coins; if(run.wave > player.highestWave) player.highestWave = run.wave; checkAchievements(); saveGame();
   }
   function returnToMenu() { document.getElementById('gameover').classList.remove('active-layer'); document.getElementById('menu').classList.add('active-layer'); updateMenuUI(); }
 
@@ -157,6 +168,10 @@
   function loop(ts) {
     if(!game.running) return; requestAnimationFrame(loop);
     game.dt = (ts - game.last)/1000; if(game.dt > 0.1) game.dt = 0.1; game.last = ts;
+    player.playTime = (player.playTime || 0) + game.dt;
+    game.achievementCheckT += game.dt; game.playSaveT += game.dt;
+    if(game.achievementCheckT >= 1) { game.achievementCheckT = 0; checkAchievements(); }
+    if(game.playSaveT >= 15) { game.playSaveT = 0; saveGame(); }
 
     let panelWidth = 300;
     let targetCx = isUpgOpen ? (canvas.width - panelWidth) / 2 : canvas.width / 2;
@@ -172,6 +187,7 @@
       game.ents.p.forEach(ent => ent.x += shiftX);
       game.ents.part.forEach(ent => ent.x += shiftX);
       game.ents.txt.forEach(ent => ent.x += shiftX);
+      game.ents.b.forEach(ent => ent.x += shiftX);
     }
 
     game.cy = canvas.height / 2;
