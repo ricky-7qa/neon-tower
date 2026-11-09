@@ -355,7 +355,7 @@
   }
   /* Keep the full playfield centred in the 58dvh area above the drawer. */
   #app.panel-open #gameCanvas {
-    transform:translateY(-21dvh) scale(.58) translate(var(--shake-x, 0px), var(--shake-y, 0px));
+    transform:translateY(-21dvh) scale(.91) translate(var(--shake-x, 0px), var(--shake-y, 0px));
   }
   #upg-panel {
     top:auto;
