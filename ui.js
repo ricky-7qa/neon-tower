@@ -6,12 +6,18 @@
     document.getElementById('menu-wave').innerText = player.highestWave;
     
     let ws = document.getElementById('ws-grid'); ws.innerHTML = "";
-    Object.keys(statDefs).forEach(k => {
-      let d = statDefs[k], lvl = player.ws[k]||0, cost = getCost(k, true), val = getVal(k, true), isMax = d.max && lvl >= d.max;
-      ws.innerHTML += `<div class="card">
-        <div><h3><span style="color:${d.col}">${d.n}</span> <span>Lvl.${lvl}</span></h3><p>${d.d}<br><br><span style="color:#fff;">Current: ${val}</span></p></div>
-        <button class="btn btn-gold" ${player.coins<cost||isMax?'disabled':''} onclick="buyWs('${k}')">${isMax?'MAX':`UPGRADE - ${cost} C`}</button>
-      </div>`;
+    ['ATTACK','DEFENSE','UTILITY'].forEach(category=>{
+      const section=document.createElement('section'); section.className='workshop-section';
+      section.innerHTML='<h2 class="workshop-heading">'+category+'</h2><div class="grid workshop-grid"></div>';
+      const grid=section.querySelector('.grid');
+      Object.keys(statDefs).filter(k=>statDefs[k].category===category).forEach(k=>{
+        let d=statDefs[k],lvl=player.ws[k]||0,cost=getCost(k,true),val=getVal(k,true),isMax=d.max&&lvl>=d.max;
+        grid.insertAdjacentHTML('beforeend',`<div class="card">
+          <div><h3><span style="color:${d.col}">${d.n}</span><span>LVL ${lvl}${d.max?' / '+d.max:''}</span></h3><p>${d.d}<br><br><span style="color:#fff;">Current: ${val}</span></p></div>
+          <button class="btn btn-gold" ${player.coins<cost||isMax?'disabled':''} onclick="buyWs('${k}')">${isMax?'MAX LEVEL':`UPGRADE · ${cost} COINS`}</button>
+        </div>`);
+      });
+      ws.appendChild(section);
     });
 
     let ach = document.getElementById('achv-grid'); ach.innerHTML = "";
@@ -19,7 +25,7 @@
       const earned = a.tiers.filter((tier,i) => player.achievements.includes(a.id+'_'+(i+1)) || (a.id==='waves' && i===1 && player.achievements.includes('w10')) || (a.id==='waves' && i===2 && player.achievements.includes('w30')) || (a.id==='kills' && i===1 && player.achievements.includes('k100'))).length;
       const next = a.tiers[earned];
       const metric = a.metric();
-      const currentText = a.format ? a.format(metric) : metric.toLocaleString('pt-PT');
+      const currentText = a.format ? a.format(metric) : metric.toLocaleString('en-US');
       const targetText = next ? (a.format ? a.format(next.value) : next.value.toLocaleString('pt-PT')) : 'MAX';
       const stars = '★'.repeat(earned) + '☆'.repeat(5-earned);
       const progress = next ? Math.min(100, metric / next.value * 100) : 100;
@@ -27,7 +33,7 @@
         <div class="achievement-head"><div><span class="achievement-kicker">PROGRESSO ${earned}/5</span><h3>${a.n}</h3></div><span class="achievement-stars" aria-label="${earned} de 5 estrelas">${stars}</span></div>
         <p>${a.d}</p>
         <div class="achievement-progress"><span style="width:${progress}%"></span></div>
-        <div class="achievement-foot"><span>${currentText} / ${targetText}</span><strong>${next ? '+'+next.reward+' COINS' : 'CONCLUÍDO'}</strong></div>
+        <div class="achievement-foot"><span>${currentText} / ${targetText}</span><strong>${next ? '+'+next.reward+' COINS' : 'COMPLETED'}</strong></div>
       </article>`);
     });
   }
@@ -40,19 +46,23 @@
       const unlocked = hasSkill(s.id);
       const available = !unlocked && (s.req === null || hasSkill(s.req));
       const locked = !unlocked && !available;
-      const requirement = s.req ? 'Requisito: ' + skillDefs[s.req].n : (s.id === 'start' ? 'Competência inicial' : 'Sem requisito');
+      const requirement = s.req ? 'Requires: ' + skillDefs[s.req].n : (s.id === 'start' ? 'Starting skill' : 'No requirement');
       const effect = {
-        start: 'Desbloqueia o sistema base da torre.',
-        multishot: 'Acrescenta 1 projétil ao disparo normal: passam a ser 2 tiros por rajada, em sequência e na mesma direção. Não são 3 tiros.',
-        missiles: 'Além dos tiros normais, lança 1 míssil teleguiado aproximadamente a cada 2 segundos. O míssil causa dano em área.',
-        lasers: 'Além dos tiros normais, dispara um laser que atravessa inimigos durante 0,5 s, a cada 4 segundos.',
-        shield: 'Bloqueia um impacto que atingiria a torre. Fica disponível novamente após 10 segundos.',
-        thorn: 'Devolve 50% do dano quando um inimigo colide diretamente com a torre.'
+        start: 'Unlocks the tower core systems.',
+        multishot: 'Adds one extra projectile to each firing burst.',
+        missiles: 'Launches a homing missile about every 2 seconds. It deals area damage.',
+        lasers: 'Fires a piercing laser for 0.5 seconds every 4 seconds.',
+        shield: 'Blocks one hit and recharges after a cooldown.',
+        thorn: 'Reflects 50% of collision damage back to the attacker.',
+        drone: 'Fires an extra homing projectile every 3 seconds.',
+        overdrive: 'Increases attack speed by 25%.',
+        vampire: 'Restores 2% of maximum health after every kill.',
+        fortify: 'Reduces incoming damage by 10%.',
       }[s.id] || s.d;
-      const status = unlocked ? 'ADQUIRIDA' : locked ? 'BLOQUEADA' : 'DISPONÍVEL';
+      const status = unlocked ? 'UNLOCKED' : locked ? 'LOCKED' : 'AVAILABLE';
       const action = unlocked ? '<span class="skill-status done">✓ ' + status + '</span>' :
         locked ? '<button class="btn skill-buy" disabled>' + status + '</button>' :
-        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\'' + s.id + '\')">' + (s.cost === 0 ? 'GRÁTIS' : (player.coins < s.cost ? 'FALTAM ' + (s.cost-player.coins) + ' COINS' : 'COMPRAR · ' + s.cost + ' COINS')) + '</button>';
+        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\'' + s.id + '\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + (s.cost-player.coins) + ' COINS' : 'COMPRAR · ' + s.cost + ' COINS')) + '</button>';
       grid.insertAdjacentHTML('beforeend', `<article class="skill-card ${unlocked?'is-unlocked':''} ${locked?'is-locked':''}">
         <div class="skill-card-top"><span class="skill-icon">${s.id==='start'?'◆':s.id==='multishot'?'⟡':s.id==='missiles'?'➤':s.id==='lasers'?'ϟ':s.id==='shield'?'⬡':'✦'}</span><span class="skill-status ${unlocked?'done':locked?'locked':'ready'}">${status}</span></div>
         <h3>${s.n}</h3><p class="skill-description">${effect}</p>
@@ -62,7 +72,7 @@
     });
   }
 
-  function buyWs(k) { let c = getCost(k, true); if(player.coins >= c) { player.coins -= c; player.ws[k]=(player.ws[k]||0)+1; saveGame(); } }
+  function buyWs(k) { let c=getCost(k,true); if(player.coins>=c && (!statDefs[k].max || (player.ws[k]||0)<statDefs[k].max)){player.coins-=c;player.ws[k]=(player.ws[k]||0)+1;saveGame();} }
   function buySkill(id) {
     let s = skillDefs[id]; if(hasSkill(id)) return;
     if(player.coins >= s.cost) { player.coins -= s.cost; player.skills.push(id); saveGame(); buildSkillTree(); AudioSys.coin(); }
@@ -95,7 +105,7 @@
     const tui = document.getElementById('target-ui');
     if(targetEnemy) {
        tui.classList.add('visible');
-       document.getElementById('t-name').innerText = `TARGET: ${targetEnemy.type}`;
+       document.getElementById('t-name').innerText = `TARGET: ${targetEnemy.type.toUpperCase()}`;
        let hpPct = Math.max(0, (targetEnemy.hp / targetEnemy.maxHp) * 100);
        document.getElementById('t-hp-fill').style.width = hpPct + '%';
        document.getElementById('t-hp-text').innerText = `${Math.ceil(Math.max(0, targetEnemy.hp))} / ${Math.ceil(targetEnemy.maxHp)} HP`;
@@ -108,7 +118,7 @@
       let btn = document.getElementById('btn-upg-' + k);
       if(btn) {
          btn.disabled = (run.cash < c) || m;
-         btn.innerHTML = `<span style="color:${d.col}">${d.n} (Lvl ${l})</span> <span style="color:#0f0;">$${m?'MAX':c}</span>`;
+         btn.innerHTML = `<span style="color:${d.col}">${d.n} · LVL ${(player.ws[k]||0)+l}</span><span style="color:#0f0;">${m?'MAX':c}</span>`;
       }
     });
   }
