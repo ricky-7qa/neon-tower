@@ -345,8 +345,15 @@
 }
 
 
-/* Portrait phone: upgrades and perk inventory slide up from the bottom. */
+/* Portrait phone: drawer and playfield move together to keep the action visible. */
 @media (orientation:portrait) and (pointer:coarse) {
+  #gameCanvas {
+    transform:translateY(0) scale(1);
+    transform-origin:50% 44%;
+    transition:transform .42s cubic-bezier(.2,.8,.2,1);
+    will-change:transform;
+  }
+  #app.panel-open #gameCanvas { transform:translateY(-7dvh) scale(.91); }
   #upg-panel {
     top:auto;
     right:0;
@@ -359,12 +366,12 @@
     border-top:2px solid #0f0;
     border-radius:14px 14px 0 0;
     transform:translateY(100%);
-    transition:transform .32s ease;
+    transition:transform .42s cubic-bezier(.2,.8,.2,1);
     box-shadow:0 -10px 30px rgba(0,255,0,.14);
   }
   #upg-panel.open { transform:translateY(0); }
   .panel-side-toggle {
-    top:-36px;
+    top:-54px;
     left:12px;
     transform:none;
     writing-mode:horizontal-tb;
@@ -376,11 +383,18 @@
     font-size:9px;
   }
   .perk-side-toggle {
-    top:-36px;
+    top:-54px;
     left:112px;
     border-color:#b66cff;
     border-bottom:0;
   }
+  #hud #stats-ui,
+  #hud #touch-controls {
+    transition:bottom .42s cubic-bezier(.2,.8,.2,1), transform .42s cubic-bezier(.2,.8,.2,1);
+  }
+  #hud.upgrades-open #stats-ui { bottom:calc(42dvh + 12px); }
+  #hud.upgrades-open #target-ui { bottom:calc(42dvh + 155px); }
+  #hud.upgrades-open #touch-controls { bottom:calc(42dvh + 14px + env(safe-area-inset-bottom)); }
   #upgrades-view,#perks-view { height:100%; min-height:0; }
   #upg-content {
     padding:80px 10px 12px;
