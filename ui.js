@@ -26,11 +26,11 @@
       const next = a.tiers[earned];
       const metric = a.metric();
       const currentText = a.format ? a.format(metric) : metric.toLocaleString('en-US');
-      const targetText = next ? (a.format ? a.format(next.value) : next.value.toLocaleString('pt-PT')) : 'MAX';
+      const targetText = next ? (a.format ? a.format(next.value) : next.value.toLocaleString('en-US')) : 'MAX';
       const stars = '★'.repeat(earned) + '☆'.repeat(5-earned);
       const progress = next ? Math.min(100, metric / next.value * 100) : 100;
       ach.insertAdjacentHTML('beforeend', `<article class="card achievement-card ${earned===5?'achievement-max':''}">
-        <div class="achievement-head"><div><span class="achievement-kicker">PROGRESSO ${earned}/5</span><h3>${a.n}</h3></div><span class="achievement-stars" aria-label="${earned} de 5 estrelas">${stars}</span></div>
+        <div class="achievement-head"><div><span class="achievement-kicker">PROGRESSO ${earned}/5</span><h3>${a.n}</h3></div><span class="achievement-stars" aria-label="${earned} out of 5 stars">${stars}</span></div>
         <p>${a.d}</p>
         <div class="achievement-progress"><span style="width:${progress}%"></span></div>
         <div class="achievement-foot"><span>${currentText} / ${targetText}</span><strong>${next ? '+'+next.reward+' COINS' : 'COMPLETED'}</strong></div>
@@ -62,11 +62,11 @@
       const status = unlocked ? 'UNLOCKED' : locked ? 'LOCKED' : 'AVAILABLE';
       const action = unlocked ? '<span class="skill-status done">✓ ' + status + '</span>' :
         locked ? '<button class="btn skill-buy" disabled>' + status + '</button>' :
-        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\'' + s.id + '\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + (s.cost-player.coins) + ' COINS' : 'COMPRAR · ' + s.cost + ' COINS')) + '</button>';
+        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\'' + s.id + '\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + (s.cost-player.coins) + ' COINS' : 'BUY · ' + s.cost + ' COINS')) + '</button>';
       grid.insertAdjacentHTML('beforeend', `<article class="skill-card ${unlocked?'is-unlocked':''} ${locked?'is-locked':''}">
-        <div class="skill-card-top"><span class="skill-icon">${s.id==='start'?'◆':s.id==='multishot'?'⟡':s.id==='missiles'?'➤':s.id==='lasers'?'ϟ':s.id==='shield'?'⬡':'✦'}</span><span class="skill-status ${unlocked?'done':locked?'locked':'ready'}">${status}</span></div>
+        <div class="skill-card-top"><span class="skill-icon">${s.id==='start'?'◆':s.id==='multishot'?'⟡':s.id==='missiles'?'➤':s.id==='lasers'?'ϟ':s.id==='shield'?'⬡':s.id==='drone'?'◉':s.id==='overdrive'?'⚡':s.id==='vampire'?'✚':'✧'}</span><span class="skill-status ${unlocked?'done':locked?'locked':'ready'}">${status}</span></div>
         <h3>${s.n}</h3><p class="skill-description">${effect}</p>
-        <div class="skill-meta"><span>${requirement}</span><strong>${s.cost === 0 ? 'GRÁTIS' : s.cost.toLocaleString('pt-PT') + ' COINS'}</strong></div>
+        <div class="skill-meta"><span>${requirement}</span><strong>${s.cost === 0 ? 'FREE' : s.cost.toLocaleString('pt-PT') + ' COINS'}</strong></div>
         ${action}
       </article>`);
     });
