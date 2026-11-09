@@ -244,23 +244,8 @@
     if(game.achievementCheckT >= 1) { game.achievementCheckT = 0; checkAchievements(); }
     if(game.playSaveT >= 15) { game.playSaveT = 0; saveGame(); }
 
-    let panelWidth = 300;
-    let targetCx = isUpgOpen ? (canvas.width - panelWidth) / 2 : canvas.width / 2;
-    
-    // Smooth camera movement
-    let prevCx = game.cx;
-    game.cx += (targetCx - game.cx) * 6 * game.dt;
-    let shiftX = game.cx - prevCx;
-
-    // Deslize das entidades
-    if (Math.abs(shiftX) > 0.01) {
-      game.ents.e.forEach(ent => ent.x += shiftX);
-      game.ents.p.forEach(ent => ent.x += shiftX);
-      game.ents.part.forEach(ent => ent.x += shiftX);
-      game.ents.txt.forEach(ent => ent.x += shiftX);
-      game.ents.b.forEach(ent => ent.x += shiftX);
-    }
-
+    // Keep the tower and the action centered. Opening a UI panel must not move gameplay sideways.
+    game.cx = canvas.width / 2;
     game.cy = canvas.height / 2;
     tower.x = game.cx;
     tower.y = game.cy;
@@ -280,7 +265,7 @@
     game.spawnT -= game.dt;
     if(game.spawnT <= 0 && game.toSpawn > 0) { game.ents.e.push(new Enemy(run.wave)); game.toSpawn--; game.spawnT = Math.max(0.35, 0.7 - (run.wave*0.025)); updateHUD(); }
 
-    tower.update(game.dt); tower.draw();run.comboTimer=Math.max(0,run.comboTimer-game.dt);if(!run.comboTimer)run.combo=0;game.bombCd=Math.max(0,game.bombCd-game.dt);
+    tower.update(game.dt); tower.draw();run.comboTimer=Math.max(0,run.comboTimer-game.dt);if(!run.comboTimer)run.combo=0;
 
     for(let i = game.ents.p.length - 1; i >= 0; i--) {
       let p = game.ents.p[i]; p.update(game.dt); p.draw();
