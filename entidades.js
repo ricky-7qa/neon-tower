@@ -127,6 +127,7 @@
       if(this.shield) { this.shield = false; this.shieldCd = Math.max(2,10-parseFloat(getVal('shieldRecharge'))); game.shake = 0.10; createParts(this.x, this.y, "#0096ff", 20, 5); return; }
       if(Math.random()*100<parseFloat(getVal('dodge'))) { createParts(this.x,this.y,"#9b8cff",12,4); return; }
       let reduced=dmg*(hasSkill('fortify')?0.9:1);
+      reduced*=1-Math.min(60,parseFloat(getVal('bulletGuard')))/100;
       reduced=Math.max(1,reduced-parseFloat(getVal('armor')));
       this.hp -= reduced; game.shake = 0.14; AudioSys.hit();
       game.ents.txt.push(new FText(this.x, this.y-40, `-${Math.floor(reduced)}`, "#f00", 24));
