@@ -269,7 +269,7 @@
     }
 
     if(game.toSpawn <= 0 && game.ents.e.length === 0) {
-      run.wave++; game.toSpawn = 10 + Math.floor(run.wave * 2);
+      run.wave++;\n      if(tower && parseFloat(getVal('waveRepair'))>0) tower.hp=Math.min(tower.maxHp,tower.hp+tower.maxHp*parseFloat(getVal('waveRepair'))/100);\n      game.toSpawn = 10 + Math.floor(run.wave * 2);
       run.coins += Math.floor(run.wave/2) + 2; run.cash += Math.floor(parseFloat(getVal('waveBonus')));
       updateHUD(); AudioSys.coin(); checkAchievements();
       if((run.wave-1)%5===0) showPerkChoice(); 
