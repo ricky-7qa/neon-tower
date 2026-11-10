@@ -140,55 +140,150 @@
 
   class Enemy {
     constructor(w) {
-      // Spawn immediately outside a real canvas edge, not hundreds of pixels away.
       const a = Math.random() * Math.PI * 2;
       const dx = Math.cos(a), dy = Math.sin(a);
-      const halfW = Math.max(1, canvas.width / 2);
-      const halfH = Math.max(1, canvas.height / 2);
-      const margin = 24;
+      const halfW = Math.max(1, canvas.width / 2), halfH = Math.max(1, canvas.height / 2), margin = 24;
       const tx = Math.abs(dx) > 0.001 ? (halfW + margin) / Math.abs(dx) : Infinity;
       const ty = Math.abs(dy) > 0.001 ? (halfH + margin) / Math.abs(dy) : Infinity;
       const d = Math.min(tx, ty);
-      this.x = game.cx + dx * d;
-      this.y = game.cy + dy * d;
-      
-      let rand = Math.random(); this.type = "Minion"; this.c = "#ff0055"; this.r = 15;
-      let hm = 1, sm = 1, cm = 1;
-      
-      if(game.toSpawn===1&&w%5===0){this.type='Boss';this.c='#9900ff';this.r=35;hm=25;sm=.4;cm=30;notify('WARNING','BOSS!');}else if(w>2&&rand<.15){this.type='Kamikaze';this.c='#ff3355';this.r=13;hm=.8;sm=2;cm=1.5;}else if(w>2&&rand<.3){this.type='Tank';this.c='#ffaa00';this.r=22;hm=4;sm=.5;cm=3;}else if(w>3&&rand<.45){this.type='Sniper';this.c='#b45cff';this.r=12;hm=.8;sm=.65;cm=2;}else if(w>4&&rand<.55){this.type='Scout';this.c='#0088ff';this.r=10;hm=.5;sm=2;cm=1.5;}this.fireCd=.8;this.phase=Math.random()*6.28;
+      this.x = game.cx + dx * d; this.y = game.cy + dy * d;
 
-      this.maxHp = (20 * Math.pow(1.2, w)) * hm; this.hp = this.maxHp;
-      this.dmg = (5 * Math.pow(1.15, w)) * hm; this.spd = (75 + (w*2)) * sm;
-      this.val = Math.floor(4 * Math.pow(1.1, w) * cm);
+      const rand = Math.random();
+      this.type = "Minion"; this.c = "#ff0055"; this.r = 15;
+      let hpM = 1, speedM = 1, damageM = 1, rewardM = 1;
+      if (game.toSpawn === 1 && w % 5 === 0) {
+        this.type = "Boss"; this.c = "#9900ff"; this.r = 34;
+        hpM = 12; speedM = 0.58; damageM = 1.8; rewardM = 18;
+        this.attackStep = 0; this.bossPulse = 0;
+        notify("WARNING", "BOSS APPROACHING");
+      } else if (w >= 3 && rand < 0.14) {
+        this.type = "Kamikaze"; this.c = "#ff3355"; this.r = 13;
+        hpM = 0.72; speedM = 1.75; damageM = 1.15; rewardM = 1.35;
+      } else if (w >= 3 && rand < 0.27) {
+        this.type = "Tank"; this.c = "#ffaa00"; this.r = 22;
+        hpM = 3.1; speedM = 0.58; damageM = 1.35; rewardM = 2.4;
+      } else if (w >= 4 && rand < 0.42) {
+        this.type = "Sniper"; this.c = "#b45cff"; this.r = 12;
+        hpM = 0.78; speedM = 0.62; damageM = 1.25; rewardM = 1.7;
+      } else if (w >= 5 && rand < 0.56) {
+        this.type = "Scout"; this.c = "#0088ff"; this.r = 10;
+        hpM = 0.58; speedM = 1.8; damageM = 0.8; rewardM = 1.25;
+      }
+
+      // Gentle, predictable scaling: later waves get tougher without becoming exponential walls.
+      const waveScale = Math.pow(1.105, Math.max(0, w - 1));
+      this.maxHp = 24 * waveScale * hpM; this.hp = this.maxHp;
+      this.dmg = (3.2 * Math.pow(1.065, Math.max(0, w - 1))) * damageM;
+      this.spd = (68 + w * 1.25) * speedM;
+      this.val = Math.floor((5 * Math.pow(1.075, Math.max(0, w - 1))) * rewardM);
+      this.fireCd = this.type === "Boss" ? 1.25 : 0.9;
+      this.phase = Math.random() * Math.PI * 2;
+      this.age = 0;
     }
-    update(dt){const a=MathUtils.angle(this.x,this.y,tower.x,tower.y),d=MathUtils.dist(this.x,this.y,tower.x,tower.y);if(this.type==='Sniper'){if(d>300){this.x+=Math.cos(a)*this.spd*dt;this.y+=Math.sin(a)*this.spd*dt;}else if(d<210){this.x-=Math.cos(a)*this.spd*dt;this.y-=Math.sin(a)*this.spd*dt;}}else{let v=this.type==='Kamikaze'?this.spd*1.35:this.spd;this.x+=Math.cos(a)*v*dt;this.y+=Math.sin(a)*v*dt;}this.fireCd-=dt;this.phase+=dt;if(this.fireCd<=0){let aim=MathUtils.angle(this.x,this.y,tower.x,tower.y),bd=Math.max(3,this.dmg*.18);if(this.type==='Boss'){for(let k=0;k<12;k++)spawnBullet(this.x,this.y,this.phase+k*Math.PI/6,155,bd,'boss');this.fireCd=1;}else if(this.type==='Sniper'){spawnBullet(this.x,this.y,aim,520,bd,'sniper');this.fireCd=2;}else if(this.type==='Tank'){for(let k=0;k<8;k++)spawnBullet(this.x,this.y,aim+k*Math.PI/4,125,bd,'ring');this.fireCd=2.6;}else{spawnBullet(this.x,this.y,aim,180,bd,'normal');this.fireCd=1.8;}}}
-    draw() {
-      drawTopDown3D(ctx, this.x, this.y, this.r, this.c, this.type);
-      
-      if(targetEnemy !== this) {
-         ctx.fillStyle = "rgba(0,0,0,0.8)"; ctx.fillRect(this.x-15, this.y-this.r-15, 30, 5);
-         ctx.fillStyle = "#f00"; ctx.fillRect(this.x-15, this.y-this.r-15, 30*(this.hp/this.maxHp), 5);
+
+    update(dt) {
+      const a = MathUtils.angle(this.x, this.y, tower.x, tower.y);
+      const d = MathUtils.dist(this.x, this.y, tower.x, tower.y);
+      this.age += dt;
+
+      if (this.type === "Sniper") {
+        if (d > 310) { this.x += Math.cos(a) * this.spd * dt; this.y += Math.sin(a) * this.spd * dt; }
+        else if (d < 225) { this.x -= Math.cos(a) * this.spd * dt; this.y -= Math.sin(a) * this.spd * dt; }
+      } else if (this.type === "Boss") {
+        // Bosses circle slightly instead of simply charging straight at the tower.
+        const orbit = Math.sin(this.age * 1.4) * 0.45;
+        this.x += Math.cos(a + orbit) * this.spd * dt;
+        this.y += Math.sin(a + orbit) * this.spd * dt;
       } else {
-         ctx.strokeStyle = "#ff3366"; ctx.lineWidth = 2;
-         ctx.beginPath(); ctx.arc(this.x, this.y, this.r+8, 0, Math.PI*2); ctx.stroke();
+        const v = this.type === "Kamikaze" ? this.spd * 1.12 : this.spd;
+        this.x += Math.cos(a) * v * dt; this.y += Math.sin(a) * v * dt;
+      }
+
+      this.fireCd -= dt; this.phase += dt;
+      if (this.fireCd > 0) return;
+      const aim = MathUtils.angle(this.x, this.y, tower.x, tower.y);
+      const baseDamage = Math.max(2, this.dmg * 0.16);
+
+      if (this.type === "Boss") {
+        const hpRatio = this.hp / this.maxHp;
+        const phase = hpRatio > 0.66 ? 0 : hpRatio > 0.33 ? 1 : 2;
+        if (phase === 0) {
+          // Rotating radial volley: readable gaps between projectiles.
+          for (let k = 0; k < 10; k++) spawnBullet(this.x, this.y, this.phase + k * Math.PI / 5, 145, baseDamage, "boss");
+          this.fireCd = 1.8;
+        } else if (phase === 1) {
+          // Three aimed lanes with a spread.
+          for (let k = -2; k <= 2; k++) spawnBullet(this.x, this.y, aim + k * 0.19, 205, baseDamage * 0.9, "boss");
+          this.fireCd = 1.45;
+        } else {
+          // Alternating spiral bursts in the final third of its health.
+          for (let k = 0; k < 8; k++) spawnBullet(this.x, this.y, this.phase + k * Math.PI / 4, 185, baseDamage * 0.85, "boss");
+          this.fireCd = 1.15;
+        }
+      } else if (this.type === "Sniper") {
+        spawnBullet(this.x, this.y, aim, 420, baseDamage * 1.2, "sniper"); this.fireCd = 2.25;
+      } else if (this.type === "Tank") {
+        for (let k = 0; k < 6; k++) spawnBullet(this.x, this.y, aim + k * Math.PI / 3, 115, baseDamage, "ring");
+        this.fireCd = 3.0;
+      } else if (this.type === "Scout") {
+        for (let k = -1; k <= 1; k++) spawnBullet(this.x, this.y, aim + k * 0.14, 235, baseDamage * 0.7, "normal");
+        this.fireCd = 2.8;
+      } else if (this.type === "Kamikaze") {
+        spawnBullet(this.x, this.y, aim, 210, baseDamage * 0.8, "normal"); this.fireCd = 2.5;
+      } else {
+        spawnBullet(this.x, this.y, aim, 170, baseDamage, "normal"); this.fireCd = 2.5;
       }
     }
+
+    draw() {
+      drawTopDown3D(ctx, this.x, this.y, this.r, this.c, this.type);
+      if (this.type === "Boss") {
+        ctx.save();
+        ctx.strokeStyle = this.hp / this.maxHp > 0.33 ? "#d18bff" : "#ff6688";
+        ctx.lineWidth = 3; ctx.setLineDash([8, 5]);
+        ctx.beginPath(); ctx.arc(this.x, this.y, this.r + 7 + Math.sin(this.age * 5) * 2, 0, Math.PI * 2); ctx.stroke();
+        ctx.restore();
+      }
+      if (targetEnemy !== this) {
+        const bw = this.type === "Boss" ? 66 : 30, bh = this.type === "Boss" ? 7 : 5;
+        ctx.fillStyle = "rgba(0,0,0,0.8)";
+        ctx.fillRect(this.x - bw/2, this.y - this.r - 15, bw, bh);
+        ctx.fillStyle = this.type === "Boss" ? "#c56bff" : "#f00";
+        ctx.fillRect(this.x - bw/2, this.y - this.r - 15, bw * Math.max(0, this.hp/this.maxHp), bh);
+      } else {
+        ctx.strokeStyle = "#ff3366"; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(this.x, this.y, this.r + 8, 0, Math.PI * 2); ctx.stroke();
+      }
+    }
+
     hit(dmg) {
       this.hp -= dmg;
-      if(this.hp <= 0) {
-        AudioSys.explosion(); run.kills++; player.totalKills++; run.combo++; run.comboTimer=3; run.cash += Math.floor(this.val*(1+Math.min(run.combo,10)*.1)*(1+parseFloat(getVal('cashBonus'))/100)*(1+parseFloat(getVal('killContract'))/100)*(1+(run.perks?.fortune||0)*.25)); 
-        if(hasSkill('vampire') && tower) tower.hp=Math.min(tower.maxHp,tower.hp+tower.maxHp*.02);
-        run.cash += Math.floor(this.val*parseFloat(getVal('salvage'))/100);
-        if(this.type === 'Boss') { player.bossKills++; run.coins += 15; run.cash += Math.floor(this.val*(parseFloat(getVal('bossBounty'))+parseFloat(getVal('bossContract')))/100); game.shake = 1.0; createParts(this.x,this.y,this.c, 60, 8, 2); }
-        else { createParts(this.x,this.y,this.c, 15, 4); if(Math.random() < 0.05) run.coins++; }
-        checkAchievements(); return true; 
+      if (this.hp <= 0) {
+        AudioSys.explosion(); run.kills++; player.totalKills++;
+        run.combo++; run.comboTimer = 3;
+        run.cash += Math.floor(this.val * (1 + Math.min(run.combo, 10) * 0.1) *
+          (1 + parseFloat(getVal("cashBonus"))/100) *
+          (1 + parseFloat(getVal("killContract"))/100) *
+          (1 + (run.perks?.fortune||0)*0.25));
+        if (hasSkill("vampire") && tower) tower.hp = Math.min(tower.maxHp, tower.hp + tower.maxHp * 0.02);
+        run.cash += Math.floor(this.val * parseFloat(getVal("salvage"))/100);
+        if (this.type === "Boss") {
+          player.bossKills++; run.coins += 15;
+          run.cash += Math.floor(this.val * (parseFloat(getVal("bossBounty")) + parseFloat(getVal("bossContract")))/100);
+          game.shake = 0.35; createParts(this.x, this.y, this.c, 45, 7, 1.2);
+          notify("BOSS DEFEATED", "BONUS REWARDS");
+        } else {
+          createParts(this.x, this.y, this.c, 15, 4);
+          if (Math.random() < 0.05) run.coins++;
+        }
+        checkAchievements(); return true;
       }
       return false;
     }
   }
 
   class Projectile {
-    constructor(x,y,a,d,c,t,target=null){this.x=x;this.y=y;this.prevX=x;this.prevY=y;this.a=a; this.d=d; this.c=c; this.type=t; this.target=target; this.turnRate=hasSkill('multishot')?18:12; this.spd=parseFloat(getVal('projectileSpeed')); this.r=4; this.dead=false; }
+    constructor(x,y,a,d,c,t,target=null){this.x=x;this.y=y;this.prevX=x;this.prevY=y;this.a=a; this.d=d; this.c=c; this.crit=!!c; this.type=t; this.target=target; this.turnRate=hasSkill('multishot')?18:12; this.spd=parseFloat(getVal('projectileSpeed')); this.r=4; this.dead=false; }
     update(dt){if(!this.target || this.target.hp<=0){this.target=game.ents.e.filter(e=>e.hp>0).sort((a,b)=>MathUtils.dist(this.x,this.y,a.x,a.y)-MathUtils.dist(this.x,this.y,b.x,b.y))[0]||null;}if(this.target && this.target.hp>0){const desired=MathUtils.angle(this.x,this.y,this.target.x,this.target.y);let delta=desired-this.a;while(delta>Math.PI)delta-=Math.PI*2;while(delta<-Math.PI)delta+=Math.PI*2;this.a+=Math.max(-this.turnRate*dt,Math.min(this.turnRate*dt,delta));}this.prevX=this.x;this.prevY=this.y;this.x+=Math.cos(this.a)*this.spd*dt;this.y+=Math.sin(this.a)*this.spd*dt;createParts(this.x,this.y,'#0ff',1,0,.1);}
     draw() { 
       ctx.shadowBlur=10; ctx.shadowColor="#0ff"; ctx.fillStyle = this.c ? "#fff" : "#0ff"; 
