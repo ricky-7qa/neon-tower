@@ -71,14 +71,14 @@
 
       if(hasSkill('drone') && targetEnemy) {
         this.cdDrone=(this.cdDrone||0)-dt;
-        if(this.cdDrone<=0){game.ents.p.push(new Missile(this.x,this.y,this.angle,parseFloat(getVal('damage'))*1.5,targetEnemy));this.cdDrone=3;}
+        if(this.cdDrone<=0){game.ents.p.push(new Missile(this.x,this.y,this.angle,parseFloat(getVal('damage'))*1.5*(1+parseFloat(getVal('plasmaCore'))/100),targetEnemy));this.cdDrone=3;}
       }
 
       if(hasSkill('missiles') && targetEnemy) {
         this.cdMissile -= dt;
         if(this.cdMissile <= 0) {
           AudioSys.missile();
-          game.ents.p.push(new Missile(this.x, this.y, this.angle + (Math.random()-0.5), parseFloat(getVal('damage'))*2, targetEnemy));
+          game.ents.p.push(new Missile(this.x, this.y, this.angle + (Math.random()-0.5), parseFloat(getVal('damage'))*2*(1+parseFloat(getVal('plasmaCore'))/100), targetEnemy));
           this.cdMissile = 2.0;
         }
       }
@@ -87,7 +87,7 @@
         this.cdLaser -= dt;
         if(this.cdLaser <= 0) {
           AudioSys.laser();
-          game.ents.p.push(new Laser(this.x, this.y, this.angle, parseFloat(getVal('damage'))*0.5, 0.5));
+          game.ents.p.push(new Laser(this.x, this.y, this.angle, parseFloat(getVal('damage'))*0.5*(1+parseFloat(getVal('plasmaCore'))/100), 0.5));
           this.cdLaser = 4.0;
         }
       }
