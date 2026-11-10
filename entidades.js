@@ -187,8 +187,16 @@
       this.age += dt;
 
       if (this.type === "Sniper") {
-        if (d > 310) { this.x += Math.cos(a) * this.spd * dt; this.y += Math.sin(a) * this.spd * dt; }
-        else if (d < 225) { this.x -= Math.cos(a) * this.spd * dt; this.y -= Math.sin(a) * this.spd * dt; }
+        // Keep Snipers comfortably inside the tower's current targeting radius.
+        const towerRange = parseFloat(getVal("range")) * (1 + (run.perks?.radar || 0) * 0.15);
+        const preferredDistance = Math.max(125, Math.min(245, towerRange * 0.68));
+        if (d > preferredDistance + 12) {
+          this.x += Math.cos(a) * this.spd * dt;
+          this.y += Math.sin(a) * this.spd * dt;
+        } else if (d < preferredDistance - 35) {
+          this.x -= Math.cos(a) * this.spd * dt;
+          this.y -= Math.sin(a) * this.spd * dt;
+        }
       } else if (this.type === "Boss") {
         // Bosses circle slightly instead of simply charging straight at the tower.
         const orbit = Math.sin(this.age * 1.4) * 0.45;
