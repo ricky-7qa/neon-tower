@@ -132,7 +132,7 @@
     }
 
     Object.keys(statDefs).forEach(k => {
-      const d=statDefs[k], l=run.stats[k]||0, c=getCost(k, false), m=!!(d.max && l>=d.max);
+      const d=statDefs[k], l=run.stats[k]||0, c=getCost(k, false), m=!!(d.max && (player.ws[k]||0)+l>=d.max);
       const btn=document.getElementById('btn-upg-'+k);
       if(btn) {
         const unlockWave=d.unlockWave||1;
@@ -148,7 +148,7 @@
     const d=statDefs[k];
     if(!d || run.wave<(d.unlockWave||1)) return;
     const c=getCost(k,false);
-    if(run.cash>=c && (!d.max || (run.stats[k]||0)<d.max)) {
+    if(run.cash>=c && (!d.max || (player.ws[k]||0)+(run.stats[k]||0)<d.max)) {
       run.cash-=c;
       run.stats[k]=(run.stats[k]||0)+1;
       if(k==='hp') {
