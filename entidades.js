@@ -49,7 +49,7 @@
 
       this.invuln=Math.max(0,this.invuln-dt); this.dashCd=Math.max(0,this.dashCd-dt);
       this.cdBase-=dt;
-      if(this.multiQueue){this.multiQueue.delay-=dt;if(this.multiQueue.delay<=0){game.ents.p.push(new Projectile(this.x,this.y,this.multiQueue.angle,this.multiQueue.damage,this.multiQueue.crit,'base'));this.multiQueue=null;}}
+      
       if(this.cdBase<=0&&targetEnemy){
         AudioSys.shoot();
         let dmg=parseFloat(getVal('damage'))*(1+(run.perks?.power||0)*.2);
@@ -66,7 +66,6 @@
           const offset=lane*5;
           game.ents.p.push(new Projectile(this.x+sideX*offset,this.y+sideY*offset,this.angle,finalD,crit,'base',targetEnemy));
         }
-        if(hasSkill('multishot'))this.multiQueue={delay:.12,angle:this.angle,damage:finalD,crit};
         this.cdBase=1/(parseFloat(getVal('speed'))*(1+(run.perks?.rapid||0)*.15)*(hasSkill('overdrive')?1.25:1));
       }
 
