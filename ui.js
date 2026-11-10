@@ -112,7 +112,7 @@
     document.getElementById('hud-timer').innerText = game.toSpawn + game.ents.e.length;
     document.getElementById('hud-cash').innerText = '$'+run.cash;
     document.getElementById('hud-coins').innerText = '$' + run.coins.toLocaleString('en-US');
-    
+
     if (tower) {
       document.getElementById('st-dmg').innerText = getVal('damage');
       document.getElementById('st-spd').innerText = getVal('speed') + '/s';
@@ -130,24 +130,36 @@
     } else {
        tui.classList.remove('visible');
     }
-    
+
     Object.keys(statDefs).forEach(k => {
-      let d=statDefs[k], l=run.stats[k]||0, c=getCost(k, false), m=d.max&&l>=d.max;
-      let btn = document.getElementById('btn-upg-' + k);
+      const d=statDefs[k], l=run.stats[k]||0, c=getCost(k, false), m=!!(d.max && l>=d.max);
+      const btn=document.getElementById('btn-upg-'+k);
       if(btn) {
-         const unlockWave=d.unlockWave||1; const waveLocked=run.wave<unlockWave;
-         btn.disabled = waveLocked || (run.cash < c) || m;
-         btn.innerHTML = `<span style="color:${d.col}">${d.n} · LVL ${Math.min(d.max||999,(player.ws[k]||0)+l)}</span><span style="color:${waveLocked?'#ffb45c':'#0f0'}">${waveLocked?'LOCKED · WAVE '+unlockWave:m?'MAX':'
+        const unlockWave=d.unlockWave||1;
+        const waveLocked=run.wave<unlockWave;
+        btn.disabled=waveLocked || (run.cash<c) || m;
+        const label=waveLocked ? 'LOCKED · WAVE '+unlockWave : m ? 'MAX' : '$'+c.toLocaleString('en-US');
+        btn.innerHTML=`<span style="color:${d.col}">${d.n} · LVL ${Math.min(d.max||999,(player.ws[k]||0)+l)}</span><span style="color:${waveLocked?'#ffb45c':'#0f0'}">${label}</span>`;
       }
     });
   }
-  
-  function buyRunUpg(k) {
-    const d=statDefs[k]; if(!d || run.wave<(d.unlockWave||1)) return;
-    let c = getCost(k, false); if(run.cash >= c && (!d.max || (run.stats[k]||0)<d.max)) { run.cash -= c; run.stats[k] = (run.stats[k]||0)+1; 
-    if(k==='hp'){ let o=tower.maxHp; tower.maxHp=parseFloat(getVal('hp')); tower.hp+=(tower.maxHp-o); } updateHUD(); AudioSys.coin(); }
-  }
 
+  function buyRunUpg(k) {
+    const d=statDefs[k];
+    if(!d || run.wave<(d.unlockWave||1)) return;
+    const c=getCost(k,false);
+    if(run.cash>=c && (!d.max || (run.stats[k]||0)<d.max)) {
+      run.cash-=c;
+      run.stats[k]=(run.stats[k]||0)+1;
+      if(k==='hp') {
+        const oldMax=tower.maxHp;
+        tower.maxHp=parseFloat(getVal('hp'));
+        tower.hp+=(tower.maxHp-oldMax);
+      }
+      updateHUD();
+      AudioSys.coin();
+    }
+  }
 
 
   loadGame();
