@@ -93,7 +93,19 @@
     bulletGuard: { n:"ENERGY PLATING", d:"Reduce damage received from enemy attacks.", category:"DEFENSE", b:0, i:3, c:100, cm:1.45, isD:false, col:"#75e0ff", unlockWave:10, max:10 },
     waveRepair: { n:"WAVE REPAIR", d:"Restore a percentage of maximum health after each wave.", category:"DEFENSE", b:0, i:4, c:110, cm:1.45, isD:false, col:"#75ff9b", unlockWave:10, max:10 },
     bossBounty: { n:"BOSS BOUNTY", d:"Earn extra cash when defeating a Boss.", category:"UTILITY", b:0, i:15, c:130, cm:1.5, isD:false, col:"#ffd166", unlockWave:15, max:10 },
-    salvage: { n:"SALVAGE PROTOCOL", d:"Gain extra cash from every defeated enemy.", category:"UTILITY", b:0, i:3, c:150, cm:1.48, isD:false, col:"#ffe66d", unlockWave:20, max:10 }
+    salvage: { n:"SALVAGE PROTOCOL", d:"Gain extra cash from every defeated enemy.", category:"UTILITY", b:0, i:3, c:150, cm:1.48, isD:false, col:"#ffe66d", unlockWave:20, max:10 },
+    plasmaCore: { n:"PLASMA CORE", d:"Increase damage dealt by all tower weapons.", category:"ATTACK", b:0, i:5, c:500, cm:1.55, isD:false, col:"#ff7bff", unlockWave:30, max:12 },
+    precisionArray: { n:"PRECISION ARRAY", d:"Increase the chance of landing critical hits.", category:"ATTACK", b:0, i:2, c:650, cm:1.58, isD:false, col:"#ff6688", unlockWave:40, max:10 },
+    executionProtocol: { n:"EXECUTION PROTOCOL", d:"Deal bonus damage to enemies below 30% health.", category:"ATTACK", b:0, i:8, c:900, cm:1.62, isD:false, col:"#ff5252", unlockWave:50, max:10 },
+    overclockDrive: { n:"OVERCLOCK DRIVE", d:"Increase the tower's firing rate.", category:"ATTACK", b:0, i:4, c:1200, cm:1.65, isD:false, col:"#ffb347", unlockWave:60, max:10 },
+    nanoMatrix: { n:"NANO MATRIX", d:"Continuously restore additional tower health.", category:"DEFENSE", b:0, i:2, c:550, cm:1.55, isD:false, col:"#62ffc4", unlockWave:70, max:10 },
+    adaptiveArmor: { n:"ADAPTIVE ARMOR", d:"Further reduce damage from all incoming attacks.", category:"DEFENSE", b:0, i:2, c:800, cm:1.6, isD:false, col:"#64c8ff", unlockWave:80, max:10 },
+    bossWard: { n:"BOSS WARD", d:"Reduce damage from Boss attacks.", category:"DEFENSE", b:0, i:4, c:1000, cm:1.62, isD:false, col:"#a88bff", unlockWave:90, max:10 },
+    repairBurst: { n:"REPAIR BURST", d:"Restore more health whenever a wave is cleared.", category:"DEFENSE", b:0, i:3, c:1300, cm:1.65, isD:false, col:"#7dff8b", unlockWave:100, max:10 },
+    waveDividend: { n:"WAVE DIVIDEND", d:"Earn extra cash every time a wave is cleared.", category:"UTILITY", b:0, i:8, c:600, cm:1.55, isD:false, col:"#ffe36e", unlockWave:110, max:10 },
+    killContract: { n:"KILL CONTRACT", d:"Earn extra cash for every enemy defeated.", category:"UTILITY", b:0, i:5, c:850, cm:1.6, isD:false, col:"#ffd166", unlockWave:120, max:10 },
+    bossContract: { n:"BOSS CONTRACT", d:"Earn bonus cash for defeating Boss enemies.", category:"UTILITY", b:0, i:20, c:1100, cm:1.65, isD:false, col:"#ffbf69", unlockWave:135, max:10 },
+    coinCache: { n:"COIN CACHE", d:"Gain extra permanent coins when clearing waves.", category:"UTILITY", b:0, i:1, c:1500, cm:1.7, isD:false, col:"#ffe66d", unlockWave:150, max:10 }
   };
 
   const skillDefs = {
@@ -269,8 +281,8 @@
     }
 
     if(game.toSpawn <= 0 && game.ents.e.length === 0) {
-      run.wave++;\n      if(tower && parseFloat(getVal('waveRepair'))>0) tower.hp=Math.min(tower.maxHp,tower.hp+tower.maxHp*parseFloat(getVal('waveRepair'))/100);\n      game.toSpawn = 10 + Math.floor(run.wave * 2);
-      run.coins += Math.floor(run.wave/2) + 2; run.cash += Math.floor(parseFloat(getVal('waveBonus')));
+      run.wave++;\n      if(tower) { const repairPct=parseFloat(getVal('waveRepair'))+parseFloat(getVal('repairBurst')); if(repairPct>0) tower.hp=Math.min(tower.maxHp,tower.hp+tower.maxHp*repairPct/100); }\n      game.toSpawn = 10 + Math.floor(run.wave * 2);
+      run.coins += Math.floor(run.wave/2) + 2 + Math.floor(parseFloat(getVal('coinCache'))); run.cash += Math.floor(parseFloat(getVal('waveBonus')) + Math.floor(run.wave*parseFloat(getVal('waveDividend'))/100));
       updateHUD(); AudioSys.coin(); checkAchievements();
       if((run.wave-1)%5===0) showPerkChoice(); 
     }
@@ -291,6 +303,7 @@
         } 
         else if(p.collide(e)) {
           let dmg = p instanceof Laser ? p.d * game.dt : p.d;\n          if(e.type === 'Boss') dmg *= 1 + parseFloat(getVal('bossDamage'))/100;
+          if(e.hp <= e.maxHp*0.3) dmg *= 1 + parseFloat(getVal('executionProtocol'))/100;
           if(!(p instanceof Laser)) {
              game.ents.txt.push(new FText(e.x, e.y-e.r, Math.floor(dmg), p.crit ? "#ff3366" : "#fff", p.crit ? 24 : 14));
              createParts(p.x, p.y, p.crit ? "#ff3366" : "#0ff", p.crit?10:3, 3);
