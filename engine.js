@@ -79,7 +79,7 @@
     speed: { n:"ATTACK SPEED", d:"More shots fired every second.", category:"ATTACK", b:1.5, i:.2, c:15, cm:1.25, isD:true, col:"#0ff", unlockWave:1 },
     critC: { n:"CRITICAL CHANCE", d:"Chance for a critical hit.", category:"ATTACK", b:0, i:5, c:50, cm:1.4, isD:false, col:"#ff3366", unlockWave:3, max:15 },
     critD: { n:"CRITICAL DAMAGE", d:"Multiplier applied to critical hits.", category:"ATTACK", b:1.5, i:.2, c:50, cm:1.4, isD:true, col:"#ff3366", unlockWave:5 },
-    multishot: { n:"MULTI-SHOT", d:"Fire up to four homing projectiles at one target.", category:"ATTACK", b:0, i:1, c:100, cm:1.42, isD:false, col:"#ff9b42", max:3, unlockWave:1 },
+    multishot: { n:"MULTI-SHOT", d:"Fire up to four homing projectiles at one target.", category:"ATTACK", b:0, i:1, c:100, cm:1.42, isD:false, col:"#ff9b42", max:3, unlockWave:5 },
     hp: { n:"MAX HEALTH", d:"Increases the tower's maximum health.", category:"DEFENSE", b:200, i:30, c:10, cm:1.15, isD:false, col:"#0f0", unlockWave:1 },
     regen: { n:"HEALTH REGEN", d:"Restores health every second.", category:"DEFENSE", b:0, i:1, c:25, cm:1.3, isD:true, col:"#0f0", unlockWave:4 },
     armor: { n:"DAMAGE REDUCTION", d:"Reduces damage from every hit.", category:"DEFENSE", b:0, i:2, c:35, cm:1.28, isD:false, col:"#53d6ff", unlockWave:7, max:20 },
