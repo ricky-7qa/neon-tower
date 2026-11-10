@@ -29,7 +29,7 @@
       this.shield = hasSkill('shield'); this.shieldCd = 0;
     }
     update(dt) {
-      let reg = parseFloat(getVal('regen')) + (run.perks?.repair||0)*3; if(reg>0 && this.hp<this.maxHp) this.hp = Math.min(this.maxHp, this.hp + reg*dt);
+      let reg = parseFloat(getVal('regen')) + parseFloat(getVal('nanoMatrix')) + (run.perks?.repair||0)*3; if(reg>0 && this.hp<this.maxHp) this.hp = Math.min(this.maxHp, this.hp + reg*dt);
       if(this.shieldCd > 0) this.shieldCd -= dt; else if(hasSkill('shield')) this.shield = true;
       
       let range = parseFloat(getVal('range')) * (1+(run.perks?.radar||0)*.15);
@@ -52,8 +52,8 @@
       
       if(this.cdBase<=0&&targetEnemy){
         AudioSys.shoot();
-        let dmg=parseFloat(getVal('damage'))*(1+(run.perks?.power||0)*.2);
-        let crit=(Math.random()*100)<parseFloat(getVal('critC'));
+        let dmg=parseFloat(getVal('damage'))*(1+(run.perks?.power||0)*.2)*(1+parseFloat(getVal('plasmaCore'))/100);
+        let crit=(Math.random()*100)<Math.min(75,parseFloat(getVal('critC'))+parseFloat(getVal('precisionArray')));
         let finalD=crit?dmg*parseFloat(getVal('critD')):dmg;
         const level=Math.min(3,Math.max(0,parseInt(getVal('multishot'))||0));
         const totalShots=level+1;
@@ -66,7 +66,7 @@
           const offset=lane*5;
           game.ents.p.push(new Projectile(this.x+sideX*offset,this.y+sideY*offset,this.angle,finalD,crit,'base',targetEnemy));
         }
-        this.cdBase=1/(parseFloat(getVal('speed'))*(1+(run.perks?.rapid||0)*.15)*(hasSkill('overdrive')?1.25:1));
+        this.cdBase=1/(parseFloat(getVal('speed'))*(1+(run.perks?.rapid||0)*.15)*(1+parseFloat(getVal('overclockDrive'))/100)*(hasSkill('overdrive')?1.25:1));
       }
 
       if(hasSkill('drone') && targetEnemy) {
@@ -127,7 +127,8 @@
       if(this.shield) { this.shield = false; this.shieldCd = Math.max(2,10-parseFloat(getVal('shieldRecharge'))); game.shake = 0.10; createParts(this.x, this.y, "#0096ff", 20, 5); return; }
       if(Math.random()*100<parseFloat(getVal('dodge'))) { createParts(this.x,this.y,"#9b8cff",12,4); return; }
       let reduced=dmg*(hasSkill('fortify')?0.9:1);
-      reduced*=1-Math.min(60,parseFloat(getVal('bulletGuard')))/100;
+      reduced*=1-Math.min(60,parseFloat(getVal('bulletGuard'))+parseFloat(getVal('adaptiveArmor')))/100;
+      if(attacker && attacker.type==='Boss') reduced*=1-Math.min(50,parseFloat(getVal('bossWard')))/100;
       reduced=Math.max(1,reduced-parseFloat(getVal('armor')));
       this.hp -= reduced; game.shake = 0.14; AudioSys.hit();
       game.ents.txt.push(new FText(this.x, this.y-40, `-${Math.floor(reduced)}`, "#f00", 24));
@@ -175,9 +176,9 @@
     hit(dmg) {
       this.hp -= dmg;
       if(this.hp <= 0) {
-        AudioSys.explosion(); run.kills++; player.totalKills++; run.combo++; run.comboTimer=3; run.cash += Math.floor(this.val*(1+Math.min(run.combo,10)*.1)*(1+parseFloat(getVal('cashBonus'))/100)*(1+(run.perks?.fortune||0)*.25)); 
+        AudioSys.explosion(); run.kills++; player.totalKills++; run.combo++; run.comboTimer=3; run.cash += Math.floor(this.val*(1+Math.min(run.combo,10)*.1)*(1+parseFloat(getVal('cashBonus'))/100)*(1+parseFloat(getVal('killContract'))/100)*(1+(run.perks?.fortune||0)*.25)); 
         if(hasSkill('vampire') && tower) tower.hp=Math.min(tower.maxHp,tower.hp+tower.maxHp*.02);
-        if(this.type === 'Boss') { player.bossKills++; run.coins += 15; run.cash += Math.floor(this.val*parseFloat(getVal('bossBounty'))/100); game.shake = 1.0; createParts(this.x,this.y,this.c, 60, 8, 2); }\n        run.cash += Math.floor(this.val*parseFloat(getVal('salvage'))/100);
+        if(this.type === 'Boss') { player.bossKills++; run.coins += 15; run.cash += Math.floor(this.val*(parseFloat(getVal('bossBounty'))+parseFloat(getVal('bossContract')))/100); game.shake = 1.0; createParts(this.x,this.y,this.c, 60, 8, 2); }\n        run.cash += Math.floor(this.val*parseFloat(getVal('salvage'))/100);
         else { createParts(this.x,this.y,this.c, 15, 4); if(Math.random() < 0.05) run.coins++; }
         checkAchievements(); return true; 
       }
