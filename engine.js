@@ -87,7 +87,13 @@
     shieldRecharge: { n:"SHIELD RECHARGE", d:"Shortens the shield's cooldown.", category:"DEFENSE", b:0, i:1, c:90, cm:1.4, isD:false, col:"#55f5dc", unlockWave:15, max:8 },
     range: { n:"TARGETING RANGE", d:"Detects enemies from farther away.", category:"UTILITY", b:300, i:50, c:30, cm:1.2, isD:false, col:"#ffd700", unlockWave:1, max:10 },
     cashBonus: { n:"CASH BONUS", d:"Earn more cash for every enemy defeated.", category:"UTILITY", b:0, i:10, c:45, cm:1.25, isD:false, col:"#ffd700", unlockWave:5, max:10 },
-    waveBonus: { n:"WAVE INCOME", d:"Earn extra cash when a wave is cleared.", category:"UTILITY", b:0, i:5, c:55, cm:1.3, isD:false, col:"#ffd700", unlockWave:8, max:10 }
+    waveBonus: { n:"WAVE INCOME", d:"Earn extra cash when a wave is cleared.", category:"UTILITY", b:0, i:5, c:55, cm:1.3, isD:false, col:"#ffd700", unlockWave:8, max:10 },
+    projectileSpeed: { n:"PROJECTILE VELOCITY", d:"Your shots travel faster and reach enemies sooner.", category:"ATTACK", b:900, i:90, c:70, cm:1.45, isD:false, col:"#39d5ff", unlockWave:6, max:8 },
+    bossDamage: { n:"BOSS HUNTER", d:"Deal bonus damage to Boss enemies.", category:"ATTACK", b:0, i:8, c:120, cm:1.5, isD:false, col:"#ff5b5b", unlockWave:12, max:10 },
+    bulletGuard: { n:"ENERGY PLATING", d:"Reduce damage received from enemy attacks.", category:"DEFENSE", b:0, i:3, c:100, cm:1.45, isD:false, col:"#75e0ff", unlockWave:10, max:10 },
+    waveRepair: { n:"WAVE REPAIR", d:"Restore a percentage of maximum health after each wave.", category:"DEFENSE", b:0, i:4, c:110, cm:1.45, isD:false, col:"#75ff9b", unlockWave:10, max:10 },
+    bossBounty: { n:"BOSS BOUNTY", d:"Earn extra cash when defeating a Boss.", category:"UTILITY", b:0, i:15, c:130, cm:1.5, isD:false, col:"#ffd166", unlockWave:15, max:10 },
+    salvage: { n:"SALVAGE PROTOCOL", d:"Gain extra cash from every defeated enemy.", category:"UTILITY", b:0, i:3, c:150, cm:1.48, isD:false, col:"#ffe66d", unlockWave:20, max:10 }
   };
 
   const skillDefs = {
@@ -284,7 +290,7 @@
             if(p.collide(e, game.ents.e)) { hitSomething = true; break; }
         } 
         else if(p.collide(e)) {
-          let dmg = p instanceof Laser ? p.d * game.dt : p.d;
+          let dmg = p instanceof Laser ? p.d * game.dt : p.d;\n          if(e.type === 'Boss') dmg *= 1 + parseFloat(getVal('bossDamage'))/100;
           if(!(p instanceof Laser)) {
              game.ents.txt.push(new FText(e.x, e.y-e.r, Math.floor(dmg), p.crit ? "#ff3366" : "#fff", p.crit ? 24 : 14));
              createParts(p.x, p.y, p.crit ? "#ff3366" : "#0ff", p.crit?10:3, 3);
