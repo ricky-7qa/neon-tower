@@ -49,7 +49,7 @@
       const requirement = s.req ? 'Requires: ' + skillDefs[s.req].n : (s.id === 'start' ? 'Starting skill' : 'No requirement');
       const effect = {
         start: 'Unlocks the tower core systems.',
-        multishot: 'Adds one extra projectile to each firing burst.',
+        multishot: 'Improves Multi-Shot projectile guidance and homing speed.',
         missiles: 'Launches a homing missile about every 2 seconds. It deals area damage.',
         lasers: 'Fires a piercing laser for 0.5 seconds every 4 seconds.',
         shield: 'Blocks one hit and recharges after a cooldown.',
