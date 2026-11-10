@@ -55,11 +55,15 @@
         let dmg=parseFloat(getVal('damage'))*(1+(run.perks?.power||0)*.2);
         let crit=(Math.random()*100)<parseFloat(getVal('critC'));
         let finalD=crit?dmg*parseFloat(getVal('critD')):dmg;
-        game.ents.p.push(new Projectile(this.x,this.y,this.angle,finalD,crit,'base'));
         const extra=Math.min(5,parseInt(getVal('multishot')));
-        for(let shot=1;shot<=extra;shot++){
-          const side=shot%2===0?1:-1, spread=Math.ceil(shot/2)*.13*side;
-          game.ents.p.push(new Projectile(this.x,this.y,this.angle+spread,finalD,crit,'base'));
+        const totalShots=extra+1;
+        // Keep the spread narrow enough that every lane can still hit the
+        // selected target. The allowed angle scales with target size/distance.
+        const targetDistance=Math.max(1,MathUtils.dist(this.x,this.y,targetEnemy.x,targetEnemy.y));
+        const spread=Math.atan2(Math.max(2,targetEnemy.r-4),targetDistance)*0.65;
+        for(let shot=0;shot<totalShots;shot++){
+          const lane=shot-(totalShots-1)/2;
+          game.ents.p.push(new Projectile(this.x,this.y,this.angle+lane*spread,finalD,crit,'base'));
         }
         if(hasSkill('multishot'))this.multiQueue={delay:.12,angle:this.angle,damage:finalD,crit};
         this.cdBase=1/(parseFloat(getVal('speed'))*(1+(run.perks?.rapid||0)*.15)*(hasSkill('overdrive')?1.25:1));
