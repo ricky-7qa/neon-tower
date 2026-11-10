@@ -283,13 +283,13 @@
     if(game.toSpawn <= 0 && game.ents.e.length === 0) {
       run.wave++;
       if(tower) { const repairPct=parseFloat(getVal('waveRepair'))+parseFloat(getVal('repairBurst')); if(repairPct>0) tower.hp=Math.min(tower.maxHp,tower.hp+tower.maxHp*repairPct/100); }
-      game.toSpawn = 10 + Math.floor(run.wave * 2);
+      game.toSpawn = 10 + Math.floor(run.wave * 1.5);
       run.coins += Math.floor(run.wave/2) + 2 + Math.floor(parseFloat(getVal('coinCache'))); run.cash += Math.floor(parseFloat(getVal('waveBonus')) + Math.floor(run.wave*parseFloat(getVal('waveDividend'))/100));
       updateHUD(); AudioSys.coin(); checkAchievements();
       if((run.wave-1)%5===0) showPerkChoice(); 
     }
     game.spawnT -= game.dt;
-    if(game.spawnT <= 0 && game.toSpawn > 0) { game.ents.e.push(new Enemy(run.wave)); game.toSpawn--; game.spawnT = Math.max(0.35, 0.7 - (run.wave*0.025)); updateHUD(); }
+    if(game.spawnT <= 0 && game.toSpawn > 0) { game.ents.e.push(new Enemy(run.wave)); game.toSpawn--; game.spawnT = Math.max(0.42, 0.78 - (run.wave*0.008)); updateHUD(); }
 
     tower.update(game.dt); tower.draw();run.comboTimer=Math.max(0,run.comboTimer-game.dt);if(!run.comboTimer)run.combo=0;
 
