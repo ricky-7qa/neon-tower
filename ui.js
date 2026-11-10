@@ -117,7 +117,8 @@
       document.getElementById('st-dmg').innerText = getVal('damage');
       document.getElementById('st-spd').innerText = getVal('speed') + '/s';
       document.getElementById('st-hp').innerText = `${Math.ceil(Math.max(0, tower.hp))} / ${getVal('hp')}`;
-      document.getElementById('st-reg').innerText = getVal('regen') + '/s';
+      const totalRegen = parseFloat(getVal('regen')) + parseFloat(getVal('nanoMatrix')) + (run.perks?.repair || 0) * 3;
+      document.getElementById('st-reg').innerText = totalRegen.toFixed(1).replace(/\.0$/, '') + '/s';
     }
 
     const tui = document.getElementById('target-ui');
