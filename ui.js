@@ -163,16 +163,3 @@
 
 
   loadGame();
-+c.toLocaleString('en-US')}</span>`;
-      }
-    });
-  }
-  
-  function buyRunUpg(k) {
-    let c = getCost(k, false); if(run.cash >= c) { run.cash -= c; run.stats[k] = (run.stats[k]||0)+1; 
-    if(k==='hp'){ let o=tower.maxHp; tower.maxHp=parseFloat(getVal('hp')); tower.hp+=(tower.maxHp-o); } updateHUD(); AudioSys.coin(); }
-  }
-
-
-
-  loadGame();
