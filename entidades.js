@@ -178,7 +178,8 @@
       if(this.hp <= 0) {
         AudioSys.explosion(); run.kills++; player.totalKills++; run.combo++; run.comboTimer=3; run.cash += Math.floor(this.val*(1+Math.min(run.combo,10)*.1)*(1+parseFloat(getVal('cashBonus'))/100)*(1+parseFloat(getVal('killContract'))/100)*(1+(run.perks?.fortune||0)*.25)); 
         if(hasSkill('vampire') && tower) tower.hp=Math.min(tower.maxHp,tower.hp+tower.maxHp*.02);
-        if(this.type === 'Boss') { player.bossKills++; run.coins += 15; run.cash += Math.floor(this.val*(parseFloat(getVal('bossBounty'))+parseFloat(getVal('bossContract')))/100); game.shake = 1.0; createParts(this.x,this.y,this.c, 60, 8, 2); }\n        run.cash += Math.floor(this.val*parseFloat(getVal('salvage'))/100);
+        run.cash += Math.floor(this.val*parseFloat(getVal('salvage'))/100);
+        if(this.type === 'Boss') { player.bossKills++; run.coins += 15; run.cash += Math.floor(this.val*(parseFloat(getVal('bossBounty'))+parseFloat(getVal('bossContract')))/100); game.shake = 1.0; createParts(this.x,this.y,this.c, 60, 8, 2); }
         else { createParts(this.x,this.y,this.c, 15, 4); if(Math.random() < 0.05) run.coins++; }
         checkAchievements(); return true; 
       }
