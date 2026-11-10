@@ -135,8 +135,23 @@
       let d=statDefs[k], l=run.stats[k]||0, c=getCost(k, false), m=d.max&&l>=d.max;
       let btn = document.getElementById('btn-upg-' + k);
       if(btn) {
-         btn.disabled = (run.cash < c) || m;
-         btn.innerHTML = `<span style="color:${d.col}">${d.n} · LVL ${(player.ws[k]||0)+l}</span><span style="color:#0f0;">${m?'MAX':'$'+c.toLocaleString('en-US')}</span>`;
+         const unlockWave=d.unlockWave||1; const waveLocked=run.wave<unlockWave;
+         btn.disabled = waveLocked || (run.cash < c) || m;
+         btn.innerHTML = `<span style="color:${d.col}">${d.n} · LVL ${Math.min(d.max||999,(player.ws[k]||0)+l)}</span><span style="color:${waveLocked?'#ffb45c':'#0f0'}">${waveLocked?'LOCKED · WAVE '+unlockWave:m?'MAX':'
+      }
+    });
+  }
+  
+  function buyRunUpg(k) {
+    const d=statDefs[k]; if(!d || run.wave<(d.unlockWave||1)) return;
+    let c = getCost(k, false); if(run.cash >= c && (!d.max || (run.stats[k]||0)<d.max)) { run.cash -= c; run.stats[k] = (run.stats[k]||0)+1; 
+    if(k==='hp'){ let o=tower.maxHp; tower.maxHp=parseFloat(getVal('hp')); tower.hp+=(tower.maxHp-o); } updateHUD(); AudioSys.coin(); }
+  }
+
+
+
+  loadGame();
++c.toLocaleString('en-US')}</span>`;
       }
     });
   }
