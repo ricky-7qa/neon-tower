@@ -281,7 +281,9 @@
     }
 
     if(game.toSpawn <= 0 && game.ents.e.length === 0) {
-      run.wave++;\n      if(tower) { const repairPct=parseFloat(getVal('waveRepair'))+parseFloat(getVal('repairBurst')); if(repairPct>0) tower.hp=Math.min(tower.maxHp,tower.hp+tower.maxHp*repairPct/100); }\n      game.toSpawn = 10 + Math.floor(run.wave * 2);
+      run.wave++;
+      if(tower) { const repairPct=parseFloat(getVal('waveRepair'))+parseFloat(getVal('repairBurst')); if(repairPct>0) tower.hp=Math.min(tower.maxHp,tower.hp+tower.maxHp*repairPct/100); }
+      game.toSpawn = 10 + Math.floor(run.wave * 2);
       run.coins += Math.floor(run.wave/2) + 2 + Math.floor(parseFloat(getVal('coinCache'))); run.cash += Math.floor(parseFloat(getVal('waveBonus')) + Math.floor(run.wave*parseFloat(getVal('waveDividend'))/100));
       updateHUD(); AudioSys.coin(); checkAchievements();
       if((run.wave-1)%5===0) showPerkChoice(); 
@@ -302,7 +304,8 @@
             if(p.collide(e, game.ents.e)) { hitSomething = true; break; }
         } 
         else if(p.collide(e)) {
-          let dmg = p instanceof Laser ? p.d * game.dt : p.d;\n          if(e.type === 'Boss') dmg *= 1 + parseFloat(getVal('bossDamage'))/100;
+          let dmg = p instanceof Laser ? p.d * game.dt : p.d;
+          if(e.type === 'Boss') dmg *= 1 + parseFloat(getVal('bossDamage'))/100;
           if(e.hp <= e.maxHp*0.3) dmg *= 1 + parseFloat(getVal('executionProtocol'))/100;
           if(!(p instanceof Laser)) {
              game.ents.txt.push(new FText(e.x, e.y-e.r, Math.floor(dmg), p.crit ? "#ff3366" : "#fff", p.crit ? 24 : 14));
