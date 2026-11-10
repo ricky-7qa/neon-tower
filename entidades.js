@@ -185,8 +185,8 @@
   }
 
   class Projectile {
-    constructor(x,y,a,d,c,t,target=null){this.x=x;this.y=y;this.prevX=x;this.prevY=y;this.a=a; this.d=d; this.c=c; this.type=t; this.target=target; this.turnRate=12; this.spd=900; this.r=4; this.dead=false; }
-    update(dt){if(this.target && this.target.hp>0){const desired=MathUtils.angle(this.x,this.y,this.target.x,this.target.y);let delta=desired-this.a;while(delta>Math.PI)delta-=Math.PI*2;while(delta<-Math.PI)delta+=Math.PI*2;this.a+=Math.max(-this.turnRate*dt,Math.min(this.turnRate*dt,delta));}this.prevX=this.x;this.prevY=this.y;this.x+=Math.cos(this.a)*this.spd*dt;this.y+=Math.sin(this.a)*this.spd*dt;createParts(this.x,this.y,'#0ff',1,0,.1);}
+    constructor(x,y,a,d,c,t,target=null){this.x=x;this.y=y;this.prevX=x;this.prevY=y;this.a=a; this.d=d; this.c=c; this.type=t; this.target=target; this.turnRate=hasSkill('multishot')?18:12; this.spd=900; this.r=4; this.dead=false; }
+    update(dt){if(!this.target || this.target.hp<=0){this.target=game.ents.e.filter(e=>e.hp>0).sort((a,b)=>MathUtils.dist(this.x,this.y,a.x,a.y)-MathUtils.dist(this.x,this.y,b.x,b.y))[0]||null;}if(this.target && this.target.hp>0){const desired=MathUtils.angle(this.x,this.y,this.target.x,this.target.y);let delta=desired-this.a;while(delta>Math.PI)delta-=Math.PI*2;while(delta<-Math.PI)delta+=Math.PI*2;this.a+=Math.max(-this.turnRate*dt,Math.min(this.turnRate*dt,delta));}this.prevX=this.x;this.prevY=this.y;this.x+=Math.cos(this.a)*this.spd*dt;this.y+=Math.sin(this.a)*this.spd*dt;createParts(this.x,this.y,'#0ff',1,0,.1);}
     draw() { 
       ctx.shadowBlur=10; ctx.shadowColor="#0ff"; ctx.fillStyle = this.c ? "#fff" : "#0ff"; 
       ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur=0;
