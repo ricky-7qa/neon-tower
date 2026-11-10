@@ -437,3 +437,29 @@
 @media (orientation:portrait) and (pointer:coarse) {
   #touch-controls { display:none !important; }
 }
+
+
+/* Mobile portrait visibility: keep the complete playfield above the bottom drawer. */
+@media (orientation:portrait) and (pointer:coarse) {
+  #upg-panel {
+    height:38dvh;
+    min-height:180px;
+    max-height:340px;
+  }
+  #app.panel-open #gameCanvas {
+    transform:translateY(-19dvh) scale(.62) translate(var(--shake-x, 0px), var(--shake-y, 0px));
+  }
+  #hud.upgrades-open #stats-ui { bottom:calc(38dvh + 10px); }
+  #hud.upgrades-open #target-ui { bottom:calc(38dvh + 145px); }
+  #hud.upgrades-open #touch-controls { bottom:calc(38dvh + 12px + env(safe-area-inset-bottom)); }
+  #upg-content {
+    padding:76px 9px 10px;
+    gap:6px;
+  }
+  #upg-content .upg-btn {
+    min-height:52px;
+    padding:7px 6px;
+    font-size:10px;
+  }
+  #perks-view { padding:10px 9px 12px; }
+}
