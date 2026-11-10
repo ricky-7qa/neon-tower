@@ -114,11 +114,17 @@
     document.getElementById('hud-coins').innerText = '$' + run.coins.toLocaleString('en-US');
 
     if (tower) {
-      document.getElementById('st-dmg').innerText = getVal('damage');
-      document.getElementById('st-spd').innerText = getVal('speed') + '/s';
-      document.getElementById('st-hp').innerText = `${Math.ceil(Math.max(0, tower.hp))} / ${getVal('hp')}`;
+      const perkDamage = 1 + (run.perks?.power || 0) * 0.2;
+      const perkFireRate = 1 + (run.perks?.rapid || 0) * 0.15;
+      const perkRange = 1 + (run.perks?.radar || 0) * 0.15;
       const totalRegen = parseFloat(getVal('regen')) + parseFloat(getVal('nanoMatrix')) + (run.perks?.repair || 0) * 3;
-      document.getElementById('st-reg').innerText = totalRegen.toFixed(1).replace(/\.0$/, '') + '/s';
+      const cashBonus = (parseFloat(getVal('cashBonus')) + (run.perks?.fortune || 0) * 25);
+      document.getElementById('st-dmg').innerText = Math.round(parseFloat(getVal('damage')) * perkDamage);
+      document.getElementById('st-spd').innerText = (parseFloat(getVal('speed')) * perkFireRate).toFixed(2).replace(/\\.00$/, '').replace(/0$/, '') + '/s';
+      document.getElementById('st-hp').innerText = `${Math.ceil(Math.max(0, tower.hp))} / ${getVal('hp')}`;
+      document.getElementById('st-reg').innerText = totalRegen.toFixed(1).replace(/\\.0$/, '') + '/s';
+      document.getElementById('st-range').innerText = Math.round(parseFloat(getVal('range')) * perkRange);
+      document.getElementById('st-cashbonus').innerText = '+' + cashBonus.toFixed(0) + '%';
     }
 
     const tui = document.getElementById('target-ui');
