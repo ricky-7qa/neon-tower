@@ -345,6 +345,19 @@
 }
 
 
+/* Desktop: shift the complete playfield into the space left by the side drawer. */
+@media (min-width:701px) and (orientation:landscape) {
+  #gameCanvas {
+    transition:transform .42s cubic-bezier(.2,.8,.2,1);
+    transform:translateX(0);
+    transform-origin:50% 50%;
+    will-change:transform;
+  }
+  #app.panel-open #gameCanvas {
+    transform:translateX(-170px);
+  }
+}
+
 /* Portrait phone: drawer and playfield move together to keep the action visible. */
 @media (orientation:portrait) and (pointer:coarse) {
   #gameCanvas {
