@@ -55,15 +55,16 @@
         let dmg=parseFloat(getVal('damage'))*(1+(run.perks?.power||0)*.2);
         let crit=(Math.random()*100)<parseFloat(getVal('critC'));
         let finalD=crit?dmg*parseFloat(getVal('critD')):dmg;
-        const extra=Math.min(5,parseInt(getVal('multishot')));
-        const totalShots=extra+1;
-        // Keep the spread narrow enough that every lane can still hit the
-        // selected target. The allowed angle scales with target size/distance.
-        const targetDistance=Math.max(1,MathUtils.dist(this.x,this.y,targetEnemy.x,targetEnemy.y));
-        const spread=Math.atan2(Math.max(2,targetEnemy.r-4),targetDistance)*0.65;
+        const level=Math.min(3,Math.max(0,parseInt(getVal('multishot'))||0));
+        const totalShots=level+1;
+        // Multi-shot projectiles all home onto the selected target. Their
+        // tiny muzzle offsets keep the burst readable while guidance makes
+        // every projectile converge instead of missing with a fixed spread.
+        const sideX=-Math.sin(this.angle), sideY=Math.cos(this.angle);
         for(let shot=0;shot<totalShots;shot++){
           const lane=shot-(totalShots-1)/2;
-          game.ents.p.push(new Projectile(this.x,this.y,this.angle+lane*spread,finalD,crit,'base'));
+          const offset=lane*5;
+          game.ents.p.push(new Projectile(this.x+sideX*offset,this.y+sideY*offset,this.angle,finalD,crit,'base',targetEnemy));
         }
         if(hasSkill('multishot'))this.multiQueue={delay:.12,angle:this.angle,damage:finalD,crit};
         this.cdBase=1/(parseFloat(getVal('speed'))*(1+(run.perks?.rapid||0)*.15)*(hasSkill('overdrive')?1.25:1));
@@ -185,8 +186,8 @@
   }
 
   class Projectile {
-    constructor(x,y,a,d,c,t){this.x=x;this.y=y;this.prevX=x;this.prevY=y;this.a=a; this.d=d; this.c=c; this.type=t; this.spd=900; this.r=4; this.dead=false; }
-    update(dt){this.prevX=this.x;this.prevY=this.y;this.x+=Math.cos(this.a)*this.spd*dt;this.y+=Math.sin(this.a)*this.spd*dt;createParts(this.x,this.y,'#0ff',1,0,.1);}
+    constructor(x,y,a,d,c,t,target=null){this.x=x;this.y=y;this.prevX=x;this.prevY=y;this.a=a; this.d=d; this.c=c; this.type=t; this.target=target; this.turnRate=12; this.spd=900; this.r=4; this.dead=false; }
+    update(dt){if(this.target && this.target.hp>0){const desired=MathUtils.angle(this.x,this.y,this.target.x,this.target.y);let delta=desired-this.a;while(delta>Math.PI)delta-=Math.PI*2;while(delta<-Math.PI)delta+=Math.PI*2;this.a+=Math.max(-this.turnRate*dt,Math.min(this.turnRate*dt,delta));}this.prevX=this.x;this.prevY=this.y;this.x+=Math.cos(this.a)*this.spd*dt;this.y+=Math.sin(this.a)*this.spd*dt;createParts(this.x,this.y,'#0ff',1,0,.1);}
     draw() { 
       ctx.shadowBlur=10; ctx.shadowColor="#0ff"; ctx.fillStyle = this.c ? "#fff" : "#0ff"; 
       ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur=0;
