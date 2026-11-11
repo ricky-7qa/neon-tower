@@ -9,7 +9,23 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' stroke='%230ff' stroke-width='10' fill='none'/><circle cx='50' cy='50' r='15' fill='%23ff3366'/></svg>">
   
   <link rel="stylesheet" href="style.css?v=20261110-10">
-  <script data-goatcounter="https://ricky7.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+  <script>
+    window.neonAnalyticsQueue = window.neonAnalyticsQueue || [];
+    window.neonTrack = function(eventData) {
+      if (window.goatcounter && typeof window.goatcounter.count === 'function') {
+        window.goatcounter.count(eventData);
+      } else {
+        window.neonAnalyticsQueue.push(eventData);
+      }
+    };
+    window.neonFlushAnalytics = function() {
+      if (!window.goatcounter || typeof window.goatcounter.count !== 'function') return;
+      window.neonAnalyticsQueue.splice(0).forEach(function(eventData) {
+        window.goatcounter.count(eventData);
+      });
+    };
+  </script>
+  <script data-goatcounter="https://ricky7.goatcounter.com/count" async src="//gc.zgo.at/count.js" onload="window.neonFlushAnalytics()"></script>
 </head>
 <body>
 
@@ -88,7 +104,7 @@
     <div id="tab-achievements" class="scroll-area" style="display:none;"><div class="grid" id="achv-grid"></div></div>
     
     <div style="padding: 20px; text-align: center; background: #000; border-top: 1px solid #333; z-index: 10;">
-      <button class="btn" style="font-size: 24px; padding: 15px 60px;" onclick="startGame()">DEPLOY TOWER</button>
+      <button class="btn" style="font-size: 24px; padding: 15px 60px;" onclick="startGame()" data-goatcounter-click="deploy-click" data-goatcounter-title="Deploy Tower button clicked">DEPLOY TOWER</button>
     </div>
   </div>
 
@@ -105,7 +121,7 @@
 </div>
 
 <script src="entidades.js?v=20261110-2"></script>
-<script src="engine.js?v=20261111-15"></script>
+<script src="engine.js?v=20261111-16"></script>
 <script src="ui.js?v=20261110-2"></script>
 </body>
 </html>
