@@ -141,7 +141,8 @@
   let run = {stats:{},cash:0,coins:0,wave:1,kills:0,combo:0,comboTimer:0,graze:0};
   let targetEnemy = null;
   let gameSessionStartedAt = 0;
-  let gameDurationTracked = false; 
+  let gameDurationTracked = false;
+  let gameSessionSource = 'direct'; 
 
   function saveGame() { localStorage.setItem(SAVE_KEY, btoa(JSON.stringify(player))); updateMenuUI(); }
   function loadGame() { 
@@ -221,6 +222,8 @@
     AudioSys.init();
     gameSessionStartedAt = Date.now();
     gameDurationTracked = false;
+    const campaignSource = new URLSearchParams(window.location.search).get('utm_source');
+    gameSessionSource = campaignSource ? campaignSource.toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 24) : 'direct';
     document.getElementById('menu').classList.remove('active-layer'); document.getElementById('hud').classList.add('active-hud');
     run = { stats: {}, cash: 0, coins: 0, wave: 1, kills: 0, perks: {} };
     Object.keys(statDefs).forEach(k => run.stats[k]=0);
@@ -232,7 +235,7 @@
     updateHUD();
     requestAnimationFrame(loop);
     if (window.goatcounter && typeof window.goatcounter.count === 'function') {
-      window.goatcounter.count({ path: 'game-start', title: 'Game started', event: true });
+      window.goatcounter.count({ path: 'game-start-' + gameSessionSource, title: 'Game started (' + gameSessionSource + ')', event: true, no_session: true });
     }
   }
 
@@ -245,8 +248,8 @@
       const roundedDuration = Math.round(durationSeconds / 10) * 10;
       if (window.goatcounter && typeof window.goatcounter.count === 'function') {
         window.goatcounter.count({
-          path: 'game-duration-' + roundedDuration + '-seconds',
-          title: 'Game duration: about ' + roundedDuration + ' seconds',
+          path: 'game-duration-' + roundedDuration + '-seconds-' + gameSessionSource,
+          title: 'Game duration: about ' + roundedDuration + ' seconds (' + gameSessionSource + ')',
           event: true,
           no_session: true
         });
