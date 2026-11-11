@@ -227,6 +227,9 @@
     initUpgBar();
     updateHUD();
     requestAnimationFrame(loop);
+    if (window.goatcounter && typeof window.goatcounter.count === 'function') {
+      window.goatcounter.count({ path: 'game-start', title: 'Game started', event: true });
+    }
   }
 
   function processGameOver() {
