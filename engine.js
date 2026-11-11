@@ -139,7 +139,9 @@
   /** SAVE SYSTEM **/
   let player = { coins: 0, highestWave: 1, totalKills: 0, bossKills: 0, playTime: 0, ws: {}, skills: ['start'], achievements: [] };
   let run = {stats:{},cash:0,coins:0,wave:1,kills:0,combo:0,comboTimer:0,graze:0};
-  let targetEnemy = null; 
+  let targetEnemy = null;
+  let gameSessionStartedAt = 0;
+  let gameDurationTracked = false; 
 
   function saveGame() { localStorage.setItem(SAVE_KEY, btoa(JSON.stringify(player))); updateMenuUI(); }
   function loadGame() { 
@@ -217,6 +219,8 @@
   /** MAIN LOOP & RENDERING **/
   function startGame() {
     AudioSys.init();
+    gameSessionStartedAt = Date.now();
+    gameDurationTracked = false;
     document.getElementById('menu').classList.remove('active-layer'); document.getElementById('hud').classList.add('active-hud');
     run = { stats: {}, cash: 0, coins: 0, wave: 1, kills: 0, perks: {} };
     Object.keys(statDefs).forEach(k => run.stats[k]=0);
@@ -234,7 +238,20 @@
 
   function processGameOver() {
     if(!game || !game.running) return;
-    game.running = false; document.getElementById('hud').classList.remove('active-hud'); document.getElementById('gameover').classList.add('active-layer');
+    game.running = false;
+    if (!gameDurationTracked && gameSessionStartedAt) {
+      gameDurationTracked = true;
+      const durationSeconds = Math.max(0, Math.round((Date.now() - gameSessionStartedAt) / 1000));
+      const roundedDuration = Math.round(durationSeconds / 10) * 10;
+      if (window.goatcounter && typeof window.goatcounter.count === 'function') {
+        window.goatcounter.count({
+          path: 'game-duration-' + roundedDuration + '-seconds',
+          title: 'Game duration: about ' + roundedDuration + ' seconds',
+          event: true,
+          no_session: true
+        });
+      }
+    } document.getElementById('hud').classList.remove('active-hud'); document.getElementById('gameover').classList.add('active-layer');
     document.getElementById('go-wave').innerText = run.wave; document.getElementById('go-kills').innerText = run.kills; document.getElementById('go-coins').innerText = "+"+run.coins+" COINS";
     player.coins += run.coins; if(run.wave > player.highestWave) player.highestWave = run.wave; checkAchievements(); saveGame();
   }
