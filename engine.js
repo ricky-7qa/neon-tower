@@ -142,7 +142,32 @@
   let targetEnemy = null;
   let gameSessionStartedAt = 0;
   let gameDurationTracked = false;
-  let gameSessionSource = 'direct'; 
+  let gameSessionSource = 'site';
+
+  function trackGameDuration(reason) {
+    if (gameDurationTracked || !gameSessionStartedAt) return;
+    gameDurationTracked = true;
+    const durationSeconds = Math.max(0, Math.round((Date.now() - gameSessionStartedAt) / 1000));
+    const roundedDuration = Math.round(durationSeconds / 10) * 10;
+    const send = typeof window.neonTrack === 'function'
+      ? window.neonTrack
+      : (data) => {
+          if (window.goatcounter && typeof window.goatcounter.count === 'function') window.goatcounter.count(data);
+        };
+    send({
+      path: 'game-duration-' + roundedDuration + '-seconds',
+      title: 'Game duration: about ' + roundedDuration + ' seconds',
+      event: true,
+      no_session: true
+    });
+    if (reason === 'exit') {
+      send({ path: 'game-exit', title: 'Game closed before game over', event: true, no_session: true });
+    }
+  }
+
+  window.addEventListener('pagehide', function() {
+    if (gameSessionStartedAt && !gameDurationTracked) trackGameDuration('exit');
+  });
 
   function saveGame() { localStorage.setItem(SAVE_KEY, btoa(JSON.stringify(player))); updateMenuUI(); }
   function loadGame() { 
@@ -222,8 +247,7 @@
     AudioSys.init();
     gameSessionStartedAt = Date.now();
     gameDurationTracked = false;
-    const campaignSource = new URLSearchParams(window.location.search).get('utm_source');
-    gameSessionSource = campaignSource ? campaignSource.toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 24) : 'direct';
+    gameSessionSource = 'site';
     document.getElementById('menu').classList.remove('active-layer'); document.getElementById('hud').classList.add('active-hud');
     run = { stats: {}, cash: 0, coins: 0, wave: 1, kills: 0, perks: {} };
     Object.keys(statDefs).forEach(k => run.stats[k]=0);
@@ -234,26 +258,21 @@
     initUpgBar();
     updateHUD();
     requestAnimationFrame(loop);
-    if (window.goatcounter && typeof window.goatcounter.count === 'function') {
-      window.goatcounter.count({ path: 'game-start-' + gameSessionSource, title: 'Game started (' + gameSessionSource + ')', event: true, no_session: true });
+    if (typeof window.neonTrack === 'function') {
+      window.neonTrack({ path: 'game-start', title: 'Game started', event: true, no_session: true });
+    } else if (window.goatcounter && typeof window.goatcounter.count === 'function') {
+      window.goatcounter.count({ path: 'game-start', title: 'Game started', event: true, no_session: true });
     }
   }
 
   function processGameOver() {
     if(!game || !game.running) return;
     game.running = false;
-    if (!gameDurationTracked && gameSessionStartedAt) {
-      gameDurationTracked = true;
-      const durationSeconds = Math.max(0, Math.round((Date.now() - gameSessionStartedAt) / 1000));
-      const roundedDuration = Math.round(durationSeconds / 10) * 10;
-      if (window.goatcounter && typeof window.goatcounter.count === 'function') {
-        window.goatcounter.count({
-          path: 'game-duration-' + roundedDuration + '-seconds-' + gameSessionSource,
-          title: 'Game duration: about ' + roundedDuration + ' seconds (' + gameSessionSource + ')',
-          event: true,
-          no_session: true
-        });
-      }
+    trackGameDuration('completed');
+    if (typeof window.neonTrack === 'function') {
+      window.neonTrack({ path: 'game-end', title: 'Game ended normally', event: true, no_session: true });
+    } else if (window.goatcounter && typeof window.goatcounter.count === 'function') {
+      window.goatcounter.count({ path: 'game-end', title: 'Game ended normally', event: true, no_session: true });
     } document.getElementById('hud').classList.remove('active-hud'); document.getElementById('gameover').classList.add('active-layer');
     document.getElementById('go-wave').innerText = run.wave; document.getElementById('go-kills').innerText = run.kills; document.getElementById('go-coins').innerText = "+"+run.coins+" COINS";
     player.coins += run.coins; if(run.wave > player.highestWave) player.highestWave = run.wave; checkAchievements(); saveGame();
