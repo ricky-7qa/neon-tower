@@ -122,11 +122,11 @@
   };
 
   const perkDefs = [
-    {id:'power',name:'Overcharged Core',desc:'+20% tower damage.',icon:'✦'},
-    {id:'rapid',name:'Rapid Calibration',desc:'+15% attack speed.',icon:'⚡'},
-    {id:'fortune',name:'Golden Core',desc:'+25% cash from enemy kills.',icon:'◈'},
-    {id:'repair',name:'Nanite Repair',desc:'+3 health regenerated per second.',icon:'✚'},
-    {id:'radar',name:'Extended Radar',desc:'+15% targeting range.',icon:'◎'}
+    {id:'power',name:'Overcharged Core',desc:'+20% tower damage per stack.',icon:'✦',maxStacks:5},
+    {id:'rapid',name:'Rapid Calibration',desc:'+15% attack speed per stack.',icon:'⚡',maxStacks:5},
+    {id:'fortune',name:'Golden Core',desc:'+25% cash from enemy kills per stack.',icon:'◈',maxStacks:5},
+    {id:'repair',name:'Nanite Repair',desc:'+3 health regenerated per second per stack.',icon:'✚',maxStacks:5},
+    {id:'radar',name:'Extended Radar',desc:'+15% targeting range per stack.',icon:'◎',maxStacks:5}
   ];
 
   const achvDefs = [
@@ -264,6 +264,11 @@
       {id:'survive', title:'SURVIVE 2 MINUTES', description:'Stay alive for 120 seconds.', target:120, reward:25}
     ];
     run.mission = {...missionOptions[Math.floor(Math.random()*missionOptions.length)], progress:0, complete:false};
+    document.getElementById('mission-title').textContent = run.mission.title;
+    document.getElementById('mission-desc').textContent = run.mission.description;
+    document.getElementById('mission-reward').textContent = '+' + run.mission.reward + ' COINS';
+    document.getElementById('mission-progress').textContent = '0 / ' + run.mission.target;
+    document.getElementById('mission-fill').style.width = '0%';
     Object.keys(statDefs).forEach(k => run.stats[k]=0);
     
     game = { running: true, paused:false, dt: 0, last: performance.now(), shake: 0, playSaveT: 0, achievementCheckT: 0, spawnT: 0.25, toSpawn: 10, ents: { e:[], p:[], b:[], part:[], txt:[] }, cx: canvas.width/2, cy: canvas.height/2 };
