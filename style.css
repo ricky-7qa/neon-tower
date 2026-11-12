@@ -447,7 +447,8 @@
     max-height:340px;
   }
   #app.panel-open #gameCanvas {
-    transform:translateY(-19dvh) scale(.62) translate(var(--shake-x, 0px), var(--shake-y, 0px));
+    /* Keep the full canvas width on phones; only move its centre above the drawer. */
+    transform:translateY(-19dvh) scale(1) translate(var(--shake-x, 0px), var(--shake-y, 0px));
   }
   #hud.upgrades-open #stats-ui { bottom:calc(38dvh + 10px); }
   #hud.upgrades-open #target-ui { bottom:calc(38dvh + 145px); }
