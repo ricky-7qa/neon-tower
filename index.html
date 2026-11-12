@@ -8,7 +8,7 @@
   <!-- Game favicon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' stroke='%230ff' stroke-width='10' fill='none'/><circle cx='50' cy='50' r='15' fill='%23ff3366'/></svg>">
   
-  <link rel="stylesheet" href="style.css?v=20261112-1">
+  <link rel="stylesheet" href="style.css?v=20261112-2">
   <script>
     window.neonAnalyticsQueue = window.neonAnalyticsQueue || [];
     window.neonTrack = function(eventData) {
@@ -44,6 +44,12 @@
         <div class="stat-box"><span class="top-label">ENEMIES</span><span class="stat-val" id="hud-timer">0</span></div>
         <div class="stat-box"><span class="top-label">CASH</span><span class="stat-val c-green" id="hud-cash">$0</span></div>
       </div>
+    </div>
+    <div id="mission-ui" aria-live="polite">
+      <div class="mission-topline"><strong id="mission-title">MISSION</strong><span id="mission-reward">+25 COINS</span></div>
+      <p id="mission-desc">Complete the optional mission for bonus coins.</p>
+      <div class="mission-progress-track"><span id="mission-fill"></span></div>
+      <small id="mission-progress">0 / 5</small>
     </div>
     
     <!-- TOWER STATS -->
@@ -118,15 +124,32 @@
         <p>BOSSES DEFEATED <strong id="go-bosses">0</strong></p>
         <p>TIME SURVIVED <strong id="go-time">0:00</strong></p>
         <p>PERSONAL BEST <strong class="c-cyan" id="go-best">1</strong></p>
+        <p>RECORD KILLS <strong id="go-record-kills">0</strong></p>
+        <p>BEST SURVIVAL <strong id="go-record-time">0:00</strong></p>
+        <p>RUNS PLAYED <strong id="go-runs">0</strong></p>
       </div>
       <p class="mission-profit">PROFIT: <span class="c-gold" id="go-coins">+0 COINS</span></p>
     </div>
     <button class="btn" style="font-size: 20px; padding: 15px 50px;" onclick="returnToMenu()">RETURN TO BASE</button>
   </div>
+  <div id="tutorial" role="dialog" aria-modal="true" aria-labelledby="tutorial-title">
+    <div class="tutorial-card">
+      <span class="tutorial-kicker">NEON TOWER // FIELD GUIDE</span>
+      <h2 id="tutorial-title">HOW TO SURVIVE</h2>
+      <p class="tutorial-intro">Your tower fights automatically. Your decisions make the difference.</p>
+      <div class="tutorial-steps">
+        <article><span>01</span><div><strong>UPGRADE</strong><small>Spend cash during a run to improve Attack, Defense and Utility.</small></div></article>
+        <article><span>02</span><div><strong>CHOOSE PERKS</strong><small>Every five waves, choose a bonus. Perks stack, but each has a limit.</small></div></article>
+        <article><span>03</span><div><strong>WATCH ENEMIES</strong><small>Snipers keep their distance, Tanks endure damage and Kamikazes rush the tower.</small></div></article>
+        <article><span>04</span><div><strong>COMPLETE MISSIONS</strong><small>Finish the optional objective for extra permanent coins.</small></div></article>
+      </div>
+      <button class="btn tutorial-start" onclick="confirmTutorialStart()">GOT IT — START RUN</button>
+    </div>
+  </div>
 </div>
 
-<script src="entidades.js?v=20261112-1"></script>
-<script src="engine.js?v=20261112-1"></script>
-<script src="ui.js?v=20261110-2"></script>
+<script src="entidades.js?v=20261112-2"></script>
+<script src="engine.js?v=20261112-2"></script>
+<script src="ui.js?v=20261112-2"></script>
 </body>
 </html>
