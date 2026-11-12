@@ -1140,6 +1140,11 @@
     transform:translateY(0);
   }
   #app.device-mobile .panel-side-toggle {
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    line-height:1;
     top:-43px;
     right:12px;
     left:auto;
