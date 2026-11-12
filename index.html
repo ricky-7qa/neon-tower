@@ -112,9 +112,14 @@
     <h1 style="color: #ff3366; text-shadow: 0 0 40px #ff3366; font-size: 70px; margin-bottom: 20px; transform: perspective(500px) rotateX(10deg);">DESTROYED</h1>
     <div style="background: rgba(0,0,0,0.8); padding: 30px; border: 1px solid #ff3366; border-radius: 10px; text-align: center; margin-bottom: 40px; box-shadow: 0 15px 30px rgba(0,0,0,0.8);">
       <h2 style="color: #fff; margin-bottom: 10px;">Mission Report</h2>
-      <p style="font-size: 20px; color: #aaa; margin-bottom: 5px;">Wave Reached: <span class="c-cyan" id="go-wave">1</span></p>
-      <p style="font-size: 20px; color: #aaa; margin-bottom: 20px;">Enemies Killed: <span id="go-kills" style="color:#fff;">0</span></p>
-      <p style="font-size: 30px; font-weight: bold;">Profit: <span class="c-gold" id="go-coins">+0 COINS</span></p>
+      <div class="mission-stats">
+        <p>WAVE REACHED <strong class="c-cyan" id="go-wave">1</strong></p>
+        <p>ENEMIES KILLED <strong id="go-kills">0</strong></p>
+        <p>BOSSES DEFEATED <strong id="go-bosses">0</strong></p>
+        <p>TIME SURVIVED <strong id="go-time">0:00</strong></p>
+        <p>PERSONAL BEST <strong class="c-cyan" id="go-best">1</strong></p>
+      </div>
+      <p class="mission-profit">PROFIT: <span class="c-gold" id="go-coins">+0 COINS</span></p>
     </div>
     <button class="btn" style="font-size: 20px; padding: 15px 50px;" onclick="returnToMenu()">RETURN TO BASE</button>
   </div>
