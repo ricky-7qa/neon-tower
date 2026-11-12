@@ -128,12 +128,13 @@
     }
 
     const tui = document.getElementById('target-ui');
-    if(targetEnemy) {
+    const bossEnemy = game?.ents?.e?.find(enemy => enemy.type === 'Boss' && enemy.hp > 0);
+    if(bossEnemy) {
        tui.classList.add('visible');
-       document.getElementById('t-name').innerText = `TARGET: ${targetEnemy.type.toUpperCase()}`;
-       let hpPct = Math.max(0, (targetEnemy.hp / targetEnemy.maxHp) * 100);
+       document.getElementById('t-name').innerText = 'BOSS';
+       const hpPct = Math.max(0, (bossEnemy.hp / bossEnemy.maxHp) * 100);
        document.getElementById('t-hp-fill').style.width = hpPct + '%';
-       document.getElementById('t-hp-text').innerText = `${Math.ceil(Math.max(0, targetEnemy.hp))} / ${Math.ceil(targetEnemy.maxHp)} HP`;
+       document.getElementById('t-hp-text').innerText = `${Math.ceil(Math.max(0, bossEnemy.hp))} / ${Math.ceil(bossEnemy.maxHp)} HP`;
     } else {
        tui.classList.remove('visible');
     }
