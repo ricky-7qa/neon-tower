@@ -305,6 +305,7 @@
       {id:'kills', title:'ELIMINATE 30 ENEMIES', description:'Defeat 30 enemies during this run.', target:30, reward:25},
       {id:'survive', title:'SURVIVE 2 MINUTES', description:'Stay alive for 120 seconds.', target:120, reward:25}
     ];
+    document.getElementById('mission-ui')?.classList.remove('mission-complete');
     run.mission = {...missionOptions[Math.floor(Math.random()*missionOptions.length)], progress:0, complete:false};
     document.getElementById('mission-title').textContent = run.mission.title;
     document.getElementById('mission-desc').textContent = run.mission.description;
@@ -364,6 +365,7 @@
     if (fill) fill.style.width = (current / mission.target * 100) + '%';
     if (mission.progress >= mission.target) {
       mission.complete = true;
+      document.getElementById('mission-ui')?.classList.add('mission-complete');
       run.coins += mission.reward;
       notify('MISSION COMPLETE', '+' + mission.reward + ' COINS');
       const title = document.getElementById('mission-title');
