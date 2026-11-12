@@ -665,3 +665,65 @@
 .perk-stack-progress,.run-perk-count { display:none !important; }
 .perk-stack-limit { display:block; }
 .perk-option .perk-stars { justify-content:center; margin-top:3px; font-size:14px; }
+
+/* Compact, readable perk selection on portrait phones. */
+@media (orientation:portrait) and (pointer:coarse), (max-width:600px) {
+  #perk-choice {
+    padding: max(10px, env(safe-area-inset-top)) 10px max(10px, env(safe-area-inset-bottom));
+    align-items:center;
+    overflow-y:auto;
+  }
+  .perk-dialog {
+    width:100%;
+    max-width:440px;
+    max-height: min(86dvh, 720px);
+    overflow-y:auto;
+    padding:14px 12px;
+    border-radius:14px;
+  }
+  .perk-eyebrow { font-size:9px; letter-spacing:2px; }
+  .perk-dialog h2 { font-size:clamp(19px, 6vw, 25px); margin:7px 0; }
+  .perk-dialog p { font-size:12px; line-height:1.4; margin:0 2px 12px; }
+  .perk-options { grid-template-columns:minmax(0,1fr); gap:8px; }
+  .perk-option {
+    width:100%;
+    min-width:0;
+    min-height:0;
+    display:grid;
+    grid-template-columns:38px minmax(0,1fr);
+    grid-template-rows:auto auto auto auto auto;
+    align-items:center;
+    justify-items:start;
+    gap:3px 9px;
+    padding:10px;
+    text-align:left;
+    border-radius:10px;
+  }
+  .perk-option > span:first-child {
+    grid-column:1;
+    grid-row:1 / 6;
+    align-self:center;
+    justify-self:center;
+    font-size:24px;
+    line-height:1;
+  }
+  .perk-option strong,
+  .perk-option small,
+  .perk-option .perk-stars {
+    grid-column:2;
+    min-width:0;
+    justify-self:start;
+    text-align:left;
+  }
+  .perk-option strong { font-size:11px; line-height:1.25; }
+  .perk-option small { font-size:10px; line-height:1.3; }
+  .perk-option .perk-rarity-label { margin:0; font-size:8px !important; }
+  .perk-option .perk-stars {
+    display:flex;
+    align-items:center;
+    gap:3px;
+    margin-top:2px;
+    font-size:13px;
+    line-height:1;
+  }
+}
