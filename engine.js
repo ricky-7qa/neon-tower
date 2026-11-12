@@ -353,6 +353,7 @@
     document.getElementById('go-runs').innerText = player.runsPlayed;
     document.getElementById('go-coins').innerText = "+"+run.coins+" COINS";
     checkAchievements(); saveGame();
+    if (typeof submitLeaderboardResult === 'function') submitLeaderboardResult(run);
   }
   function updateMissionProgress() {
     if (!run.mission || run.mission.complete) return;
