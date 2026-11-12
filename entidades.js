@@ -334,7 +334,7 @@
         run.cash += Math.floor(this.val * (1 + Math.min(run.combo, 10) * 0.1) *
           (1 + parseFloat(getVal("cashBonus"))/100) *
           (1 + parseFloat(getVal("killContract"))/100) *
-          (1 + (run.perks?.fortune||0)*0.25));
+          (1 + (run.perks?.fortune||0)*0.10));
         if (hasSkill("vampire") && tower) tower.hp = Math.min(tower.maxHp, tower.hp + tower.maxHp * 0.02);
         run.cash += Math.floor(this.val * parseFloat(getVal("salvage"))/100);
         if (this.type === "Boss") {
