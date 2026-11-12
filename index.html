@@ -8,7 +8,7 @@
   <!-- Game favicon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' stroke='%230ff' stroke-width='10' fill='none'/><circle cx='50' cy='50' r='15' fill='%23ff3366'/></svg>">
   
-  <link rel="stylesheet" href="style.css?v=20261112-15">
+  <link rel="stylesheet" href="style.css?v=20261112-16">
   <script>
     window.neonAnalyticsQueue = window.neonAnalyticsQueue || [];
     window.neonTrack = function(eventData) {
@@ -89,10 +89,34 @@
     </div>
   </div>
 
-  <div id="menu" class="layer active-layer">
+  <div id="device-select" class="layer active-layer">
+    <div class="device-select-panel">
+      <span class="device-eyebrow">NEON TOWER // SYSTEM SETUP</span>
+      <h1>CHOOSE YOUR PLATFORM</h1>
+      <p class="device-select-intro">Select how you want to play. You can change this later.</p>
+      <div class="device-choice-grid">
+        <button class="device-choice-card" onclick="selectDeviceMode('desktop')">
+          <span class="device-choice-icon" aria-hidden="true">▣</span>
+          <strong>DESKTOP</strong>
+          <small>Wide layout · Mouse and keyboard</small>
+          <span class="device-choice-action">SELECT DESKTOP</span>
+        </button>
+        <button class="device-choice-card" onclick="selectDeviceMode('mobile')">
+          <span class="device-choice-icon" aria-hidden="true">▯</span>
+          <strong>MOBILE</strong>
+          <small>Compact layout · Touch controls</small>
+          <span class="device-choice-action">SELECT MOBILE</span>
+        </button>
+      </div>
+      <span class="device-select-footnote">YOUR GAME PROGRESS WILL STAY THE SAME</span>
+    </div>
+  </div>
+
+  <div id="menu" class="layer">
     <div class="menu-header">
       <h1>NEON TOWER</h1>
       <p style="color:#0ff; letter-spacing: 5px; font-weight: bold;">3D APEX EDITION</p>
+      <div class="menu-device-row"><span id="menu-device-label">DESKTOP MODE</span><button class="btn change-device-btn" onclick="changeDeviceMode()">CHANGE DEVICE</button></div>
     </div>
     <div class="menu-nav">
       <button class="btn btn-gold" onclick="switchTab('workshop')">WORKSHOP</button>
@@ -150,6 +174,6 @@
 
 <script src="entidades.js?v=20261112-7"></script>
 <script src="engine.js?v=20261112-14"></script>
-<script src="ui.js?v=20261112-7"></script>
+<script src="ui.js?v=20261112-8"></script>
 </body>
 </html>
