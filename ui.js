@@ -204,4 +204,5 @@
   }
 
 
-  loadGame();\n  initializeDeviceMode();
+  loadGame();
+  initializeDeviceMode();
