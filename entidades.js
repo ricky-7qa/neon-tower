@@ -25,7 +25,7 @@
     constructor() {
       this.x = game.cx || canvas.width/2; this.y = game.cy || canvas.height/2; this.r = 35;
       this.maxHp = parseFloat(getVal('hp')); this.hp = this.maxHp; 
-      this.cdBase = 0; this.cdMissile = 0; this.cdLaser = 0; this.angle = 0; this.multiQueue=null; this.invuln=0; this.dashCd=0;
+      this.cdBase = 0; this.cdMissile = 0; this.cdLaser = 0; this.angle = 0; this.multiQueue=null; this.invuln=0; this.dashCd=0; this.muzzleFlash=0;
       this.shield = hasSkill('shield'); this.shieldCd = 0;
     }
     update(dt) {
@@ -48,10 +48,12 @@
       } else { targetEnemy = null; }
 
       this.invuln=Math.max(0,this.invuln-dt); this.dashCd=Math.max(0,this.dashCd-dt);
+      this.muzzleFlash=Math.max(0,this.muzzleFlash-dt);
       this.cdBase-=dt;
       
       if(this.cdBase<=0&&targetEnemy){
         AudioSys.shoot();
+        this.muzzleFlash=0.09;
         let dmg=parseFloat(getVal('damage'))*(1+(run.perks?.power||0)*.2)*(1+parseFloat(getVal('plasmaCore'))/100);
         let crit=(Math.random()*100)<Math.min(75,parseFloat(getVal('critC'))+parseFloat(getVal('precisionArray')));
         let finalD=crit?dmg*parseFloat(getVal('critD')):dmg;
@@ -117,6 +119,14 @@
       
       ctx.fillStyle = '#0ff'; ctx.beginPath(); ctx.arc(0, 0, this.r*0.4, 0, Math.PI*2); ctx.fill();
       ctx.restore();
+      if(this.muzzleFlash>0) {
+        ctx.save();
+        ctx.translate(this.x,this.y); ctx.rotate(this.angle);
+        ctx.globalAlpha=Math.min(1,this.muzzleFlash/0.09);
+        ctx.shadowBlur=18; ctx.shadowColor='#0ff'; ctx.fillStyle='#fff';
+        ctx.beginPath(); ctx.ellipse(this.r+23,0,12,5,0,0,Math.PI*2); ctx.fill();
+        ctx.restore();
+      }
       
       const bw = 80; ctx.fillStyle = "rgba(0,0,0,0.8)"; ctx.fillRect(this.x-bw/2, this.y-this.r-25, bw, 8);
       ctx.fillStyle = "#0f0"; ctx.fillRect(this.x-bw/2, this.y-this.r-25, bw*(this.hp/this.maxHp), 8);
@@ -179,12 +189,14 @@
       this.fireCd = this.type === "Boss" ? 1.25 : 0.9;
       this.phase = Math.random() * Math.PI * 2;
       this.age = 0;
+      this.hitFlash = 0;
     }
 
     update(dt) {
       const a = MathUtils.angle(this.x, this.y, tower.x, tower.y);
       const d = MathUtils.dist(this.x, this.y, tower.x, tower.y);
       this.age += dt;
+      this.hitFlash = Math.max(0, this.hitFlash - dt);
       if (this.type === "Boss") {
         const hpRatio = this.hp / this.maxHp;
         const currentPhase = hpRatio > 0.66 ? 1 : hpRatio > 0.33 ? 2 : 3;
@@ -275,6 +287,14 @@
 
     draw() {
       drawTopDown3D(ctx, this.x, this.y, this.r, this.c, this.type);
+      if(this.hitFlash>0) {
+        ctx.save();
+        ctx.globalAlpha=Math.min(1,this.hitFlash/0.14);
+        ctx.strokeStyle='#ffffff'; ctx.lineWidth=3;
+        ctx.shadowBlur=16; ctx.shadowColor=this.c;
+        ctx.beginPath(); ctx.arc(this.x,this.y,this.r+5,0,Math.PI*2); ctx.stroke();
+        ctx.restore();
+      }
       if (this.type === "Boss") {
         ctx.save();
         ctx.strokeStyle = this.bossPhase === 3 ? "#ff6688" : this.bossPhase === 2 ? "#ffbd66" : "#d18bff";
@@ -298,6 +318,7 @@
     }
 
     hit(dmg) {
+      this.hitFlash = 0.14;
       this.hp -= dmg;
       if (this.hp <= 0) {
         AudioSys.explosion(); run.kills++; player.totalKills++;
