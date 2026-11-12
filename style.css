@@ -633,3 +633,15 @@
     transform:translate(-50%, -19dvh) scale(.9);
   }
 }
+
+
+/* Perk rarity tiers. */
+.perk-option.rarity-common,.run-perk-card.rarity-common { border-left:3px solid #aab4c0; }
+.perk-option.rarity-rare,.run-perk-card.rarity-rare { border-left:3px solid #45a8ff; }
+.perk-option.rarity-epic,.run-perk-card.rarity-epic { border-left:3px solid #b56cff; }
+.perk-option.rarity-legendary,.run-perk-card.rarity-legendary { border-left:3px solid #ffbd45; box-shadow:0 0 16px rgba(255,189,69,.12); }
+.perk-rarity-label { display:inline-block; width:max-content; margin:2px 0 4px; font-size:8px !important; font-weight:900; letter-spacing:1.2px; }
+.rarity-common .perk-rarity-label { color:#b9c3cf !important; }
+.rarity-rare .perk-rarity-label { color:#55b4ff !important; }
+.rarity-epic .perk-rarity-label { color:#c28aff !important; }
+.rarity-legendary .perk-rarity-label { color:#ffca69 !important; }
