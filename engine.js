@@ -259,7 +259,7 @@
       const effect=perk.id==='overload'
         ? '+'+getPerkValue('overload')+'% DAMAGE · +'+Object.entries(stacks||{}).reduce((sum,[rarity,count])=>sum+(perk.speedValues[rarity]||0)*count,0)+'% FIRE RATE'
         : '+'+getPerkValue(perk.id)+perk.unit;
-      return '<div class="run-perk-card"><span class="run-perk-icon">' + perk.icon + '</span><div class="run-perk-info"><strong>' + perk.name + '</strong><small class="perk-rarity-label">' + rarityLines + '</small><small>' + effect + '</small><small class="perk-stack-progress">STACKS ' + total + ' / ' + perk.maxStacks + '</small></div><span class="run-perk-count">×' + total + '</span></div>';
+      return '<div class="run-perk-card"><span class="run-perk-icon">' + perk.icon + '</span><div class="run-perk-info"><strong>' + perk.name + '</strong>' + rarityLines + '<small>' + effect + '</small><small class="perk-stack-progress">STACKS ' + total + ' / ' + perk.maxStacks + '</small></div><span class="run-perk-count">×' + total + '</span></div>';
     }).join('');
   }
 
