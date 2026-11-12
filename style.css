@@ -645,3 +645,9 @@
 .rarity-rare .perk-rarity-label { color:#55b4ff !important; }
 .rarity-epic .perk-rarity-label { color:#c28aff !important; }
 .rarity-legendary .perk-rarity-label { color:#ffca69 !important; }
+
+/* Colour each owned rarity independently when a perk has mixed tiers. */
+.perk-rarity-label.rarity-common { color:#b9c3cf !important; }
+.perk-rarity-label.rarity-rare { color:#55b4ff !important; }
+.perk-rarity-label.rarity-epic { color:#c28aff !important; }
+.perk-rarity-label.rarity-legendary { color:#ffca69 !important; }
