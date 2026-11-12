@@ -115,7 +115,8 @@
 
     if (tower) {
       const perkDamage = 1 + (getPerkValue('power') + getPerkValue('overload')) / 100;
-      const overloadSpeed = Object.entries(run.perks?.overload || {}).reduce((sum,[rarity,count])=>sum+(perkDefs.find(p=>p.id==='overload').speedValues[rarity]||0)*count,0);\n      const perkFireRate = 1 + (getPerkValue('rapid') + overloadSpeed) / 100;
+      const overloadSpeed = Object.entries(run.perks?.overload || {}).reduce((sum,[rarity,count])=>sum+(perkDefs.find(p=>p.id==='overload').speedValues[rarity]||0)*count,0);
+      const perkFireRate = 1 + (getPerkValue('rapid') + overloadSpeed) / 100;
       const perkRange = 1 + getPerkValue('radar') / 100;
       const totalRegen = parseFloat(getVal('regen')) + parseFloat(getVal('nanoMatrix')) + getPerkValue('repair');
       const cashBonus = (parseFloat(getVal('cashBonus')) + getPerkValue('fortune'));
