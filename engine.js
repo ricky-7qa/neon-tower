@@ -249,7 +249,7 @@
     gameDurationTracked = false;
     gameSessionSource = 'site';
     document.getElementById('menu').classList.remove('active-layer'); document.getElementById('hud').classList.add('active-hud');
-    run = { stats: {}, cash: 0, coins: 0, wave: 1, kills: 0, perks: {} };
+    run = { stats: {}, cash: 0, coins: 0, wave: 1, kills: 0, bossKills: 0, elapsed: 0, perks: {} };
     Object.keys(statDefs).forEach(k => run.stats[k]=0);
     
     game = { running: true, paused:false, dt: 0, last: performance.now(), shake: 0, playSaveT: 0, achievementCheckT: 0, spawnT: 0.25, toSpawn: 10, ents: { e:[], p:[], b:[], part:[], txt:[] }, cx: canvas.width/2, cy: canvas.height/2 };
@@ -274,8 +274,20 @@
     } else if (window.goatcounter && typeof window.goatcounter.count === 'function') {
       window.goatcounter.count({ path: 'game-end', title: 'Game ended normally', event: true, no_session: true });
     } document.getElementById('hud').classList.remove('active-hud'); document.getElementById('gameover').classList.add('active-layer');
-    document.getElementById('go-wave').innerText = run.wave; document.getElementById('go-kills').innerText = run.kills; document.getElementById('go-coins').innerText = "+"+run.coins+" COINS";
-    player.coins += run.coins; if(run.wave > player.highestWave) player.highestWave = run.wave; checkAchievements(); saveGame();
+    document.getElementById('go-wave').innerText = run.wave;
+    document.getElementById('go-kills').innerText = run.kills;
+    document.getElementById('go-bosses').innerText = run.bossKills || 0;
+    document.getElementById('go-time').innerText = formatRunTime(run.elapsed || 0);
+    player.coins += run.coins;
+    if(run.wave > player.highestWave) player.highestWave = run.wave;
+    document.getElementById('go-best').innerText = player.highestWave;
+    document.getElementById('go-coins').innerText = "+"+run.coins+" COINS";
+    checkAchievements(); saveGame();
+  }
+  function formatRunTime(seconds) {
+    const total = Math.max(0, Math.floor(seconds));
+    const minutes = Math.floor(total / 60);
+    return minutes + ':' + String(total % 60).padStart(2, '0');
   }
   function returnToMenu() { document.getElementById('gameover').classList.remove('active-layer'); document.getElementById('menu').classList.add('active-layer'); updateMenuUI(); }
 
@@ -301,6 +313,7 @@
     game.dt = (ts - game.last)/1000; if(game.dt > 0.1) game.dt = 0.1; game.last = ts;
     player.playTime = (player.playTime || 0) + game.dt;
     game.achievementCheckT += game.dt; game.playSaveT += game.dt;
+    run.elapsed = (run.elapsed || 0) + game.dt;
     if(game.achievementCheckT >= 1) { game.achievementCheckT = 0; checkAchievements(); }
     if(game.playSaveT >= 15) { game.playSaveT = 0; saveGame(); }
 
@@ -325,13 +338,13 @@
     if(game.toSpawn <= 0 && game.ents.e.length === 0) {
       run.wave++;
       if(tower) { const repairPct=parseFloat(getVal('waveRepair'))+parseFloat(getVal('repairBurst')); if(repairPct>0) tower.hp=Math.min(tower.maxHp,tower.hp+tower.maxHp*repairPct/100); }
-      game.toSpawn = 10 + Math.floor(run.wave * 1.5);
+      game.toSpawn = 9 + Math.floor(run.wave * 1.25);
       run.coins += Math.floor(run.wave/2) + 2 + Math.floor(parseFloat(getVal('coinCache'))); run.cash += Math.floor(parseFloat(getVal('waveBonus')) + Math.floor(run.wave*parseFloat(getVal('waveDividend'))/100));
       updateHUD(); AudioSys.coin(); checkAchievements();
       if((run.wave-1)%5===0) showPerkChoice(); 
     }
     game.spawnT -= game.dt;
-    if(game.spawnT <= 0 && game.toSpawn > 0) { game.ents.e.push(new Enemy(run.wave)); game.toSpawn--; game.spawnT = Math.max(0.42, 0.78 - (run.wave*0.008)); updateHUD(); }
+    if(game.spawnT <= 0 && game.toSpawn > 0) { game.ents.e.push(new Enemy(run.wave)); game.toSpawn--; game.spawnT = Math.max(0.48, 0.82 - (run.wave*0.006)); updateHUD(); }
 
     tower.update(game.dt); tower.draw();run.comboTimer=Math.max(0,run.comboTimer-game.dt);if(!run.comboTimer)run.combo=0;
 
