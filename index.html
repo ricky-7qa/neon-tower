@@ -25,6 +25,7 @@
       });
     };
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0/dist/umd/supabase.js"></script>
   <script data-goatcounter="https://ricky7.goatcounter.com/count" async src="//gc.zgo.at/count.js" onload="window.neonFlushAnalytics()"></script>
 </head>
 <body>
@@ -122,6 +123,7 @@
       <button class="btn btn-gold" onclick="switchTab('workshop')">WORKSHOP</button>
       <button class="btn btn-gold" onclick="switchTab('skills')">SKILL TREE</button>
       <button class="btn btn-gold" onclick="switchTab('achievements')">ACHIEVEMENTS</button>
+      <button class="btn btn-gold" onclick="switchTab('leaderboard')">LEADERBOARD</button>
       <button class="btn" style="border-color:#ff3366; color:#ff3366;" onclick="resetSave()">WIPE SAVE</button>
     </div>
     <div class="top-bar" style="justify-content: center; gap: 50px; background: transparent; border: none; margin-bottom: 20px;">
@@ -132,6 +134,14 @@
     <div id="tab-workshop" class="scroll-area"><div class="grid" id="ws-grid"></div></div>
     <div id="tab-skills" class="scroll-area" style="display:none;"><div class="skill-tree" id="skill-tree-container"></div></div>
     <div id="tab-achievements" class="scroll-area" style="display:none;"><div class="grid" id="achv-grid"></div></div>
+    <div id="tab-leaderboard" class="scroll-area leaderboard-area" style="display:none;">
+      <section class="leaderboard-panel">
+        <div class="leaderboard-heading"><span class="eyebrow">NEON TOWER // GLOBAL</span><h2>WORLD LEADERBOARD</h2><p>Compete with players around the world.</p></div>
+        <div class="leaderboard-profile"><label for="leaderboard-name">PLAYER NAME</label><div class="leaderboard-name-row"><input id="leaderboard-name" maxlength="16" minlength="3" placeholder="Enter a player name" autocomplete="nickname"><button class="btn btn-gold" onclick="saveLeaderboardName()">SAVE</button></div><small>3–16 characters. Do not use your real name or personal information.</small></div>
+        <div class="leaderboard-toolbar"><span id="leaderboard-status" role="status">CONNECTING...</span><button class="btn" onclick="loadLeaderboard()">REFRESH</button></div>
+        <div id="leaderboard-list" class="leaderboard-list"><div class="leaderboard-empty">LOADING GLOBAL RANKINGS...</div></div>
+      </section>
+    </div>
     
     <div style="padding: 20px; text-align: center; background: #000; border-top: 1px solid #333; z-index: 10;">
       <button class="btn" style="font-size: 24px; padding: 15px 60px;" onclick="startGame()" data-goatcounter-click="deploy-click" data-goatcounter-title="Start Game button clicked">START GAME</button>
