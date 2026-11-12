@@ -1336,9 +1336,11 @@
 /* Center the actual empty-state block in the mobile perks tab. */
 @media (orientation:portrait) and (pointer:coarse) {
   #app.device-mobile #perks-view #run-perks-content .perks-empty {
+    grid-column:1 / -1;
     width:100%;
     box-sizing:border-box;
     align-items:center;
+    justify-content:center;
     text-align:center;
   }
   #app.device-mobile #perks-view #run-perks-content .perks-empty strong,
