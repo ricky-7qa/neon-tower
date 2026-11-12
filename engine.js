@@ -239,7 +239,7 @@
     panel.innerHTML = '<div class="perk-dialog"><span class="perk-eyebrow">MILESTONE REACHED</span><h2>CHOOSE A PERK</h2><p>Each perk can appear in four rarities. Higher rarities have stronger effects.</p><div class="perk-options">'+picks.map(p=>{
       const amount=p.values[p.rarity], speed=p.speedValues?.[p.rarity];
       const effect=p.id==='overload' ? '+'+amount+'% DAMAGE · +'+speed+'% FIRE RATE' : '+'+amount+(Number.isInteger(amount)?'': '')+p.unit;
-      return '<button class="perk-option rarity-'+p.rarity+'" onclick="choosePerk(\''+p.id+'\',\''+p.rarity+'\')"><span>'+p.icon+'</span><strong>'+p.name+'</strong><small class="perk-rarity-label">'+perkRarities[p.rarity].label+'</small><small>'+p.desc+'</small><small class="perk-stack-limit">'+effect+'</small><span class="perk-stars" aria-label="'+getPerkStacks(p.id)+' of '+p.maxStacks+' perk stars">'+'★'.repeat(getPerkStacks(p.id))+'<span class="perk-star-empty">'+'☆'.repeat(p.maxStacks-getPerkStacks(p.id))+'</span></span></button>';
+      return '<button class="perk-option rarity-'+p.rarity+'" onclick="choosePerk(\\''+p.id+'\\',\\''+p.rarity+'\\')"><span class="perk-option-icon">'+p.icon+'</span><span class="perk-option-copy"><strong>'+p.name+'</strong><small class="perk-rarity-label">'+perkRarities[p.rarity].label+'</small><small class="perk-option-description">'+p.desc+'</small><small class="perk-stack-limit">'+effect+'</small></span><span class="perk-stars" aria-label="'+getPerkStacks(p.id)+' of '+p.maxStacks+' perk stars">'+'★'.repeat(getPerkStacks(p.id))+'<span class="perk-star-empty">'+'☆'.repeat(p.maxStacks-getPerkStacks(p.id))+'</span></span></button>';
     }).join('')+'</div></div>';
     panel.classList.add('visible');
   }
