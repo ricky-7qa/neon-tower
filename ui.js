@@ -1,4 +1,37 @@
   /** MENUS & HUD **/
+  const DEVICE_MODE_KEY = 'neonTowerDeviceMode';
+
+  function applyDeviceMode(mode) {
+    const app = document.getElementById('app');
+    app.classList.remove('device-desktop', 'device-mobile');
+    app.classList.add(mode === 'mobile' ? 'device-mobile' : 'device-desktop');
+    const label = document.getElementById('menu-device-label');
+    if (label) label.textContent = mode === 'mobile' ? 'MOBILE MODE' : 'DESKTOP MODE';
+  }
+
+  function selectDeviceMode(mode) {
+    if (mode !== 'desktop' && mode !== 'mobile') return;
+    localStorage.setItem(DEVICE_MODE_KEY, mode);
+    applyDeviceMode(mode);
+    document.getElementById('device-select').classList.remove('active-layer');
+    document.getElementById('menu').classList.add('active-layer');
+    switchTab('workshop');
+  }
+
+  function changeDeviceMode() {
+    document.getElementById('menu').classList.remove('active-layer');
+    document.getElementById('device-select').classList.add('active-layer');
+  }
+
+  function initializeDeviceMode() {
+    const savedMode = localStorage.getItem(DEVICE_MODE_KEY);
+    if (savedMode === 'desktop' || savedMode === 'mobile') {
+      applyDeviceMode(savedMode);
+      document.getElementById('device-select').classList.remove('active-layer');
+      document.getElementById('menu').classList.add('active-layer');
+    }
+  }
+
   function switchTab(t) { ['workshop', 'skills', 'achievements'].forEach(x => { const tab = document.getElementById('tab-'+x); tab.style.display = (x===t?'flex':'none'); if (x===t) tab.scrollTop = 0; }); if (t==='skills') buildSkillTree(); }
   
   function updateMenuUI() {
@@ -171,4 +204,4 @@
   }
 
 
-  loadGame();
+  loadGame();\n  initializeDeviceMode();
