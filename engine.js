@@ -137,7 +137,7 @@
   ];
 
   /** SAVE SYSTEM **/
-  let player = { coins: 0, highestWave: 1, totalKills: 0, bossKills: 0, playTime: 0, ws: {}, skills: ['start'], achievements: [] };
+  let player = { coins: 0, highestWave: 1, totalKills: 0, bossKills: 0, playTime: 0, runsPlayed: 0, bestKills: 0, bestBosses: 0, bestDuration: 0, ws: {}, skills: ['start'], achievements: [], tutorialSeen: false };
   let run = {stats:{},cash:0,coins:0,wave:1,kills:0,combo:0,comboTimer:0,graze:0};
   let targetEnemy = null;
   let gameSessionStartedAt = 0;
@@ -199,10 +199,12 @@
 
   function showPerkChoice() {
     if(!game || !game.running) return;
+    const available = perkDefs.filter(p => (run.perks?.[p.id] || 0) < p.maxStacks);
+    if (!available.length) { notify('PERKS MAXED', 'All run perks have reached their limit.'); return; }
     game.paused = true;
     const panel = document.getElementById('perk-choice');
-    const picks = [...perkDefs].sort(()=>Math.random()-.5).slice(0,3);
-    panel.innerHTML = '<div class="perk-dialog"><span class="perk-eyebrow">MILESTONE REACHED</span><h2>CHOOSE A PERK</h2><p>Select one permanent bonus for this run.</p><div class="perk-options">'+picks.map(p=>'<button class="perk-option" onclick="choosePerk(\''+p.id+'\')"><span>'+p.icon+'</span><strong>'+p.name+'</strong><small>'+p.desc+'</small></button>').join('')+'</div></div>';
+    const picks = [...available].sort(()=>Math.random()-.5).slice(0,3);
+    panel.innerHTML = '<div class="perk-dialog"><span class="perk-eyebrow">MILESTONE REACHED</span><h2>CHOOSE A PERK</h2><p>Choose carefully. Each perk has a maximum of '+perkDefs[0].maxStacks+' stacks.</p><div class="perk-options">'+picks.map(p=>'<button class="perk-option" onclick="choosePerk(\''+p.id+'\')"><span>'+p.icon+'</span><strong>'+p.name+'</strong><small>'+p.desc+'</small><small class="perk-stack-limit">MAX '+p.maxStacks+' STACKS</small></button>').join('')+'</div></div>';
     panel.classList.add('visible');
   }
 
@@ -216,13 +218,15 @@
     }
     container.innerHTML = owned.map(perk => {
       const count = run.perks[perk.id];
-      return '<div class="run-perk-card"><span class="run-perk-icon">' + perk.icon + '</span><div class="run-perk-info"><strong>' + perk.name + '</strong><small>' + perk.desc + '</small></div><span class="run-perk-count">×' + count + '</span></div>';
+      return '<div class="run-perk-card"><span class="run-perk-icon">' + perk.icon + '</span><div class="run-perk-info"><strong>' + perk.name + '</strong><small>' + perk.desc + '</small><small class="perk-stack-progress">STACKS ' + count + ' / ' + perk.maxStacks + '</small></div><span class="run-perk-count">×' + count + '</span></div>';
     }).join('');
   }
 
   function choosePerk(id) {
-    if(!perkDefs.some(p=>p.id===id)) return;
+    const selectedPerk = perkDefs.find(p=>p.id===id);
+    if(!selectedPerk) return;
     run.perks=run.perks||{};
+    if((run.perks[id]||0) >= selectedPerk.maxStacks) return;
     run.perks[id]=(run.perks[id]||0)+1;
     renderRunPerks();
     const panel=document.getElementById('perk-choice');
@@ -244,12 +248,22 @@
 
   /** MAIN LOOP & RENDERING **/
   function startGame() {
+    if (!player.tutorialSeen) {
+      document.getElementById('tutorial').classList.add('visible');
+      return;
+    }
     AudioSys.init();
     gameSessionStartedAt = Date.now();
     gameDurationTracked = false;
     gameSessionSource = 'site';
     document.getElementById('menu').classList.remove('active-layer'); document.getElementById('hud').classList.add('active-hud');
     run = { stats: {}, cash: 0, coins: 0, wave: 1, kills: 0, bossKills: 0, elapsed: 0, perks: {} };
+    const missionOptions = [
+      {id:'waves', title:'REACH WAVE 5', description:'Clear waves until you reach wave 5.', target:5, reward:25},
+      {id:'kills', title:'ELIMINATE 30 ENEMIES', description:'Defeat 30 enemies during this run.', target:30, reward:25},
+      {id:'survive', title:'SURVIVE 2 MINUTES', description:'Stay alive for 120 seconds.', target:120, reward:25}
+    ];
+    run.mission = {...missionOptions[Math.floor(Math.random()*missionOptions.length)], progress:0, complete:false};
     Object.keys(statDefs).forEach(k => run.stats[k]=0);
     
     game = { running: true, paused:false, dt: 0, last: performance.now(), shake: 0, playSaveT: 0, achievementCheckT: 0, spawnT: 0.25, toSpawn: 10, ents: { e:[], p:[], b:[], part:[], txt:[] }, cx: canvas.width/2, cy: canvas.height/2 };
@@ -280,10 +294,46 @@
     document.getElementById('go-time').innerText = formatRunTime(run.elapsed || 0);
     player.coins += run.coins;
     if(run.wave > player.highestWave) player.highestWave = run.wave;
+    player.runsPlayed = (player.runsPlayed || 0) + 1;
+    player.bestKills = Math.max(player.bestKills || 0, run.kills);
+    player.bestBosses = Math.max(player.bestBosses || 0, run.bossKills || 0);
+    player.bestDuration = Math.max(player.bestDuration || 0, run.elapsed || 0);
     document.getElementById('go-best').innerText = player.highestWave;
+    document.getElementById('go-record-kills').innerText = player.bestKills;
+    document.getElementById('go-record-time').innerText = formatRunTime(player.bestDuration);
+    document.getElementById('go-runs').innerText = player.runsPlayed;
     document.getElementById('go-coins').innerText = "+"+run.coins+" COINS";
     checkAchievements(); saveGame();
   }
+  function updateMissionProgress() {
+    if (!run.mission || run.mission.complete) return;
+    const mission = run.mission;
+    mission.progress = mission.id === 'waves' ? run.wave : mission.id === 'kills' ? run.kills : Math.floor(run.elapsed);
+    const current = Math.min(mission.target, mission.progress);
+    const value = mission.id === 'survive' ? current + ' / ' + mission.target + 's' : current + ' / ' + mission.target;
+    const label = document.getElementById('mission-progress');
+    if (label) label.textContent = value;
+    const fill = document.getElementById('mission-fill');
+    if (fill) fill.style.width = (current / mission.target * 100) + '%';
+    if (mission.progress >= mission.target) {
+      mission.complete = true;
+      run.coins += mission.reward;
+      notify('MISSION COMPLETE', '+' + mission.reward + ' COINS');
+      const title = document.getElementById('mission-title');
+      if (title) title.textContent = 'MISSION COMPLETE';
+      const reward = document.getElementById('mission-reward');
+      if (reward) reward.textContent = '+' + mission.reward + ' COINS';
+    }
+  }
+
+  function confirmTutorialStart() {
+    const tutorial = document.getElementById('tutorial');
+    tutorial.classList.remove('visible');
+    player.tutorialSeen = true;
+    saveGame();
+    startGame();
+  }
+
   function formatRunTime(seconds) {
     const total = Math.max(0, Math.floor(seconds));
     const minutes = Math.floor(total / 60);
@@ -314,6 +364,7 @@
     player.playTime = (player.playTime || 0) + game.dt;
     game.achievementCheckT += game.dt; game.playSaveT += game.dt;
     run.elapsed = (run.elapsed || 0) + game.dt;
+    updateMissionProgress();
     if(game.achievementCheckT >= 1) { game.achievementCheckT = 0; checkAchievements(); }
     if(game.playSaveT >= 15) { game.playSaveT = 0; saveGame(); }
 
