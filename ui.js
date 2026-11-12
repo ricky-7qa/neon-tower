@@ -114,11 +114,11 @@
     document.getElementById('hud-coins').innerText = '$' + run.coins.toLocaleString('en-US');
 
     if (tower) {
-      const perkDamage = 1 + (run.perks?.power || 0) * 0.2;
-      const perkFireRate = 1 + (run.perks?.rapid || 0) * 0.15;
-      const perkRange = 1 + (run.perks?.radar || 0) * 0.15;
-      const totalRegen = parseFloat(getVal('regen')) + parseFloat(getVal('nanoMatrix')) + (run.perks?.repair || 0) * 3;
-      const cashBonus = (parseFloat(getVal('cashBonus')) + (run.perks?.fortune || 0) * 25);
+      const perkDamage = 1 + (getPerkValue('power') + getPerkValue('overload')) / 100;
+      const overloadSpeed = Object.entries(run.perks?.overload || {}).reduce((sum,[rarity,count])=>sum+(perkDefs.find(p=>p.id==='overload').speedValues[rarity]||0)*count,0);\n      const perkFireRate = 1 + (getPerkValue('rapid') + overloadSpeed) / 100;
+      const perkRange = 1 + getPerkValue('radar') / 100;
+      const totalRegen = parseFloat(getVal('regen')) + parseFloat(getVal('nanoMatrix')) + getPerkValue('repair');
+      const cashBonus = (parseFloat(getVal('cashBonus')) + getPerkValue('fortune'));
       document.getElementById('st-dmg').innerText = Math.round(parseFloat(getVal('damage')) * perkDamage);
       document.getElementById('st-spd').innerText = (parseFloat(getVal('speed')) * perkFireRate).toFixed(2).replace(/\\.00$/, '').replace(/0$/, '') + '/s';
       document.getElementById('st-hp').innerText = `${Math.ceil(Math.max(0, tower.hp))} / ${getVal('hp')}`;
