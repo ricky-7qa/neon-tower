@@ -255,7 +255,7 @@
     container.innerHTML = owned.map(perk => {
       const stacks=run.perks[perk.id];
       const total=getPerkStacks(perk.id);
-      const rarityLines=typeof stacks==='number' ? 'COMMON ×'+stacks : Object.entries(stacks).filter(([,count])=>count>0).map(([rarity,count])=>perkRarities[rarity].label+' ×'+count).join(' · ');
+      const rarityLines=typeof stacks==='number' ? '<small class="perk-rarity-label rarity-common">COMMON ×'+stacks+'</small>' : Object.entries(stacks).filter(([,count])=>count>0).map(([rarity,count])=>'<small class="perk-rarity-label rarity-'+rarity+'">'+perkRarities[rarity].label+' ×'+count+'</small>').join('');
       const effect=perk.id==='overload'
         ? '+'+getPerkValue('overload')+'% DAMAGE · +'+Object.entries(stacks||{}).reduce((sum,[rarity,count])=>sum+(perk.speedValues[rarity]||0)*count,0)+'% FIRE RATE'
         : '+'+getPerkValue(perk.id)+perk.unit;
