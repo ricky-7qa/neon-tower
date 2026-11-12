@@ -526,3 +526,93 @@
   #gameover .mission-stats strong { font-size:17px; }
   #gameover .mission-profit { font-size:16px; }
 }
+
+
+/* Mission tracker: compact, persistent objective during a run. */
+#mission-ui {
+  position:absolute;
+  z-index:5;
+  top:76px;
+  left:50%;
+  transform:translateX(-50%);
+  width:min(310px,48vw);
+  padding:9px 12px 8px;
+  border:1px solid rgba(0,255,255,.22);
+  border-radius:9px;
+  background:rgba(0,10,24,.82);
+  box-shadow:0 5px 20px rgba(0,0,0,.25);
+  pointer-events:none;
+}
+.mission-topline { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.mission-topline strong { color:#0ff; font-size:9px; letter-spacing:1px; }
+.mission-topline span { color:#ffd166; font-size:9px; font-weight:900; }
+#mission-desc { margin:4px 0 6px; color:#a9bdca; font-size:9px; }
+.mission-progress-track { height:4px; overflow:hidden; border-radius:4px; background:rgba(255,255,255,.12); }
+#mission-fill { display:block; width:0; height:100%; border-radius:4px; background:linear-gradient(90deg,#00d9ff,#00ff9d); transition:width .2s ease; }
+#mission-progress { display:block; margin-top:4px; color:#dceaf2; text-align:right; font-size:8px; }
+
+/* Perk stack caps are visible both when choosing and in the run panel. */
+.perk-stack-limit,.perk-stack-progress { color:#7fefff !important; font-size:8px !important; letter-spacing:.8px; }
+
+/* First-run tutorial overlay. */
+#tutorial {
+  position:absolute;
+  z-index:100;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  background:rgba(0,3,12,.94);
+  backdrop-filter:blur(9px);
+}
+#tutorial.visible { display:flex; }
+.tutorial-card {
+  width:min(560px,100%);
+  max-height:92%;
+  overflow-y:auto;
+  padding:clamp(18px,4vw,30px);
+  border:1px solid rgba(0,255,255,.45);
+  border-radius:14px;
+  background:linear-gradient(145deg,rgba(5,19,37,.98),rgba(2,7,18,.99));
+  box-shadow:0 0 40px rgba(0,220,255,.12);
+}
+.tutorial-kicker { color:#0ff; font-size:9px; font-weight:900; letter-spacing:2px; }
+.tutorial-card h2 { margin:9px 0 7px; color:#fff; font-size:clamp(25px,5vw,36px); letter-spacing:1px; }
+.tutorial-intro { margin-bottom:18px; color:#a9bdca; font-size:13px; line-height:1.5; }
+.tutorial-steps { display:grid; gap:9px; }
+.tutorial-steps article {
+  display:grid;
+  grid-template-columns:34px 1fr;
+  gap:10px;
+  align-items:start;
+  padding:11px;
+  border:1px solid rgba(0,255,255,.13);
+  border-radius:8px;
+  background:rgba(0,15,30,.72);
+}
+.tutorial-steps article > span { color:#0ff; font-size:13px; font-weight:900; }
+.tutorial-steps strong { display:block; color:#fff; font-size:10px; letter-spacing:1px; }
+.tutorial-steps small { display:block; margin-top:4px; color:#9db1c0; font-size:10px; line-height:1.45; }
+.tutorial-start { width:100%; margin-top:17px; padding:13px; border-color:#0ff; color:#0ff; font-size:12px; font-weight:900; }
+
+/* Personal bests in the end-of-run report. */
+#gameover .mission-stats p { min-width:0; }
+#gameover .mission-stats p strong { overflow-wrap:anywhere; }
+
+@media (orientation:portrait) and (pointer:coarse) {
+  #mission-ui {
+    top:calc(66px + env(safe-area-inset-top));
+    width:min(250px,62vw);
+    padding:7px 9px;
+  }
+  .mission-topline strong,.mission-topline span { font-size:8px; }
+  #mission-desc { font-size:8px; }
+  #mission-progress { font-size:7px; }
+}
+@media (max-width:700px) {
+  #tutorial { padding:10px; }
+  .tutorial-card { max-height:94%; padding:16px; }
+  .tutorial-steps { gap:7px; }
+  .tutorial-steps article { padding:9px; }
+}
