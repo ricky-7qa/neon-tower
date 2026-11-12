@@ -224,7 +224,9 @@
       if (this.type === "Sniper") {
         // Keep Snipers comfortably inside the tower's current targeting radius.
         const towerRange = parseFloat(getVal("range")) * (1 + getPerkValue('radar') / 100);
-        const preferredDistance = Math.max(125, Math.min(245, towerRange * 0.68));
+        // On small mobile canvases, never let Snipers retreat beyond the visible play area.
+        const mobileSafeRange = Math.max(70, Math.min(canvas.width, canvas.height) * 0.38);
+        const preferredDistance = Math.max(70, Math.min(245, towerRange * 0.68, mobileSafeRange));
         if (d > preferredDistance + 12) {
           this.x += Math.cos(a) * this.spd * dt;
           this.y += Math.sin(a) * this.spd * dt;
