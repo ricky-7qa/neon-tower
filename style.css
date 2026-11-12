@@ -651,3 +651,7 @@
 .perk-rarity-label.rarity-rare { color:#55b4ff !important; }
 .perk-rarity-label.rarity-epic { color:#c28aff !important; }
 .perk-rarity-label.rarity-legendary { color:#ffca69 !important; }
+
+/* Fade the mission tracker away after its objective is completed. */
+#mission-ui { opacity:1; visibility:visible; transition:opacity .4s ease, visibility 0s linear 0s, transform .42s cubic-bezier(.2,.8,.2,1); }
+#mission-ui.mission-complete { opacity:0; visibility:hidden; transition:opacity .4s ease, visibility 0s linear .4s, transform .42s cubic-bezier(.2,.8,.2,1); }
