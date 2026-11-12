@@ -1334,6 +1334,20 @@
 
 
 /* Center the actual empty-state block in the mobile perks tab. */
+/* When the perks list is empty, disable its two-column grid so the empty state centers across the full panel. */
+@media (orientation:portrait) and (pointer:coarse) {
+  #app.device-mobile #perks-view #run-perks-content:has(> .perks-empty) {
+    display:flex !important;
+    flex-direction:column;
+    align-items:stretch;
+  }
+  #app.device-mobile #perks-view #run-perks-content:has(> .perks-empty) > .perks-empty {
+    width:100%;
+    align-self:stretch;
+    text-align:center;
+  }
+}
+
 @media (orientation:portrait) and (pointer:coarse) {
   #app.device-mobile #perks-view #run-perks-content .perks-empty {
     grid-column:1 / -1;
