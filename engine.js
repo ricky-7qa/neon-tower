@@ -128,20 +128,35 @@
     legendary: {label:'LEGENDARY', weight:3}
   };
   const perkDefs = [
-    {id:'power',name:'Overcharged Core',desc:'+6% tower damage per stack.',icon:'✦',rarity:'common',effect:'+6% DAMAGE',maxStacks:3},
-    {id:'rapid',name:'Rapid Calibration',desc:'+5% attack speed per stack.',icon:'⚡',rarity:'common',effect:'+5% FIRE RATE',maxStacks:3},
-    {id:'fortune',name:'Golden Core',desc:'+10% cash from enemy kills per stack.',icon:'◈',rarity:'rare',effect:'+10% CASH',maxStacks:2},
-    {id:'radar',name:'Extended Radar',desc:'+8% targeting range per stack.',icon:'◎',rarity:'rare',effect:'+8% RANGE',maxStacks:2},
-    {id:'repair',name:'Nanite Repair',desc:'+1.5 health regenerated per second per stack.',icon:'✚',rarity:'epic',effect:'+1.5 HP / SEC',maxStacks:2},
-    {id:'overload',name:'Overload Protocol',desc:'+10% damage and +8% attack speed.',icon:'✧',rarity:'legendary',effect:'+10% DAMAGE · +8% FIRE RATE',maxStacks:1}
+    {id:'power',name:'Overcharged Core',icon:'✦',desc:'Increases tower damage.',values:{common:3,rare:5,epic:7,legendary:10},unit:'% DAMAGE',maxStacks:3},
+    {id:'rapid',name:'Rapid Calibration',icon:'⚡',desc:'Increases attack speed.',values:{common:2,rare:4,epic:6,legendary:9},unit:'% FIRE RATE',maxStacks:3},
+    {id:'fortune',name:'Golden Core',icon:'◈',desc:'Increases cash earned from enemy kills.',values:{common:5,rare:8,epic:12,legendary:18},unit:'% CASH',maxStacks:3},
+    {id:'radar',name:'Extended Radar',icon:'◎',desc:'Increases tower targeting range.',values:{common:4,rare:7,epic:10,legendary:15},unit:'% RANGE',maxStacks:3},
+    {id:'repair',name:'Nanite Repair',icon:'✚',desc:'Regenerates tower health every second.',values:{common:0.5,rare:1,epic:1.5,legendary:2.5},unit:'HP / SEC',maxStacks:3},
+    {id:'overload',name:'Overload Protocol',icon:'✧',desc:'Boosts both damage and attack speed.',values:{common:3,rare:5,epic:7,legendary:10},speedValues:{common:2,rare:4,epic:6,legendary:8},unit:'% DAMAGE · FIRE RATE',maxStacks:3}
   ];
+  function getPerkValue(id) {
+    const owned=run.perks?.[id];
+    if (typeof owned === 'number') return owned * (perkDefs.find(p=>p.id===id)?.values?.common || 0);
+    if (!owned || typeof owned !== 'object') return 0;
+    const perk=perkDefs.find(p=>p.id===id);
+    return perk ? Object.entries(owned).reduce((sum,[rarity,count])=>sum+(perk.values[rarity]||0)*count,0) : 0;
+  }
+  function getPerkStacks(id) {
+    const owned=run.perks?.[id];
+    if (typeof owned === 'number') return owned;
+    return owned && typeof owned === 'object' ? Object.values(owned).reduce((sum,count)=>sum+count,0) : 0;
+  }
   function rollPerkOptions(available, count=3) {
     const pool=[...available], picks=[];
+    const rarityKeys=Object.keys(perkRarities);
     while(pool.length && picks.length<count) {
-      const total=pool.reduce((sum,p)=>sum+perkRarities[p.rarity].weight,0);
-      let roll=Math.random()*total, index=0;
-      for(;index<pool.length-1;index++){roll-=perkRarities[pool[index].rarity].weight;if(roll<0)break;}
-      picks.push(pool.splice(index,1)[0]);
+      const total=rarityKeys.reduce((sum,key)=>sum+perkRarities[key].weight,0);
+      let roll=Math.random()*total, rarity=rarityKeys[0];
+      for(const key of rarityKeys){roll-=perkRarities[key].weight;if(roll<0){rarity=key;break;}}
+      const index=Math.floor(Math.random()*pool.length);
+      const perk=pool.splice(index,1)[0];
+      picks.push({...perk,rarity});
     }
     return picks;
   }
@@ -216,41 +231,51 @@
 
   function showPerkChoice() {
     if(!game || !game.running) return;
-    const available = perkDefs.filter(p => (run.perks?.[p.id] || 0) < p.maxStacks);
+    const available = perkDefs.filter(p => getPerkStacks(p.id) < p.maxStacks);
     if (!available.length) { notify('PERKS MAXED', 'All run perks have reached their limits.'); return; }
     game.paused = true;
     const panel = document.getElementById('perk-choice');
     const picks = rollPerkOptions(available,3);
-    panel.innerHTML = '<div class="perk-dialog"><span class="perk-eyebrow">MILESTONE REACHED</span><h2>CHOOSE A PERK</h2><p>Rarer perks are stronger, but appear less often.</p><div class="perk-options">'+picks.map(p=>'<button class="perk-option rarity-'+p.rarity+'" onclick="choosePerk(\''+p.id+'\')"><span>'+p.icon+'</span><strong>'+p.name+'</strong><small class="perk-rarity-label">'+perkRarities[p.rarity].label+'</small><small>'+p.desc+'</small><small class="perk-stack-limit">'+p.effect+' · MAX '+p.maxStacks+'</small></button>').join('')+'</div></div>';
+    panel.innerHTML = '<div class="perk-dialog"><span class="perk-eyebrow">MILESTONE REACHED</span><h2>CHOOSE A PERK</h2><p>Each perk can appear in four rarities. Higher rarities have stronger effects.</p><div class="perk-options">'+picks.map(p=>{
+      const amount=p.values[p.rarity], speed=p.speedValues?.[p.rarity];
+      const effect=p.id==='overload' ? '+'+amount+'% DAMAGE · +'+speed+'% FIRE RATE' : '+'+amount+(Number.isInteger(amount)?'': '')+p.unit;
+      return '<button class="perk-option rarity-'+p.rarity+'" onclick="choosePerk(\''+p.id+'\',\''+p.rarity+'\')"><span>'+p.icon+'</span><strong>'+p.name+'</strong><small class="perk-rarity-label">'+perkRarities[p.rarity].label+'</small><small>'+p.desc+'</small><small class="perk-stack-limit">'+effect+' · '+getPerkStacks(p.id)+'/'+p.maxStacks+' STACKS</small></button>';
+    }).join('')+'</div></div>';
     panel.classList.add('visible');
   }
 
   function renderRunPerks() {
     const container = document.getElementById('run-perks-content');
     if (!container) return;
-    const owned = perkDefs.filter(perk => (run.perks && run.perks[perk.id]) > 0);
+    const owned = perkDefs.filter(perk => getPerkStacks(perk.id) > 0);
     if (!owned.length) {
       container.innerHTML = '<div class="perks-empty"><span>◇</span><strong>NO PERKS YET</strong><small>Reach milestone waves and choose perks to build your run.</small></div>';
       return;
     }
     container.innerHTML = owned.map(perk => {
-      const count = run.perks[perk.id];
-      return '<div class="run-perk-card rarity-'+perk.rarity+'"><span class="run-perk-icon">' + perk.icon + '</span><div class="run-perk-info"><strong>' + perk.name + '</strong><small class="perk-rarity-label">' + perkRarities[perk.rarity].label + '</small><small>' + perk.desc + '</small><small class="perk-stack-progress">STACKS ' + count + ' / ' + perk.maxStacks + '</small></div><span class="run-perk-count">×' + count + '</span></div>';
+      const stacks=run.perks[perk.id];
+      const total=getPerkStacks(perk.id);
+      const rarityLines=typeof stacks==='number' ? 'COMMON ×'+stacks : Object.entries(stacks).filter(([,count])=>count>0).map(([rarity,count])=>perkRarities[rarity].label+' ×'+count).join(' · ');
+      const effect=perk.id==='overload'
+        ? '+'+getPerkValue('overload')+'% DAMAGE · +'+Object.entries(stacks||{}).reduce((sum,[rarity,count])=>sum+(perk.speedValues[rarity]||0)*count,0)+'% FIRE RATE'
+        : '+'+getPerkValue(perk.id)+perk.unit;
+      return '<div class="run-perk-card"><span class="run-perk-icon">' + perk.icon + '</span><div class="run-perk-info"><strong>' + perk.name + '</strong><small class="perk-rarity-label">' + rarityLines + '</small><small>' + effect + '</small><small class="perk-stack-progress">STACKS ' + total + ' / ' + perk.maxStacks + '</small></div><span class="run-perk-count">×' + total + '</span></div>';
     }).join('');
   }
 
-  function choosePerk(id) {
+  function choosePerk(id, rarity='common') {
     const selectedPerk = perkDefs.find(p=>p.id===id);
-    if(!selectedPerk) return;
+    if(!selectedPerk || !perkRarities[rarity]) return;
     run.perks=run.perks||{};
-    if((run.perks[id]||0) >= selectedPerk.maxStacks) return;
-    run.perks[id]=(run.perks[id]||0)+1;
+    if(getPerkStacks(id) >= selectedPerk.maxStacks) return;
+    if(typeof run.perks[id] !== 'object') run.perks[id] = {};
+    run.perks[id][rarity]=(run.perks[id][rarity]||0)+1;
     renderRunPerks();
     const panel=document.getElementById('perk-choice');
     panel.classList.remove('visible'); panel.innerHTML='';
-    if(id==='repair' && tower) tower.hp=Math.min(tower.maxHp,tower.hp+10);
+    if(id==='repair' && tower) tower.hp=Math.min(tower.maxHp,tower.hp+selectedPerk.values[rarity]*4);
     game.paused=false; game.last=performance.now(); updateHUD();
-    const perk=perkDefs.find(p=>p.id===id); notify('PERK UNLOCKED',perk.name);
+    notify('PERK UNLOCKED',selectedPerk.name+' · '+perkRarities[rarity].label);
   }
 
   function notify(title, msg) {
