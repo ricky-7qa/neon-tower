@@ -171,11 +171,11 @@
       }
 
       // Gentle, predictable scaling: later waves get tougher without becoming exponential walls.
-      const waveScale = Math.pow(1.105, Math.max(0, w - 1));
+      const waveScale = Math.pow(1.075, Math.max(0, w - 1));
       this.maxHp = 24 * waveScale * hpM; this.hp = this.maxHp;
-      this.dmg = (3.2 * Math.pow(1.065, Math.max(0, w - 1))) * damageM;
-      this.spd = (68 + w * 1.25) * speedM;
-      this.val = Math.floor((5 * Math.pow(1.075, Math.max(0, w - 1))) * rewardM);
+      this.dmg = (3.2 * Math.pow(1.045, Math.max(0, w - 1))) * damageM;
+      this.spd = (68 + Math.min(30, w * 1.1)) * speedM;
+      this.val = Math.floor((5 * Math.pow(1.055, Math.max(0, w - 1))) * rewardM);
       this.fireCd = this.type === "Boss" ? 1.25 : 0.9;
       this.phase = Math.random() * Math.PI * 2;
       this.age = 0;
@@ -202,9 +202,24 @@
         const orbit = Math.sin(this.age * 1.4) * 0.45;
         this.x += Math.cos(a + orbit) * this.spd * dt;
         this.y += Math.sin(a + orbit) * this.spd * dt;
+      } else if (this.type === "Scout") {
+        // Scouts weave while closing in, making their movement less predictable.
+        const weave = Math.sin(this.age * 3.2 + this.phase) * 0.72;
+        this.x += Math.cos(a + weave) * this.spd * dt;
+        this.y += Math.sin(a + weave) * this.spd * dt;
+      } else if (this.type === "Kamikaze") {
+        // Kamikazes accelerate as they get close, clearly signalling their threat.
+        const urgency = 1.05 + Math.max(0, 1 - d / 520) * 0.48;
+        this.x += Math.cos(a) * this.spd * urgency * dt;
+        this.y += Math.sin(a) * this.spd * urgency * dt;
+      } else if (this.type === "Tank") {
+        // Tanks keep a steady, heavy advance rather than moving like basic minions.
+        this.x += Math.cos(a) * this.spd * 0.88 * dt;
+        this.y += Math.sin(a) * this.spd * 0.88 * dt;
       } else {
-        const v = this.type === "Kamikaze" ? this.spd * 1.12 : this.spd;
-        this.x += Math.cos(a) * v * dt; this.y += Math.sin(a) * v * dt;
+        const weave = Math.sin(this.age * 1.8 + this.phase) * 0.12;
+        this.x += Math.cos(a + weave) * this.spd * dt;
+        this.y += Math.sin(a + weave) * this.spd * dt;
       }
 
       this.fireCd -= dt; this.phase += dt;
@@ -276,7 +291,7 @@
         if (hasSkill("vampire") && tower) tower.hp = Math.min(tower.maxHp, tower.hp + tower.maxHp * 0.02);
         run.cash += Math.floor(this.val * parseFloat(getVal("salvage"))/100);
         if (this.type === "Boss") {
-          player.bossKills++; run.coins += 15;
+          player.bossKills++; run.bossKills = (run.bossKills || 0) + 1; run.coins += 15;
           run.cash += Math.floor(this.val * (parseFloat(getVal("bossBounty")) + parseFloat(getVal("bossContract")))/100);
           game.shake = 0.35; createParts(this.x, this.y, this.c, 45, 7, 1.2);
           notify("BOSS DEFEATED", "BONUS REWARDS");
