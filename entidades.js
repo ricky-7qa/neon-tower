@@ -29,10 +29,10 @@
       this.shield = hasSkill('shield'); this.shieldCd = 0;
     }
     update(dt) {
-      let reg = parseFloat(getVal('regen')) + parseFloat(getVal('nanoMatrix')) + (run.perks?.repair||0)*3; if(reg>0 && this.hp<this.maxHp) this.hp = Math.min(this.maxHp, this.hp + reg*dt);
+      let reg = parseFloat(getVal('regen')) + parseFloat(getVal('nanoMatrix')) + (run.perks?.repair||0)*1.5; if(reg>0 && this.hp<this.maxHp) this.hp = Math.min(this.maxHp, this.hp + reg*dt);
       if(this.shieldCd > 0) this.shieldCd -= dt; else if(hasSkill('shield')) this.shield = true;
       
-      let range = parseFloat(getVal('range')) * (1+(run.perks?.radar||0)*.15);
+      let range = parseFloat(getVal('range')) * (1+(run.perks?.radar||0)*.08);
       let targets = game.ents.e.filter(e => MathUtils.dist(this.x, this.y, e.x, e.y) < range);
       
       if(targets.length > 0) {
@@ -62,7 +62,7 @@
       if(this.cdBase<=0&&targetEnemy){
         AudioSys.shoot();
         this.muzzleFlash=0.09;
-        let dmg=parseFloat(getVal('damage'))*(1+(run.perks?.power||0)*.2)*(1+parseFloat(getVal('plasmaCore'))/100);
+        let dmg=parseFloat(getVal('damage'))*(1+(run.perks?.power||0)*.06+(run.perks?.overload||0)*.10)*(1+parseFloat(getVal('plasmaCore'))/100);
         let crit=(Math.random()*100)<Math.min(75,parseFloat(getVal('critC'))+parseFloat(getVal('precisionArray')));
         let finalD=crit?dmg*parseFloat(getVal('critD')):dmg;
         const level=Math.min(3,Math.max(0,parseInt(getVal('multishot'))||0));
@@ -76,7 +76,7 @@
           const offset=lane*5;
           game.ents.p.push(new Projectile(this.x+sideX*offset,this.y+sideY*offset,this.angle,finalD,crit,'base',targetEnemy));
         }
-        this.cdBase=1/(parseFloat(getVal('speed'))*(1+(run.perks?.rapid||0)*.15)*(1+parseFloat(getVal('overclockDrive'))/100)*(hasSkill('overdrive')?1.25:1));
+        this.cdBase=1/(parseFloat(getVal('speed'))*(1+(run.perks?.rapid||0)*.05+(run.perks?.overload||0)*.08)*(1+parseFloat(getVal('overclockDrive'))/100)*(hasSkill('overdrive')?1.25:1));
       }
 
       if(hasSkill('drone') && targetEnemy) {
