@@ -300,6 +300,11 @@
   async function submitLeaderboardResult(result) {
     if (!leaderboardClient || !result) return;
     const name = (localStorage.getItem(LEADERBOARD_NAME_KEY) || ('Pilot-' + leaderboardPlayerId.slice(0,4).toUpperCase())).trim();
+    const completedWave = Math.floor(Number(result.wave) || 0);
+    if (completedWave <= 15) {
+      setLeaderboardStatus('REACH WAVE 16 TO ENTER THE LEADERBOARD');
+      return;
+    }
     try {
       const { data: previous, error: readError } = await leaderboardClient
         .from('leaderboard_entries')
