@@ -1333,9 +1333,17 @@
 }
 
 
-/* Center the empty-state message in the mobile perks tab. */
+/* Center the actual empty-state block in the mobile perks tab. */
 @media (orientation:portrait) and (pointer:coarse) {
-  #app.device-mobile #perks-view #run-perks-content > p {
+  #app.device-mobile #perks-view #run-perks-content .perks-empty {
+    width:100%;
+    box-sizing:border-box;
+    align-items:center;
+    text-align:center;
+  }
+  #app.device-mobile #perks-view #run-perks-content .perks-empty strong,
+  #app.device-mobile #perks-view #run-perks-content .perks-empty small {
+    display:block;
     width:100%;
     text-align:center;
   }
