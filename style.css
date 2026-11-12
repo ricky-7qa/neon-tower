@@ -1331,3 +1331,12 @@
     justify-content:center;
   }
 }
+
+
+/* Center the empty-state message in the mobile perks tab. */
+@media (orientation:portrait) and (pointer:coarse) {
+  #app.device-mobile #perks-view #run-perks-content > p {
+    width:100%;
+    text-align:center;
+  }
+}
