@@ -616,3 +616,20 @@
   .tutorial-steps { gap:7px; }
   .tutorial-steps article { padding:9px; }
 }
+
+
+/* Keep the mission tracker attached to the playfield while the upgrade drawer opens. */
+#mission-ui {
+  transition:transform .42s cubic-bezier(.2,.8,.2,1);
+  will-change:transform;
+}
+@media (min-width:701px) and (orientation:landscape) {
+  #app.panel-open #mission-ui {
+    transform:translateX(calc(-50% - 170px));
+  }
+}
+@media (orientation:portrait) and (pointer:coarse) {
+  #app.panel-open #mission-ui {
+    transform:translate(-50%, -19dvh) scale(.9);
+  }
+}
