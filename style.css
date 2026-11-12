@@ -655,3 +655,12 @@
 /* Fade the mission tracker away after its objective is completed. */
 #mission-ui { opacity:1; visibility:visible; transition:opacity .4s ease, visibility 0s linear 0s, transform .42s cubic-bezier(.2,.8,.2,1); }
 #mission-ui.mission-complete { opacity:0; visibility:hidden; transition:opacity .4s ease, visibility 0s linear .4s, transform .42s cubic-bezier(.2,.8,.2,1); }
+
+
+/* Perk stacks are represented by collectible stars instead of numeric stack labels. */
+.run-perk-card { grid-template-columns:38px 1fr; }
+.perk-stars { display:flex; align-items:center; gap:3px; color:#ffd166; font:900 15px/1 Arial,sans-serif; letter-spacing:1px; text-shadow:0 0 8px rgba(255,209,102,.28); }
+.perk-star-empty { color:rgba(160,174,192,.35); text-shadow:none; }
+.perk-stack-progress,.run-perk-count { display:none !important; }
+.perk-stack-limit { display:block; }
+.perk-option .perk-stars { justify-content:center; margin-top:3px; font-size:14px; }
