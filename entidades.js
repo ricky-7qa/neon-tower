@@ -45,7 +45,15 @@
         
         targetEnemy = targets[0]; 
         this.angle = MathUtils.angle(this.x, this.y, targetEnemy.x, targetEnemy.y); 
-      } else { targetEnemy = null; }
+      } else {
+        targetEnemy = null;
+        // With no enemies in range, smoothly return the cannon to its idle
+        // forward position instead of leaving it tracking empty space.
+        let idleDelta = -this.angle;
+        while (idleDelta > Math.PI) idleDelta -= Math.PI * 2;
+        while (idleDelta < -Math.PI) idleDelta += Math.PI * 2;
+        this.angle += idleDelta * Math.min(1, 7 * dt);
+      }
 
       this.invuln=Math.max(0,this.invuln-dt); this.dashCd=Math.max(0,this.dashCd-dt);
       this.muzzleFlash=Math.max(0,this.muzzleFlash-dt);
