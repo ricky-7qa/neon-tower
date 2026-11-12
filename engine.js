@@ -221,7 +221,7 @@
     game.paused = true;
     const panel = document.getElementById('perk-choice');
     const picks = rollPerkOptions(available,3);
-    panel.innerHTML = '<div class="perk-dialog"><span class="perk-eyebrow">MILESTONE REACHED</span><h2>CHOOSE A PERK</h2><p>Rarer perks are stronger, but appear less often.</p><div class="perk-options">'+picks.map(p=>'<button class="perk-option rarity-'+p.rarity+'" onclick="choosePerk(\\''+p.id+'\\')"><span>'+p.icon+'</span><strong>'+p.name+'</strong><small class="perk-rarity-label">'+perkRarities[p.rarity].label+'</small><small>'+p.desc+'</small><small class="perk-stack-limit">'+p.effect+' · MAX '+p.maxStacks+'</small></button>').join('')+'</div></div>';
+    panel.innerHTML = '<div class="perk-dialog"><span class="perk-eyebrow">MILESTONE REACHED</span><h2>CHOOSE A PERK</h2><p>Rarer perks are stronger, but appear less often.</p><div class="perk-options">'+picks.map(p=>'<button class="perk-option rarity-'+p.rarity+'" onclick="choosePerk(\''+p.id+'\')"><span>'+p.icon+'</span><strong>'+p.name+'</strong><small class="perk-rarity-label">'+perkRarities[p.rarity].label+'</small><small>'+p.desc+'</small><small class="perk-stack-limit">'+p.effect+' · MAX '+p.maxStacks+'</small></button>').join('')+'</div></div>';
     panel.classList.add('visible');
   }
 
