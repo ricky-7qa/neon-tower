@@ -121,13 +121,30 @@
     fortify:{id:'fortify',req:'thorn',cost:1000,n:'Fortified Core',d:'Reduces all incoming damage by 10%.'}
   };
 
+  const perkRarities = {
+    common: {label:'COMMON', weight:62},
+    rare: {label:'RARE', weight:25},
+    epic: {label:'EPIC', weight:10},
+    legendary: {label:'LEGENDARY', weight:3}
+  };
   const perkDefs = [
-    {id:'power',name:'Overcharged Core',desc:'+20% tower damage per stack.',icon:'✦',maxStacks:5},
-    {id:'rapid',name:'Rapid Calibration',desc:'+15% attack speed per stack.',icon:'⚡',maxStacks:5},
-    {id:'fortune',name:'Golden Core',desc:'+25% cash from enemy kills per stack.',icon:'◈',maxStacks:5},
-    {id:'repair',name:'Nanite Repair',desc:'+3 health regenerated per second per stack.',icon:'✚',maxStacks:5},
-    {id:'radar',name:'Extended Radar',desc:'+15% targeting range per stack.',icon:'◎',maxStacks:5}
+    {id:'power',name:'Overcharged Core',desc:'+6% tower damage per stack.',icon:'✦',rarity:'common',effect:'+6% DAMAGE',maxStacks:3},
+    {id:'rapid',name:'Rapid Calibration',desc:'+5% attack speed per stack.',icon:'⚡',rarity:'common',effect:'+5% FIRE RATE',maxStacks:3},
+    {id:'fortune',name:'Golden Core',desc:'+10% cash from enemy kills per stack.',icon:'◈',rarity:'rare',effect:'+10% CASH',maxStacks:2},
+    {id:'radar',name:'Extended Radar',desc:'+8% targeting range per stack.',icon:'◎',rarity:'rare',effect:'+8% RANGE',maxStacks:2},
+    {id:'repair',name:'Nanite Repair',desc:'+1.5 health regenerated per second per stack.',icon:'✚',rarity:'epic',effect:'+1.5 HP / SEC',maxStacks:2},
+    {id:'overload',name:'Overload Protocol',desc:'+10% damage and +8% attack speed.',icon:'✧',rarity:'legendary',effect:'+10% DAMAGE · +8% FIRE RATE',maxStacks:1}
   ];
+  function rollPerkOptions(available, count=3) {
+    const pool=[...available], picks=[];
+    while(pool.length && picks.length<count) {
+      const total=pool.reduce((sum,p)=>sum+perkRarities[p.rarity].weight,0);
+      let roll=Math.random()*total, index=0;
+      for(;index<pool.length-1;index++){roll-=perkRarities[pool[index].rarity].weight;if(roll<0)break;}
+      picks.push(pool.splice(index,1)[0]);
+    }
+    return picks;
+  }
 
   const achvDefs = [
     { id:'waves', n:'Wave Breaker', d:'Reach higher and higher waves.', metric:()=>player.highestWave, tiers:[5,10,20,35,50].map((v,i)=>({value:v,reward:[30,60,120,250,500][i]})) },
@@ -200,11 +217,11 @@
   function showPerkChoice() {
     if(!game || !game.running) return;
     const available = perkDefs.filter(p => (run.perks?.[p.id] || 0) < p.maxStacks);
-    if (!available.length) { notify('PERKS MAXED', 'All run perks have reached their limit.'); return; }
+    if (!available.length) { notify('PERKS MAXED', 'All run perks have reached their limits.'); return; }
     game.paused = true;
     const panel = document.getElementById('perk-choice');
-    const picks = [...available].sort(()=>Math.random()-.5).slice(0,3);
-    panel.innerHTML = '<div class="perk-dialog"><span class="perk-eyebrow">MILESTONE REACHED</span><h2>CHOOSE A PERK</h2><p>Choose carefully. Each perk has a maximum of '+perkDefs[0].maxStacks+' stacks.</p><div class="perk-options">'+picks.map(p=>'<button class="perk-option" onclick="choosePerk(\''+p.id+'\')"><span>'+p.icon+'</span><strong>'+p.name+'</strong><small>'+p.desc+'</small><small class="perk-stack-limit">MAX '+p.maxStacks+' STACKS</small></button>').join('')+'</div></div>';
+    const picks = rollPerkOptions(available,3);
+    panel.innerHTML = '<div class="perk-dialog"><span class="perk-eyebrow">MILESTONE REACHED</span><h2>CHOOSE A PERK</h2><p>Rarer perks are stronger, but appear less often.</p><div class="perk-options">'+picks.map(p=>'<button class="perk-option rarity-'+p.rarity+'" onclick="choosePerk(\\''+p.id+'\\')"><span>'+p.icon+'</span><strong>'+p.name+'</strong><small class="perk-rarity-label">'+perkRarities[p.rarity].label+'</small><small>'+p.desc+'</small><small class="perk-stack-limit">'+p.effect+' · MAX '+p.maxStacks+'</small></button>').join('')+'</div></div>';
     panel.classList.add('visible');
   }
 
@@ -218,7 +235,7 @@
     }
     container.innerHTML = owned.map(perk => {
       const count = run.perks[perk.id];
-      return '<div class="run-perk-card"><span class="run-perk-icon">' + perk.icon + '</span><div class="run-perk-info"><strong>' + perk.name + '</strong><small>' + perk.desc + '</small><small class="perk-stack-progress">STACKS ' + count + ' / ' + perk.maxStacks + '</small></div><span class="run-perk-count">×' + count + '</span></div>';
+      return '<div class="run-perk-card rarity-'+perk.rarity+'"><span class="run-perk-icon">' + perk.icon + '</span><div class="run-perk-info"><strong>' + perk.name + '</strong><small class="perk-rarity-label">' + perkRarities[perk.rarity].label + '</small><small>' + perk.desc + '</small><small class="perk-stack-progress">STACKS ' + count + ' / ' + perk.maxStacks + '</small></div><span class="run-perk-count">×' + count + '</span></div>';
     }).join('');
   }
 
@@ -231,7 +248,7 @@
     renderRunPerks();
     const panel=document.getElementById('perk-choice');
     panel.classList.remove('visible'); panel.innerHTML='';
-    if(id==='repair' && tower) tower.hp=Math.min(tower.maxHp,tower.hp+20);
+    if(id==='repair' && tower) tower.hp=Math.min(tower.maxHp,tower.hp+10);
     game.paused=false; game.last=performance.now(); updateHUD();
     const perk=perkDefs.find(p=>p.id===id); notify('PERK UNLOCKED',perk.name);
   }
