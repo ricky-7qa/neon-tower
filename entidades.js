@@ -154,7 +154,7 @@
       if (game.toSpawn === 1 && w % 5 === 0) {
         this.type = "Boss"; this.c = "#9900ff"; this.r = 34;
         hpM = 12; speedM = 0.58; damageM = 1.8; rewardM = 18;
-        this.attackStep = 0; this.bossPulse = 0;
+        this.attackStep = 0; this.bossPulse = 0; this.bossPhase = 0; this.phaseFlash = 0;
         notify("WARNING", "BOSS APPROACHING");
       } else if (w >= 3 && rand < 0.14) {
         this.type = "Kamikaze"; this.c = "#ff3355"; this.r = 13;
@@ -185,6 +185,21 @@
       const a = MathUtils.angle(this.x, this.y, tower.x, tower.y);
       const d = MathUtils.dist(this.x, this.y, tower.x, tower.y);
       this.age += dt;
+      if (this.type === "Boss") {
+        const hpRatio = this.hp / this.maxHp;
+        const currentPhase = hpRatio > 0.66 ? 1 : hpRatio > 0.33 ? 2 : 3;
+        if (currentPhase !== this.bossPhase) {
+          this.bossPhase = currentPhase;
+          this.phaseFlash = 0.9;
+          const phaseMessages = {
+            1: "Rotating projectile barrage",
+            2: "Aimed multi-lane attacks",
+            3: "Final spiral attack pattern"
+          };
+          notify("BOSS PHASE " + currentPhase, phaseMessages[currentPhase]);
+        }
+        this.phaseFlash = Math.max(0, this.phaseFlash - dt);
+      }
 
       if (this.type === "Sniper") {
         // Keep Snipers comfortably inside the tower's current targeting radius.
@@ -262,8 +277,11 @@
       drawTopDown3D(ctx, this.x, this.y, this.r, this.c, this.type);
       if (this.type === "Boss") {
         ctx.save();
-        ctx.strokeStyle = this.hp / this.maxHp > 0.33 ? "#d18bff" : "#ff6688";
-        ctx.lineWidth = 3; ctx.setLineDash([8, 5]);
+        ctx.strokeStyle = this.bossPhase === 3 ? "#ff6688" : this.bossPhase === 2 ? "#ffbd66" : "#d18bff";
+        ctx.lineWidth = this.phaseFlash > 0 ? 5 : 3;
+        ctx.shadowBlur = this.phaseFlash > 0 ? 20 : 8;
+        ctx.shadowColor = ctx.strokeStyle;
+        ctx.setLineDash([8, 5]);
         ctx.beginPath(); ctx.arc(this.x, this.y, this.r + 7 + Math.sin(this.age * 5) * 2, 0, Math.PI * 2); ctx.stroke();
         ctx.restore();
       }
