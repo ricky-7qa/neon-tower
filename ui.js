@@ -32,7 +32,7 @@
     }
   }
 
-  function switchTab(t) { ['workshop', 'skills', 'achievements'].forEach(x => { const tab = document.getElementById('tab-'+x); tab.style.display = (x===t?'flex':'none'); if (x===t) tab.scrollTop = 0; }); if (t==='skills') buildSkillTree(); }
+  function switchTab(t) { ['workshop', 'skills', 'achievements', 'leaderboard'].forEach(x => { const tab = document.getElementById('tab-'+x); tab.style.display = (x===t?'flex':'none'); if (x===t) tab.scrollTop = 0; }); if (t==='skills') buildSkillTree(); if (t==='leaderboard') loadLeaderboard(); }
   
   function updateMenuUI() {
     document.getElementById('menu-coins').innerText = '$' + player.coins.toLocaleString('en-US');
@@ -204,5 +204,135 @@
   }
 
 
+
+  const LEADERBOARD_URL = 'https://iioagfxyzfxyoifjclgw.supabase.co';
+  const LEADERBOARD_KEY = 'sb_publishable_Xop-cOuasc5PmiD3e4ed5A_hWr-mclf';
+  const LEADERBOARD_ID_KEY = 'neonTowerLeaderboardId';
+  const LEADERBOARD_NAME_KEY = 'neonTowerLeaderboardName';
+  let leaderboardClient = null;
+  let leaderboardPlayerId = '';
+
+  function getLeaderboardPlayerId() {
+    let id = localStorage.getItem(LEADERBOARD_ID_KEY);
+    if (!id) {
+      id = crypto.randomUUID();
+      localStorage.setItem(LEADERBOARD_ID_KEY, id);
+    }
+    return id;
+  }
+
+  function escapeLeaderboardText(value) {
+    return String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+  }
+
+  function initializeLeaderboard() {
+    leaderboardPlayerId = getLeaderboardPlayerId();
+    const savedName = localStorage.getItem(LEADERBOARD_NAME_KEY);
+    const nameInput = document.getElementById('leaderboard-name');
+    if (nameInput) nameInput.value = savedName || ('Pilot-' + leaderboardPlayerId.slice(0,4).toUpperCase());
+    if (!window.supabase || !window.supabase.createClient) {
+      setLeaderboardStatus('ONLINE SERVICE UNAVAILABLE');
+      return;
+    }
+    leaderboardClient = window.supabase.createClient(LEADERBOARD_URL, LEADERBOARD_KEY, {
+      global: { headers: { 'x-player-id': leaderboardPlayerId } },
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+    });
+    loadLeaderboard();
+  }
+
+  function setLeaderboardStatus(message) {
+    const status = document.getElementById('leaderboard-status');
+    if (status) status.textContent = message;
+  }
+
+  function saveLeaderboardName() {
+    const input = document.getElementById('leaderboard-name');
+    const name = (input?.value || '').trim();
+    if (!/^[a-zA-Z0-9 _-]{3,16}$/.test(name)) {
+      setLeaderboardStatus('USE 3–16 LETTERS, NUMBERS, SPACES, _ OR -');
+      return;
+    }
+    localStorage.setItem(LEADERBOARD_NAME_KEY, name);
+    setLeaderboardStatus('PLAYER NAME SAVED');
+    loadLeaderboard();
+  }
+
+  async function loadLeaderboard() {
+    if (!leaderboardClient) {
+      setLeaderboardStatus('CONNECTING TO GLOBAL RANKINGS...');
+      return;
+    }
+    setLeaderboardStatus('UPDATING GLOBAL RANKINGS...');
+    const list = document.getElementById('leaderboard-list');
+    try {
+      const { data, error } = await leaderboardClient
+        .from('leaderboard_entries')
+        .select('player_id, player_name, best_wave, best_kills, best_bosses, best_duration, updated_at')
+        .order('best_wave', { ascending: false })
+        .order('best_kills', { ascending: false })
+        .order('best_bosses', { ascending: false })
+        .order('best_duration', { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      if (!data || !data.length) {
+        list.innerHTML = '<div class="leaderboard-empty">NO SCORES YET — BE THE FIRST!</div>';
+      } else {
+        list.innerHTML = data.map((entry, index) => {
+          const own = entry.player_id === leaderboardPlayerId;
+          const duration = Math.floor(entry.best_duration / 60) + ':' + String(entry.best_duration % 60).padStart(2, '0');
+          return '<article class="leaderboard-row ' + (own ? 'is-you' : '') + '">' +
+            '<span class="leaderboard-rank">#' + (index + 1) + '</span>' +
+            '<span class="leaderboard-player"><strong>' + escapeLeaderboardText(entry.player_name) + (own ? ' <small>YOU</small>' : '') + '</strong><small>WAVE ' + entry.best_wave + ' · ' + entry.best_kills + ' KILLS</small></span>' +
+            '<span class="leaderboard-result"><strong>' + entry.best_wave + '</strong><small>WAVE</small></span>' +
+            '<span class="leaderboard-result"><strong>' + entry.best_kills.toLocaleString('en-US') + '</strong><small>KILLS</small></span>' +
+            '</article>';
+        }).join('');
+      }
+      setLeaderboardStatus('GLOBAL TOP 100 · ' + data.length + ' PLAYERS');
+    } catch (error) {
+      console.error('Leaderboard load failed:', error);
+      setLeaderboardStatus('COULD NOT LOAD RANKINGS');
+      if (list) list.innerHTML = '<div class="leaderboard-empty">RANKINGS ARE TEMPORARILY UNAVAILABLE. TRY REFRESHING.</div>';
+    }
+  }
+
+  async function submitLeaderboardResult(result) {
+    if (!leaderboardClient || !result) return;
+    const name = (localStorage.getItem(LEADERBOARD_NAME_KEY) || ('Pilot-' + leaderboardPlayerId.slice(0,4).toUpperCase())).trim();
+    try {
+      const { data: previous, error: readError } = await leaderboardClient
+        .from('leaderboard_entries')
+        .select('best_wave, best_kills, best_bosses, best_duration')
+        .eq('player_id', leaderboardPlayerId)
+        .maybeSingle();
+      if (readError) throw readError;
+      const incoming = {
+        best_wave: Math.max(1, Math.floor(Number(result.wave) || 1)),
+        best_kills: Math.max(0, Math.floor(Number(result.kills) || 0)),
+        best_bosses: Math.max(0, Math.floor(Number(result.bossKills) || 0)),
+        best_duration: Math.min(604800, Math.max(0, Math.floor(Number(result.elapsed) || 0)))
+      };
+      const beatsPrevious = !previous ||
+        incoming.best_wave > previous.best_wave ||
+        (incoming.best_wave === previous.best_wave && incoming.best_kills > previous.best_kills) ||
+        (incoming.best_wave === previous.best_wave && incoming.best_kills === previous.best_kills && incoming.best_bosses > previous.best_bosses) ||
+        (incoming.best_wave === previous.best_wave && incoming.best_kills === previous.best_kills && incoming.best_bosses === previous.best_bosses && incoming.best_duration > previous.best_duration);
+      if (!beatsPrevious) return;
+      const { error } = await leaderboardClient.from('leaderboard_entries').upsert({
+        player_id: leaderboardPlayerId,
+        player_name: name,
+        ...incoming,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'player_id' });
+      if (error) throw error;
+      setLeaderboardStatus('YOUR NEW RECORD WAS SUBMITTED');
+    } catch (error) {
+      console.error('Leaderboard submit failed:', error);
+      setLeaderboardStatus('RECORD COULD NOT BE SUBMITTED');
+    }
+  }
+
   loadGame();
   initializeDeviceMode();
+  initializeLeaderboard();
