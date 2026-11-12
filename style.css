@@ -741,7 +741,7 @@
   min-width:0;
   text-align:left;
 }
-.perk-option > .perk-option-icon {
+.perk-option > span.perk-option-icon:first-child {
   grid-column:1;
   grid-row:1 / 3;
   display:grid;
