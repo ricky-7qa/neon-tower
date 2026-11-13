@@ -76,12 +76,12 @@
 
   /** DATABASE EN **/
   const statDefs = {
-    damage: { n: "DAMAGE", d: "Increases every projectile's base damage.", category:"ATTACK", b:15, i:5, c:10, cm:1.15, isD:false, col:"#0ff", unlockWave:1 },
-    speed: { n:"ATTACK SPEED", d:"More shots fired every second.", category:"ATTACK", b:1.5, i:.2, c:15, cm:1.25, isD:true, col:"#0ff", unlockWave:1 },
+    damage: { n: "DAMAGE", d: "Increases base damage: +3.5% per level (1–30), +1.75% (31–60), +0.875% (61–100), then +0.35%.", category:"ATTACK", b:15, i:5, c:10, cm:1.15, isD:false, col:"#0ff", unlockWave:1 },
+    speed: { n:"ATTACK SPEED", d:"Increases shots per second: +2% per level (1–30), +1% (31–60), +0.5% (61–100), then +0.2%.", category:"ATTACK", b:1.5, i:.2, c:15, cm:1.25, isD:true, col:"#0ff", unlockWave:1 },
     critC: { n:"CRITICAL CHANCE", d:"Chance for a critical hit.", category:"ATTACK", b:0, i:5, c:50, cm:1.4, isD:false, col:"#ff3366", unlockWave:3, max:15 },
     critD: { n:"CRITICAL DAMAGE", d:"Multiplier applied to critical hits.", category:"ATTACK", b:1.5, i:.2, c:50, cm:1.4, isD:true, col:"#ff3366", unlockWave:5 },
     multishot: { n:"MULTI-SHOT", d:"Fire up to four homing projectiles at one target.", category:"ATTACK", b:0, i:1, c:100, cm:1.42, isD:false, col:"#ff9b42", max:3, unlockWave:5 },
-    hp: { n:"MAX HEALTH", d:"Increases the tower's maximum health.", category:"DEFENSE", b:200, i:30, c:10, cm:1.15, isD:false, col:"#0f0", unlockWave:1 },
+    hp: { n:"MAX HEALTH", d:"Increases maximum health: +4% per level (1–30), +2% (31–60), +1% (61–100), then +0.4%.", category:"DEFENSE", b:200, i:30, c:10, cm:1.15, isD:false, col:"#0f0", unlockWave:1 },
     regen: { n:"HEALTH REGEN", d:"Restores health every second.", category:"DEFENSE", b:0, i:0.2, c:25, cm:1.3, isD:true, col:"#0f0", unlockWave:4 },
     armor: { n:"DAMAGE REDUCTION", d:"Reduces damage from every hit.", category:"DEFENSE", b:0, i:2, c:35, cm:1.28, isD:false, col:"#53d6ff", unlockWave:7, max:20 },
     dodge: { n:"DODGE CHANCE", d:"Chance to completely avoid a hit.", category:"DEFENSE", b:0, i:2, c:80, cm:1.38, isD:false, col:"#9b8cff", unlockWave:12, max:20 },
@@ -323,7 +323,40 @@
   // so existing game events continue working without showing pop-ups.
   function notify(title, msg) { return; }
 
-  function getVal(k, wsO=false) { const d=statDefs[k]; let l=(player.ws[k]||0)+(wsO?0:(run.stats[k]||0)); let v; if(k==='regen'){v=l>0?0.2*Math.pow(1.10,Math.min(l-1,29))*Math.pow(1.05,Math.min(Math.max(l-30,0),30))*Math.pow(1.025,Math.min(Math.max(l-60,0),40))*Math.pow(1.01,Math.max(l-100,0)):0;}else{v=d.b+(l*d.i);} return d.isD?v.toFixed(2):Math.floor(v); }
+  function getTieredMultiplier(level, rates) {
+    let remaining = Math.max(0, Math.floor(Number(level) || 0));
+    let multiplier = 1;
+    const tiers = [
+      { levels: 30, rate: rates[0] },
+      { levels: 30, rate: rates[1] },
+      { levels: 40, rate: rates[2] }
+    ];
+    for (const tier of tiers) {
+      const count = Math.min(remaining, tier.levels);
+      multiplier *= Math.pow(1 + tier.rate, count);
+      remaining -= count;
+    }
+    if (remaining > 0) multiplier *= Math.pow(1 + rates[3], remaining);
+    return multiplier;
+  }
+
+  function getVal(k, wsO=false) {
+    const d=statDefs[k];
+    const l=(player.ws[k]||0)+(wsO?0:(run.stats[k]||0));
+    let v;
+    if(k==='regen'){
+      v=l>0?0.2*Math.pow(1.10,Math.min(l-1,29))*Math.pow(1.05,Math.min(Math.max(l-30,0),30))*Math.pow(1.025,Math.min(Math.max(l-60,0),40))*Math.pow(1.01,Math.max(l-100,0)):0;
+    } else if(k==='damage') {
+      v=d.b*getTieredMultiplier(l,[0.035,0.0175,0.00875,0.0035]);
+    } else if(k==='speed') {
+      v=d.b*getTieredMultiplier(l,[0.02,0.01,0.005,0.002]);
+    } else if(k==='hp') {
+      v=d.b*getTieredMultiplier(l,[0.04,0.02,0.01,0.004]);
+    } else {
+      v=d.b+(l*d.i);
+    }
+    return d.isD?v.toFixed(2):Math.floor(v);
+  }
   function getCost(k, isW) { const d=statDefs[k]; let l=isW?player.ws[k]:(run.stats[k]||0); return Math.floor(d.c*Math.pow(d.cm, l)); }
   function hasSkill(id) { return player.skills.includes(id); }
 
