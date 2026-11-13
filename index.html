@@ -146,7 +146,11 @@
     </div>
     
     <div style="padding: 20px; text-align: center; background: #000; border-top: 1px solid #333; z-index: 10;">
-      <button class="btn" style="font-size: 24px; padding: 15px 60px;" onclick="startGame()" data-goatcounter-click="deploy-click" data-goatcounter-title="Start Game button clicked">START GAME</button>
+      <div id="resume-run-panel" style="display:none; margin:0 auto 12px; max-width:520px; padding:14px; border:1px solid rgba(0,255,255,.35); border-radius:10px; background:linear-gradient(145deg,rgba(0,35,48,.8),rgba(3,8,18,.95));">
+        <div style="color:#9db8c8; font-size:11px; letter-spacing:2px; margin-bottom:9px;">RUN IN PROGRESS · <strong id="resume-run-wave" style="color:#0ff;">WAVE</strong></div>
+        <button class="btn" style="font-size:20px; padding:12px 35px; border-color:#0ff; color:#0ff;" onclick="resumeRun()">RESUME RUN</button>
+      </div>
+      <button id="start-new-run-button" class="btn" style="font-size: 24px; padding: 15px 60px;" onclick="startGame()" data-goatcounter-click="deploy-click" data-goatcounter-title="Start Game button clicked">START GAME</button>
     </div>
   </div>
 
@@ -185,7 +189,7 @@
 </div>
 
 <script src="entidades.js?v=20261113-boss-no-phase"></script>
-<script src="engine.js?v=20261113-no-notifications"></script>
+<script src="engine.js?v=20261113-wave-resume1"></script>
 <script src="ui.js?v=20261112-8"></script>
 </body>
 </html>
