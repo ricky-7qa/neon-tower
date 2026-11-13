@@ -323,7 +323,7 @@
   // so existing game events continue working without showing pop-ups.
   function notify(title, msg) { return; }
 
-  function getVal(k, wsO=false) { const d=statDefs[k]; let l=(player.ws[k]||0)+(wsO?0:(run.stats[k]||0)); let v=d.b+(l*d.i); return d.isD?v.toFixed(2):Math.floor(v); }
+  function getVal(k, wsO=false) { const d=statDefs[k]; let l=(player.ws[k]||0)+(wsO?0:(run.stats[k]||0)); let v=k==='regen'?(l>0?0.2*Math.pow(1.075,l-1):0):(d.b+(l*d.i)); return d.isD?v.toFixed(2):Math.floor(v); }
   function getCost(k, isW) { const d=statDefs[k]; let l=isW?player.ws[k]:(run.stats[k]||0); return Math.floor(d.c*Math.pow(d.cm, l)); }
   function hasSkill(id) { return player.skills.includes(id); }
 
