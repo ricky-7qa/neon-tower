@@ -8,7 +8,7 @@
   <!-- Game favicon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' stroke='%230ff' stroke-width='10' fill='none'/><circle cx='50' cy='50' r='15' fill='%23ff3366'/></svg>">
   
-  <link rel="stylesheet" href="style.css?v=20261112-25">
+  <link rel="stylesheet" href="style.css?v=20261113-26">
   <script>
     window.neonAnalyticsQueue = window.neonAnalyticsQueue || [];
     window.neonTrack = function(eventData) {
@@ -44,6 +44,7 @@
       <div class="topbar-right">
         <div class="stat-box"><span class="top-label">ENEMIES</span><span class="stat-val" id="hud-timer">0</span></div>
         <div class="stat-box"><span class="top-label">CASH</span><span class="stat-val c-green" id="hud-cash">$0</span></div>
+        <button id="end-run-btn" class="end-run-btn" type="button" onclick="requestEndRun()">END RUN</button>
       </div>
     </div>
     <div id="mission-ui" aria-live="polite">
