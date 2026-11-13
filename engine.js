@@ -340,7 +340,25 @@
     const l=(player.ws[k]||0)+(wsO?0:(run.stats[k]||0));
     let v;
     if(k==='regen'){
-      v=l>0?0.2*Math.pow(1.10,Math.min(l-1,29))*Math.pow(1.05,Math.min(Math.max(l-30,0),30))*Math.pow(1.025,Math.min(Math.max(l-60,0),40))*Math.pow(1.01,Math.max(l-100,0)):0;
+      if(l>0){
+        let remaining = Math.max(0, l - 1);
+        let addedLevels = 0;
+        const regenTiers = [
+          { levels: 29, rate: 0.10 },
+          { levels: 30, rate: 0.05 },
+          { levels: 40, rate: 0.025 },
+          { levels: Infinity, rate: 0.01 }
+        ];
+        for(const tier of regenTiers){
+          const count = Math.min(remaining, tier.levels);
+          addedLevels += count * (1 + tier.rate);
+          remaining -= count;
+          if(remaining <= 0) break;
+        }
+        v = 0.2 + (0.2 * addedLevels);
+      } else {
+        v = 0;
+      }
     } else if(k==='damage') {
       v=d.b*getTieredMultiplier(l,[0.07,0.05,0.03,0.02,0.015,0.011,0.008,0.006,0.0045,0.003,0.002]);
     } else if(k==='speed') {
