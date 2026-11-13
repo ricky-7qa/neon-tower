@@ -340,7 +340,7 @@
           notify("BOSS DEFEATED", "BONUS REWARDS");
         } else {
           createParts(this.x, this.y, this.c, 15, 4);
-          if (Math.random() < 0.05) run.coins++;
+          if (Math.random() < 0.02) run.coins++;
         }
         checkAchievements(); return true;
       }
