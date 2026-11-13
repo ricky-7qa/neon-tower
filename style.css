@@ -1491,3 +1491,30 @@
   from { opacity:0; transform:translateY(-7px) scale(.97); }
   to { opacity:1; transform:translateY(0) scale(1); }
 }
+
+
+/* FINAL MOBILE TOAST OVERRIDE — compact notifications on portrait phones. */
+@media (orientation:portrait) and (pointer:coarse) {
+  #app.device-mobile #notif-box {
+    top:calc(8px + env(safe-area-inset-top));
+    width:min(210px,calc(100% - 36px));
+    gap:5px;
+  }
+  #app.device-mobile #notif-box .notif {
+    box-sizing:border-box;
+    padding:6px 9px 7px;
+    border-radius:8px;
+    border-left-width:2px;
+    box-shadow:0 3px 12px rgba(0,0,0,.38),0 0 9px rgba(255,215,0,.1);
+  }
+  #app.device-mobile #notif-box .notif h4 {
+    margin-bottom:2px;
+    font-size:8px;
+    line-height:1.25;
+    letter-spacing:.7px;
+  }
+  #app.device-mobile #notif-box .notif p {
+    font-size:10px;
+    line-height:1.3;
+  }
+}
