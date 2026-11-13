@@ -606,28 +606,46 @@
     for(let i = game.ents.e.length - 1; i >= 0; i--) {
       let e = game.ents.e[i];
       if(e.hp <= 0) { game.ents.e.splice(i,1); continue; } 
-      e.update(game.dt); e.draw();
+      e.update(game.dt);
       const dx = e.x - tower.x;
       const dy = e.y - tower.y;
       const distance = Math.hypot(dx, dy) || 1;
       const contactDistance = tower.r + e.r + 2;
       if(e.isAttackingTower) {
-        // Hold each attacker in its own evenly distributed position around the tower.
-        e.x = tower.x + Math.cos(e.contactAngle) * contactDistance;
-        e.y = tower.y + Math.sin(e.contactAngle) * contactDistance;
+        // Keep the enemy at its arrival position; only gently separate overlapping attackers.
+        let pushX = 0, pushY = 0;
+        for(let j = 0; j < game.ents.e.length; j++) {
+          const other = game.ents.e[j];
+          if(other === e || !other.isAttackingTower || other.hp <= 0) continue;
+          let sx = e.x - other.x, sy = e.y - other.y;
+          let spacing = Math.hypot(sx, sy);
+          const minSpacing = e.r + other.r + 5;
+          if(spacing < minSpacing) {
+            if(spacing < 0.001) {
+              const angle = (i + 1) * 2.399963229728653;
+              sx = Math.cos(angle);
+              sy = Math.sin(angle);
+              spacing = 1;
+            }
+            const force = (minSpacing - spacing) * 0.45;
+            pushX += (sx / spacing) * force;
+            pushY += (sy / spacing) * force;
+          }
+        }
+        const separationStep = Math.min(1, game.dt * 6);
+        e.x += pushX * separationStep;
+        e.y += pushY * separationStep;
         e.contactDamageTimer -= game.dt;
         if(e.contactDamageTimer <= 0) {
           tower.hit(e.dmg, e);
           e.contactDamageTimer = 1;
         }
       } else if(distance < contactDistance) {
-        // Assign a stable, spread-out position as soon as this enemy reaches the tower.
+        // Lock the enemy exactly where it reached the tower; do not reposition it.
         e.isAttackingTower = true;
-        e.contactAngle = Math.atan2(dy, dx) + (i * 2.399963229728653);
         e.contactDamageTimer = 0.35 + (Math.abs(Math.sin(e.phase)) * 0.65);
-        e.x = tower.x + Math.cos(e.contactAngle) * contactDistance;
-        e.y = tower.y + Math.sin(e.contactAngle) * contactDistance;
       }
+      e.draw();
     }
     
     for(let i = game.ents.part.length - 1; i >= 0; i--) { let p = game.ents.part[i]; p.update(game.dt); p.draw(); if(p.l<=0) game.ents.part.splice(i,1); }
