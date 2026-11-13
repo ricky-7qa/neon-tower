@@ -328,14 +328,14 @@
     }
   }
 
-  function processGameOver() {
+  function processGameOver(reason = 'defeat') {
     if(!game || !game.running) return;
     game.running = false;
     trackGameDuration('completed');
     if (typeof window.neonTrack === 'function') {
-      window.neonTrack({ path: 'game-end', title: 'Game ended normally', event: true, no_session: true });
+      window.neonTrack({ path: 'game-end', title: reason === 'voluntary' ? 'Game ended voluntarily' : 'Game ended normally', event: true, no_session: true });
     } else if (window.goatcounter && typeof window.goatcounter.count === 'function') {
-      window.goatcounter.count({ path: 'game-end', title: 'Game ended normally', event: true, no_session: true });
+      window.goatcounter.count({ path: 'game-end', title: reason === 'voluntary' ? 'Game ended voluntarily' : 'Game ended normally', event: true, no_session: true });
     } document.getElementById('hud').classList.remove('active-hud'); document.getElementById('gameover').classList.add('active-layer');
     document.getElementById('go-wave').innerText = run.wave;
     document.getElementById('go-kills').innerText = run.kills;
@@ -355,6 +355,12 @@
     checkAchievements(); saveGame();
     if (typeof submitLeaderboardResult === 'function') submitLeaderboardResult(run);
   }
+  function requestEndRun() {
+    if (!game || !game.running) return;
+    const confirmed = window.confirm('END THIS RUN? Your current score will be saved and submitted if it qualifies for the leaderboard.');
+    if (confirmed) processGameOver('voluntary');
+  }
+
   function updateMissionProgress() {
     if (!run.mission || run.mission.complete) return;
     const mission = run.mission;
