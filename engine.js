@@ -632,9 +632,26 @@
             pushY += (sy / spacing) * force;
           }
         }
+        // Only separate along the tower's circumference, never toward its center.
+        const radialX = e.x - tower.x;
+        const radialY = e.y - tower.y;
+        const radialLength = Math.hypot(radialX, radialY) || 1;
+        const radialUnitX = radialX / radialLength;
+        const radialUnitY = radialY / radialLength;
+        const inwardOutwardPush = pushX * radialUnitX + pushY * radialUnitY;
+        pushX -= inwardOutwardPush * radialUnitX;
+        pushY -= inwardOutwardPush * radialUnitY;
         const separationStep = Math.min(1, game.dt * 6);
         e.x += pushX * separationStep;
         e.y += pushY * separationStep;
+        const safeDx = e.x - tower.x;
+        const safeDy = e.y - tower.y;
+        const safeDistance = Math.hypot(safeDx, safeDy) || 1;
+        const minTowerDistance = tower.r + e.r + 2;
+        if(safeDistance < minTowerDistance) {
+          e.x = tower.x + (safeDx / safeDistance) * minTowerDistance;
+          e.y = tower.y + (safeDy / safeDistance) * minTowerDistance;
+        }
         e.contactDamageTimer -= game.dt;
         if(e.contactDamageTimer <= 0) {
           tower.hit(e.dmg, e);
