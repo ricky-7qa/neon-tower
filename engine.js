@@ -360,6 +360,7 @@
     const confirmed = window.confirm('END THIS RUN? Your current score will be saved and submitted if it qualifies for the leaderboard.');
     if (confirmed) processGameOver('voluntary');
   }
+  window.requestEndRun = requestEndRun;
 
   function updateMissionProgress() {
     if (!run.mission || run.mission.complete) return;
