@@ -1518,3 +1518,40 @@
     line-height:1.3;
   }
 }
+
+
+/* MOBILE NOTIFICATIONS — use viewport width instead of pointer detection. */
+@media (max-width:700px) {
+  #app #notif-box {
+    top:10px !important;
+    left:50% !important;
+    right:auto !important;
+    width:min(230px,calc(100% - 32px)) !important;
+    gap:6px !important;
+    align-items:stretch !important;
+    transform:translateX(-50%) !important;
+    z-index:70 !important;
+  }
+  #app #notif-box .notif {
+    width:100% !important;
+    box-sizing:border-box !important;
+    padding:7px 10px 8px !important;
+    border:1px solid rgba(255,215,0,.42) !important;
+    border-left:3px solid #ffd75e !important;
+    border-radius:9px !important;
+    text-align:center !important;
+    background:linear-gradient(120deg,rgba(5,15,30,.96),rgba(13,22,38,.94)) !important;
+    box-shadow:0 4px 14px rgba(0,0,0,.4) !important;
+  }
+  #app #notif-box .notif h4 {
+    margin:0 0 2px !important;
+    color:#ffe28a !important;
+    font:900 9px/1.3 Orbitron,sans-serif !important;
+    letter-spacing:.7px !important;
+  }
+  #app #notif-box .notif p {
+    margin:0 !important;
+    color:#d7e5f2 !important;
+    font:600 10px/1.35 Arial,sans-serif !important;
+  }
+}
