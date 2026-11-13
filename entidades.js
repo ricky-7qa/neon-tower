@@ -194,7 +194,10 @@
       this.dmg = (3.2 * Math.pow(1.045, Math.max(0, w - 1))) * damageM;
       this.spd = (68 + Math.min(30, w * 1.1)) * speedM;
       this.val = Math.floor((5 * Math.pow(1.055, Math.max(0, w - 1))) * rewardM);
-      this.fireCd = this.type === "Boss" ? 1.25 : 0.9;
+      this.fireCd = (this.type === "Boss" ? 1.25 : 0.9) + Math.random() * 1.5;
+      this.isAttackingTower = false;
+      this.contactAngle = 0;
+      this.contactDamageTimer = 0;
       this.phase = Math.random() * Math.PI * 2;
       this.age = 0;
       this.hitFlash = 0;
@@ -215,7 +218,9 @@
         this.phaseFlash = Math.max(0, this.phaseFlash - dt);
       }
 
-      if (this.type === "Sniper") {
+      if (this.isAttackingTower) {
+        // Stay at the assigned contact position while continuing to fire.
+      } else if (this.type === "Sniper") {
         // Keep Snipers comfortably inside the tower's current targeting radius.
         const towerRange = parseFloat(getVal("range")) * (1 + getPerkValue('radar') / 100);
         // On small mobile canvases, never let Snipers retreat beyond the visible play area.
