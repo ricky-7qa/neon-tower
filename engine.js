@@ -579,7 +579,23 @@
       let e = game.ents.e[i];
       if(e.hp <= 0) { game.ents.e.splice(i,1); continue; } 
       e.update(game.dt); e.draw();
-      if(MathUtils.dist(e.x, e.y, tower.x, tower.y) < tower.r + e.r) { tower.hit(e.dmg, e); game.ents.e.splice(i,1); updateHUD(); }
+      const dx = e.x - tower.x;
+      const dy = e.y - tower.y;
+      const distance = Math.hypot(dx, dy) || 1;
+      const contactDistance = tower.r + e.r;
+      if(distance < contactDistance) {
+        // Keep the enemy pressed against the tower instead of consuming it on impact.
+        e.x = tower.x + (dx / distance) * contactDistance;
+        e.y = tower.y + (dy / distance) * contactDistance;
+        e.contactDamageTimer = (e.contactDamageTimer || 0) - game.dt;
+        if(e.contactDamageTimer <= 0) {
+          tower.hit(e.dmg, e);
+          e.contactDamageTimer = 1;
+          updateHUD();
+        }
+      } else {
+        e.contactDamageTimer = 0;
+      }
     }
     
     for(let i = game.ents.part.length - 1; i >= 0; i--) { let p = game.ents.part[i]; p.update(game.dt); p.draw(); if(p.l<=0) game.ents.part.splice(i,1); }
