@@ -582,19 +582,23 @@
       const dx = e.x - tower.x;
       const dy = e.y - tower.y;
       const distance = Math.hypot(dx, dy) || 1;
-      const contactDistance = tower.r + e.r;
-      if(distance < contactDistance) {
-        // Keep the enemy pressed against the tower instead of consuming it on impact.
-        e.x = tower.x + (dx / distance) * contactDistance;
-        e.y = tower.y + (dy / distance) * contactDistance;
-        e.contactDamageTimer = (e.contactDamageTimer || 0) - game.dt;
+      const contactDistance = tower.r + e.r + 2;
+      if(e.isAttackingTower) {
+        // Hold each attacker in its own evenly distributed position around the tower.
+        e.x = tower.x + Math.cos(e.contactAngle) * contactDistance;
+        e.y = tower.y + Math.sin(e.contactAngle) * contactDistance;
+        e.contactDamageTimer -= game.dt;
         if(e.contactDamageTimer <= 0) {
           tower.hit(e.dmg, e);
           e.contactDamageTimer = 1;
-          updateHUD();
         }
-      } else {
-        e.contactDamageTimer = 0;
+      } else if(distance < contactDistance) {
+        // Assign a stable, spread-out position as soon as this enemy reaches the tower.
+        e.isAttackingTower = true;
+        e.contactAngle = Math.atan2(dy, dx) + (i * 2.399963229728653);
+        e.contactDamageTimer = 0.35 + (Math.abs(Math.sin(e.phase)) * 0.65);
+        e.x = tower.x + Math.cos(e.contactAngle) * contactDistance;
+        e.y = tower.y + Math.sin(e.contactAngle) * contactDistance;
       }
     }
     
