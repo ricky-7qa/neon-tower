@@ -653,9 +653,42 @@
 .perk-rarity-label.rarity-epic { color:#c28aff !important; }
 .perk-rarity-label.rarity-legendary { color:#ffca69 !important; }
 
-/* Fade the mission tracker away after its objective is completed. */
-#mission-ui { opacity:1; visibility:visible; transition:opacity .4s ease, visibility 0s linear 0s, transform .42s cubic-bezier(.2,.8,.2,1); }
-#mission-ui.mission-complete { opacity:0; visibility:hidden; transition:opacity .4s ease, visibility 0s linear .4s, transform .42s cubic-bezier(.2,.8,.2,1); }
+/* Mission completion banner: hold for 3 seconds, then fade for 1 second. */
+#mission-ui { transition:opacity .4s ease, visibility 0s linear 0s, transform .42s cubic-bezier(.2,.8,.2,1); }
+#mission-complete-banner {
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid rgba(0,255,190,.65);
+  border-radius:9px;
+  background:linear-gradient(135deg,rgba(0,28,34,.97),rgba(0,12,27,.97));
+  color:#72ffd1;
+  font:900 clamp(19px,4vw,28px)/1 Orbitron,sans-serif;
+  letter-spacing:2px;
+  text-shadow:0 0 8px rgba(0,255,190,.8),0 0 22px rgba(0,255,190,.45);
+  box-shadow:inset 0 0 20px rgba(0,255,190,.1),0 0 18px rgba(0,255,190,.18);
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+}
+#mission-ui.mission-complete {
+  border-color:transparent;
+  background:transparent;
+  box-shadow:none;
+}
+#mission-ui.mission-complete > :not(#mission-complete-banner) {
+  visibility:hidden;
+}
+#mission-ui.mission-complete #mission-complete-banner {
+  visibility:visible;
+  animation:missionCompleteHold 4s ease forwards;
+}
+@keyframes missionCompleteHold {
+  0%,75% { opacity:1; }
+  100% { opacity:0; visibility:hidden; }
+}
 
 
 /* Perk stacks are represented by collectible stars instead of numeric stack labels. */
