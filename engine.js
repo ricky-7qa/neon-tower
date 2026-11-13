@@ -219,9 +219,16 @@
   function saveRunCheckpoint(pendingPerk = false) {
     if (!game || !game.running || !tower) return;
     try {
+      const previous = JSON.parse(localStorage.getItem(RUN_CHECKPOINT_KEY) || 'null');
+      const savedRun = JSON.parse(JSON.stringify(run));
+      if (previous && previous.run && Number(previous.run.wave) === Number(run.wave)) {
+        ['kills','bossKills','elapsed','mission','graze','combo','comboTimer'].forEach(key => {
+          if (previous.run[key] !== undefined) savedRun[key] = previous.run[key];
+        });
+      }
       localStorage.setItem(RUN_CHECKPOINT_KEY, JSON.stringify({
         version: 1,
-        run: JSON.parse(JSON.stringify(run)),
+        run: savedRun,
         tower: { hp: tower.hp, shield: tower.shield },
         pendingPerk: !!pendingPerk
       }));
