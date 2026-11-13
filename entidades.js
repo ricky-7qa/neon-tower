@@ -256,7 +256,7 @@
       this.fireCd -= dt; this.phase += dt;
       if (this.fireCd > 0) return;
       const aim = MathUtils.angle(this.x, this.y, tower.x, tower.y);
-      const baseDamage = Math.max(2, this.dmg * 0.16);
+      const baseDamage = this.dmg * 0.5;
 
       if (this.type === "Boss") {
         const hpRatio = this.hp / this.maxHp;
