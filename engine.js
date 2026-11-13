@@ -528,7 +528,7 @@
       run.wave++;
       if(tower) { const repairPct=parseFloat(getVal('waveRepair'))+parseFloat(getVal('repairBurst')); if(repairPct>0) tower.hp=Math.min(tower.maxHp,tower.hp+tower.maxHp*repairPct/100); }
       game.toSpawn = 9 + Math.floor(run.wave * 1.25);
-      run.coins += Math.floor(run.wave/2) + 2 + Math.floor(parseFloat(getVal('coinCache'))); run.cash += Math.floor(parseFloat(getVal('waveBonus')) + Math.floor(run.wave*parseFloat(getVal('waveDividend'))/100));
+      run.coins += Math.max(1, Math.floor((Math.floor(run.wave/2) + 2 + Math.floor(parseFloat(getVal('coinCache'))) ) * 0.4)); run.cash += Math.floor(parseFloat(getVal('waveBonus')) + Math.floor(run.wave*parseFloat(getVal('waveDividend'))/100));
       updateHUD(); AudioSys.coin(); checkAchievements();
       const milestonePerk = (run.wave-1)%5===0;
       if(milestonePerk) showPerkChoice();
@@ -566,7 +566,7 @@
       if(hitSomething) game.ents.p.splice(i,1);
     }
 
-    for(let i=game.ents.b.length-1;i>=0;i--){let b=game.ents.b[i];b.update(game.dt);b.draw();let d=MathUtils.dist(b.x,b.y,tower.x,tower.y);if(d<tower.r+b.r){if(tower.invuln<=0)tower.hit(b.damage,b.kind==='boss'?{type:'Boss'}:null);bulletPool.release(b);game.ents.b.splice(i,1);continue;}if(!b.grazed&&d<tower.r+b.r+18){b.grazed=true;run.graze++;run.coins++;AudioSys.play('graze',1500,900,'sine',.08,.08);}if(b.x<-30||b.x>canvas.width+30||b.y<-30||b.y>canvas.height+30){bulletPool.release(b);game.ents.b.splice(i,1);}}
+    for(let i=game.ents.b.length-1;i>=0;i--){let b=game.ents.b[i];b.update(game.dt);b.draw();let d=MathUtils.dist(b.x,b.y,tower.x,tower.y);if(d<tower.r+b.r){if(tower.invuln<=0)tower.hit(b.damage,b.kind==='boss'?{type:'Boss'}:null);bulletPool.release(b);game.ents.b.splice(i,1);continue;}if(!b.grazed&&d<tower.r+b.r+18){b.grazed=true;run.graze++;if(Math.random()<0.4)run.coins++;AudioSys.play('graze',1500,900,'sine',.08,.08);}if(b.x<-30||b.x>canvas.width+30||b.y<-30||b.y>canvas.height+30){bulletPool.release(b);game.ents.b.splice(i,1);}}
     for(let i = game.ents.e.length - 1; i >= 0; i--) {
       let e = game.ents.e[i];
       if(e.hp <= 0) { game.ents.e.splice(i,1); continue; } 
