@@ -211,12 +211,6 @@
         if (currentPhase !== this.bossPhase) {
           this.bossPhase = currentPhase;
           this.phaseFlash = 0.9;
-          const phaseMessages = {
-            1: "Rotating projectile barrage",
-            2: "Aimed multi-lane attacks",
-            3: "Final spiral attack pattern"
-          };
-          notify("BOSS PHASE " + currentPhase, phaseMessages[currentPhase]);
         }
         this.phaseFlash = Math.max(0, this.phaseFlash - dt);
       }
