@@ -33,20 +33,29 @@
       if(this.shieldCd > 0) this.shieldCd -= dt; else if(hasSkill('shield')) this.shield = true;
       
       let range = parseFloat(getVal('range')) * (1+getPerkValue('radar')/100);
-      let targets = game.ents.e.filter(e => MathUtils.dist(this.x, this.y, e.x, e.y) < range);
-      
-      if(targets.length > 0) {
-        // Prioritize the closest enemy.
-        targets.sort((a, b) => {
-           let distA = MathUtils.dist(this.x, this.y, a.x, a.y);
-           let distB = MathUtils.dist(this.x, this.y, b.x, b.y);
-           return distA - distB;
-        });
-        
-        targetEnemy = targets[0]; 
-        this.angle = MathUtils.angle(this.x, this.y, targetEnemy.x, targetEnemy.y); 
-      } else {
+      // Keep the current target until it is defeated or leaves targeting range.
+      // This prevents the tower from switching between nearby enemies every frame.
+      const currentTargetValid = targetEnemy &&
+        targetEnemy.hp > 0 &&
+        game.ents.e.includes(targetEnemy) &&
+        MathUtils.dist(this.x, this.y, targetEnemy.x, targetEnemy.y) < range;
+
+      if(!currentTargetValid) {
         targetEnemy = null;
+        let closestDistance = Infinity;
+        for(const enemy of game.ents.e) {
+          if(enemy.hp <= 0) continue;
+          const distance = MathUtils.dist(this.x, this.y, enemy.x, enemy.y);
+          if(distance < range && distance < closestDistance) {
+            closestDistance = distance;
+            targetEnemy = enemy;
+          }
+        }
+      }
+
+      if(targetEnemy) {
+        this.angle = MathUtils.angle(this.x, this.y, targetEnemy.x, targetEnemy.y);
+      } else {
         // With no enemies in range, smoothly return the cannon to its idle
         // forward position instead of leaving it tracking empty space.
         let idleDelta = -this.angle;
