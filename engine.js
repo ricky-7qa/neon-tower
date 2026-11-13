@@ -233,6 +233,7 @@
     refreshResumeUI();
   }
   window.refreshResumeUI = refreshResumeUI;
+  window.saveRunCheckpoint = saveRunCheckpoint;
   function loadGame() { 
     const s = localStorage.getItem(SAVE_KEY); 
     if(s) { try { let p=JSON.parse(atob(s)); player={...player,...p}; player.ws={...player.ws,...(p.ws||{})}; } catch(err) { console.warn("Invalid save data",err); localStorage.removeItem(SAVE_KEY); } }
