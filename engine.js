@@ -206,8 +206,14 @@
   function refreshResumeUI() {
     const panel = document.getElementById('resume-run-panel');
     const startButton = document.getElementById('start-new-run-button');
-    const exists = !!localStorage.getItem(RUN_CHECKPOINT_KEY);
-    if (panel) panel.style.display = exists ? 'block' : 'none';
+    let checkpoint = null;
+    try { checkpoint = JSON.parse(localStorage.getItem(RUN_CHECKPOINT_KEY) || 'null'); } catch (err) {}
+    const exists = !!(checkpoint && checkpoint.version === 1 && checkpoint.run);
+    if (panel) {
+      panel.style.display = exists ? 'block' : 'none';
+      const waveLabel = document.getElementById('resume-run-wave');
+      if (waveLabel) waveLabel.textContent = exists ? 'WAVE ' + checkpoint.run.wave : '';
+    }
     if (startButton) startButton.textContent = exists ? 'NEW RUN' : 'START GAME';
   }
   function saveRunCheckpoint(pendingPerk = false) {
