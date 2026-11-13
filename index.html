@@ -8,7 +8,7 @@
   <!-- Game favicon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' stroke='%230ff' stroke-width='10' fill='none'/><circle cx='50' cy='50' r='15' fill='%23ff3366'/></svg>">
   
-  <link rel="stylesheet" href="style.css?v=20261113-no-doubletap-zoom1">
+  <link rel="stylesheet" href="style.css?v=20261113-no-doubletap-zoom2">
   <script>
     window.neonAnalyticsQueue = window.neonAnalyticsQueue || [];
     window.neonTrack = function(eventData) {
@@ -188,6 +188,23 @@
   </div>
 </div>
 
+<script>
+  (function () {
+    var app = document.getElementById('app');
+    if (!app) return;
+    var lastTouchEnd = 0;
+    app.addEventListener('touchend', function (event) {
+      var target = event.target;
+      if (target && target.closest && target.closest('button, a, input, select, textarea, [role="button"]')) return;
+      var now = Date.now();
+      if (now - lastTouchEnd <= 320) event.preventDefault();
+      lastTouchEnd = now;
+    }, { passive: false });
+    app.addEventListener('dblclick', function (event) {
+      if (event.cancelable) event.preventDefault();
+    }, { passive: false });
+  })();
+</script>
 <script src="entidades.js?v=20261113-focus-target1"></script>
 <script src="engine.js?v=20261113-regen-tiered1"></script>
 <script src="ui.js?v=20261113-wave-resume1"></script>
