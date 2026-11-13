@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>Neon Tower: Apex - Idle Tower Defense</title>
   
   <!-- Game favicon -->
@@ -194,10 +194,10 @@
     if (!app) return;
     var lastTouchEnd = 0;
     app.addEventListener('touchend', function (event) {
-      var target = event.target;
-      if (target && target.closest && target.closest('button, a, input, select, textarea, [role="button"]')) return;
       var now = Date.now();
-      if (now - lastTouchEnd <= 320) event.preventDefault();
+      if (now - lastTouchEnd <= 350) {
+        if (event.cancelable) event.preventDefault();
+      }
       lastTouchEnd = now;
     }, { passive: false });
     app.addEventListener('dblclick', function (event) {
