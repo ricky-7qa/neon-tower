@@ -355,7 +355,7 @@
     } else {
       v=d.b+(l*d.i);
     }
-    return d.isD?v.toFixed(2):Math.floor(v);
+    return (d.isD||k==='damage')?v.toFixed(2):Math.floor(v);
   }
   function getCost(k, isW) { const d=statDefs[k]; let l=isW?player.ws[k]:(run.stats[k]||0); return Math.floor(d.c*Math.pow(d.cm, l)); }
   function hasSkill(id) { return player.skills.includes(id); }
