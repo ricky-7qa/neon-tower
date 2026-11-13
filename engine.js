@@ -1,6 +1,7 @@
 
   /** CORE ENGINE & DATA **/
   const SAVE_KEY = "NeonTowerApexSave_FinalVersion";
+  const RUN_CHECKPOINT_KEY = "NeonTowerApexRunCheckpoint";
   const canvas = document.getElementById('gameCanvas'); const ctx = canvas.getContext('2d');
   
   let tower = null; 
@@ -202,6 +203,30 @@
   });
 
   function saveGame() { localStorage.setItem(SAVE_KEY, btoa(JSON.stringify(player))); updateMenuUI(); }
+  function refreshResumeUI() {
+    const panel = document.getElementById('resume-run-panel');
+    const startButton = document.getElementById('start-new-run-button');
+    const exists = !!localStorage.getItem(RUN_CHECKPOINT_KEY);
+    if (panel) panel.style.display = exists ? 'block' : 'none';
+    if (startButton) startButton.textContent = exists ? 'NEW RUN' : 'START GAME';
+  }
+  function saveRunCheckpoint(pendingPerk = false) {
+    if (!game || !game.running || !tower) return;
+    try {
+      localStorage.setItem(RUN_CHECKPOINT_KEY, JSON.stringify({
+        version: 1,
+        run: JSON.parse(JSON.stringify(run)),
+        tower: { hp: tower.hp, shield: tower.shield },
+        pendingPerk: !!pendingPerk
+      }));
+    } catch (err) { console.warn('Could not save run checkpoint', err); }
+    refreshResumeUI();
+  }
+  function clearRunCheckpoint() {
+    localStorage.removeItem(RUN_CHECKPOINT_KEY);
+    refreshResumeUI();
+  }
+  window.refreshResumeUI = refreshResumeUI;
   function loadGame() { 
     const s = localStorage.getItem(SAVE_KEY); 
     if(s) { try { let p=JSON.parse(atob(s)); player={...player,...p}; player.ws={...player.ws,...(p.ws||{})}; } catch(err) { console.warn("Invalid save data",err); localStorage.removeItem(SAVE_KEY); } }
@@ -276,6 +301,7 @@
     panel.classList.remove('visible'); panel.innerHTML='';
     if(id==='repair' && tower) tower.hp=Math.min(tower.maxHp,tower.hp+selectedPerk.values[rarity]*4);
     game.paused=false; game.last=performance.now(); updateHUD();
+    saveRunCheckpoint(false);
     notify('PERK UNLOCKED',selectedPerk.name+' · '+perkRarities[rarity].label);
   }
 
@@ -289,6 +315,7 @@
 
   /** MAIN LOOP & RENDERING **/
   function startGame() {
+    clearRunCheckpoint();
     if (!player.tutorialSeen) {
       document.getElementById('tutorial').classList.add('visible');
       return;
@@ -317,6 +344,7 @@
     
     tower = new Tower(); 
     initUpgBar();
+    saveRunCheckpoint(false);
     updateHUD();
     requestAnimationFrame(loop);
     if (typeof window.neonTrack === 'function') {
@@ -329,6 +357,7 @@
   function processGameOver(reason = 'defeat') {
     if(!game || !game.running) return;
     game.running = false;
+    clearRunCheckpoint();
     trackGameDuration('completed');
     if (typeof window.neonTrack === 'function') {
       window.neonTrack({ path: 'game-end', title: reason === 'voluntary' ? 'Game ended voluntarily' : 'Game ended normally', event: true, no_session: true });
@@ -353,6 +382,45 @@
     checkAchievements(); saveGame();
     if (typeof submitLeaderboardResult === 'function') submitLeaderboardResult(run);
   }
+  function resumeRun() {
+    let checkpoint = null;
+    try { checkpoint = JSON.parse(localStorage.getItem(RUN_CHECKPOINT_KEY) || 'null'); } catch (err) {}
+    if (!checkpoint || checkpoint.version !== 1 || !checkpoint.run || !Number.isFinite(Number(checkpoint.run.wave))) {
+      clearRunCheckpoint();
+      return;
+    }
+    if (!player.tutorialSeen) {
+      document.getElementById('tutorial').classList.add('visible');
+      return;
+    }
+    AudioSys.init();
+    gameSessionStartedAt = Date.now();
+    gameDurationTracked = false;
+    gameSessionSource = 'resume';
+    document.getElementById('menu').classList.remove('active-layer');
+    document.getElementById('gameover').classList.remove('active-layer');
+    document.getElementById('hud').classList.add('active-hud');
+    run = checkpoint.run;
+    game = {
+      running:true, paused:!!checkpoint.pendingPerk, dt:0, last:performance.now(),
+      shake:0, playSaveT:0, achievementCheckT:0, spawnT:0.25,
+      toSpawn:9 + Math.floor(run.wave * 1.25),
+      ents:{e:[],p:[],b:[],part:[],txt:[]},
+      cx:canvas.width/2, cy:canvas.height/2
+    };
+    tower = new Tower();
+    if (checkpoint.tower) {
+      tower.hp = Math.max(0, Math.min(tower.maxHp, Number(checkpoint.tower.hp) || tower.maxHp));
+      tower.shield = !!checkpoint.tower.shield && hasSkill('shield');
+    }
+    initUpgBar();
+    updateHUD();
+    refreshResumeUI();
+    if (checkpoint.pendingPerk) showPerkChoice();
+    requestAnimationFrame(loop);
+  }
+  window.resumeRun = resumeRun;
+
   function requestEndRun() {
     if (!game || !game.running) return;
     const confirmed = window.confirm('END THIS RUN? Your current score will be saved and submitted if it qualifies for the leaderboard.');
@@ -448,7 +516,9 @@
       game.toSpawn = 9 + Math.floor(run.wave * 1.25);
       run.coins += Math.floor(run.wave/2) + 2 + Math.floor(parseFloat(getVal('coinCache'))); run.cash += Math.floor(parseFloat(getVal('waveBonus')) + Math.floor(run.wave*parseFloat(getVal('waveDividend'))/100));
       updateHUD(); AudioSys.coin(); checkAchievements();
-      if((run.wave-1)%5===0) showPerkChoice(); 
+      const milestonePerk = (run.wave-1)%5===0;
+      if(milestonePerk) showPerkChoice();
+      saveRunCheckpoint(milestonePerk); 
     }
     game.spawnT -= game.dt;
     if(game.spawnT <= 0 && game.toSpawn > 0) { game.ents.e.push(new Enemy(run.wave)); game.toSpawn--; game.spawnT = Math.max(0.48, 0.82 - (run.wave*0.006)); updateHUD(); }
