@@ -1416,3 +1416,33 @@
   #app.device-mobile .leaderboard-result strong { font-size:11px; }
   #app.device-mobile .leaderboard-result small { font-size:6px; }
 }
+
+
+/* VOLUNTARY RUN END — keep the control visible on desktop and mobile. */
+#hud .game-topbar .end-run-btn {
+  pointer-events:auto;
+  min-height:34px;
+  padding:7px 10px;
+  border:1px solid rgba(255,75,112,.58);
+  border-radius:8px;
+  background:linear-gradient(145deg,rgba(58,13,29,.92),rgba(20,5,14,.96));
+  color:#ff8ba2;
+  font:900 9px Orbitron,sans-serif;
+  letter-spacing:1px;
+  cursor:pointer;
+  box-shadow:0 0 12px rgba(255,50,100,.12),inset 0 0 10px rgba(255,60,100,.06);
+}
+#hud .game-topbar .end-run-btn:active {
+  background:rgba(100,18,42,.95);
+  border-color:#ff6688;
+}
+@media (orientation:portrait) and (pointer:coarse) {
+  #app.device-mobile .game-topbar .end-run-btn {
+    min-height:31px;
+    padding:6px 7px;
+    font-size:7px;
+    letter-spacing:.5px;
+    white-space:nowrap;
+  }
+  #app.device-mobile .game-topbar .topbar-right { gap:5px; }
+}
