@@ -340,5 +340,6 @@
   }
 
   loadGame();
+  if (typeof window.refreshResumeUI === 'function') window.refreshResumeUI();
   initializeDeviceMode();
   initializeLeaderboard();
