@@ -661,9 +661,9 @@
   display:flex;
   align-items:center;
   justify-content:center;
-  border:1px solid rgba(0,255,190,.65);
-  border-radius:9px;
-  background:linear-gradient(135deg,rgba(0,28,34,.97),rgba(0,12,27,.97));
+  border:0;
+  border-radius:0;
+  background:transparent;
   color:#72ffd1;
   font:900 clamp(19px,4vw,28px)/1 Orbitron,sans-serif;
   letter-spacing:2px;
