@@ -82,7 +82,7 @@
     critD: { n:"CRITICAL DAMAGE", d:"Multiplier applied to critical hits.", category:"ATTACK", b:1.5, i:.2, c:50, cm:1.4, isD:true, col:"#ff3366", unlockWave:5 },
     multishot: { n:"MULTI-SHOT", d:"Fire up to four homing projectiles at one target.", category:"ATTACK", b:0, i:1, c:100, cm:1.42, isD:false, col:"#ff9b42", max:3, unlockWave:5 },
     hp: { n:"MAX HEALTH", d:"Increases maximum health with tiered growth: +4% (1–30), +3% (31–60), +2% (61–100), +1.5% (101–200), then gradually less every 100 levels.", category:"DEFENSE", b:200, i:30, c:10, cm:1.15, isD:false, col:"#0f0", unlockWave:1 },
-    regen: { n:"HEALTH REGEN", d:"Restores health every second.", category:"DEFENSE", b:0, i:0.2, c:25, cm:1.3, isD:true, col:"#0f0", unlockWave:4 },
+    regen: { n:"HEALTH REGEN", d:"Restores health every second. Each level increases total regeneration by 12.5%.", category:"DEFENSE", b:0, i:0.2, c:25, cm:1.3, isD:true, col:"#0f0", unlockWave:4 },
     armor: { n:"DAMAGE REDUCTION", d:"Reduces damage from every hit.", category:"DEFENSE", b:0, i:2, c:35, cm:1.28, isD:false, col:"#53d6ff", unlockWave:7, max:20 },
     dodge: { n:"DODGE CHANCE", d:"Chance to completely avoid a hit.", category:"DEFENSE", b:0, i:2, c:80, cm:1.38, isD:false, col:"#9b8cff", unlockWave:12, max:20 },
     shieldRecharge: { n:"SHIELD RECHARGE", d:"Shortens the shield's cooldown.", category:"DEFENSE", b:0, i:1, c:90, cm:1.4, isD:false, col:"#55f5dc", unlockWave:15, max:8 },
@@ -340,25 +340,7 @@
     const l=(player.ws[k]||0)+(wsO?0:(run.stats[k]||0));
     let v;
     if(k==='regen'){
-      if(l>0){
-        let remaining = Math.max(0, l - 1);
-        let addedLevels = 0;
-        const regenTiers = [
-          { levels: 29, rate: 0.10 },
-          { levels: 30, rate: 0.05 },
-          { levels: 40, rate: 0.025 },
-          { levels: Infinity, rate: 0.01 }
-        ];
-        for(const tier of regenTiers){
-          const count = Math.min(remaining, tier.levels);
-          addedLevels += count * (1 + tier.rate);
-          remaining -= count;
-          if(remaining <= 0) break;
-        }
-        v = 0.2 + (0.2 * addedLevels);
-      } else {
-        v = 0;
-      }
+      v = l > 0 ? 0.2 * Math.pow(1.125, l - 1) : 0;
     } else if(k==='damage') {
       v=d.b*getTieredMultiplier(l,[0.07,0.05,0.03,0.02,0.015,0.011,0.008,0.006,0.0045,0.003,0.002]);
     } else if(k==='speed') {
