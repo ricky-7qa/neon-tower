@@ -279,11 +279,9 @@
     notify('PERK UNLOCKED',selectedPerk.name+' · '+perkRarities[rarity].label);
   }
 
-  function notify(title, msg) {
-    const box = document.getElementById('notif-box');
-    const el = document.createElement('div'); el.className = 'notif'; el.innerHTML = `<h4>${title}</h4><p>${msg}</p>`;
-    box.appendChild(el); setTimeout(() => { el.style.opacity = 0; setTimeout(()=>el.remove(), 300); }, 3000);
-  }
+  // Notifications are disabled globally; keep this function as a no-op
+  // so existing game events continue working without showing pop-ups.
+  function notify(title, msg) { return; }
 
   function getVal(k, wsO=false) { const d=statDefs[k]; let l=(player.ws[k]||0)+(wsO?0:(run.stats[k]||0)); let v=d.b+(l*d.i); return d.isD?v.toFixed(2):Math.floor(v); }
   function getCost(k, isW) { const d=statDefs[k]; let l=isW?player.ws[k]:(run.stats[k]||0); return Math.floor(d.c*Math.pow(d.cm, l)); }
