@@ -1588,3 +1588,21 @@
     font:600 10px/1.35 Arial,sans-serif !important;
   }
 }
+
+/* Remove the original mobile mission panel frame during the COMPLETE state. */
+#app.device-mobile #mission-ui.mission-complete {
+  border:0 !important;
+  outline:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  backdrop-filter:none !important;
+}
+#app.device-mobile #mission-ui.mission-complete #mission-complete-banner,
+#mission-ui.mission-complete #mission-complete-banner {
+  border:0 !important;
+  outline:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+}
