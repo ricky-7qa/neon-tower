@@ -566,7 +566,7 @@
       if(hitSomething) game.ents.p.splice(i,1);
     }
 
-    for(let i=game.ents.b.length-1;i>=0;i--){let b=game.ents.b[i];b.update(game.dt);b.draw();let d=MathUtils.dist(b.x,b.y,tower.x,tower.y);if(d<tower.r+b.r){if(tower.invuln<=0)tower.hit(b.damage,b.kind==='boss'?{type:'Boss'}:null);bulletPool.release(b);game.ents.b.splice(i,1);continue;}if(!b.grazed&&d<tower.r+b.r+18){b.grazed=true;run.graze++;if(Math.random()<0.4)run.coins++;AudioSys.play('graze',1500,900,'sine',.08,.08);}if(b.x<-30||b.x>canvas.width+30||b.y<-30||b.y>canvas.height+30){bulletPool.release(b);game.ents.b.splice(i,1);}}
+    for(let i=game.ents.b.length-1;i>=0;i--){let b=game.ents.b[i];b.update(game.dt);b.draw();let d=MathUtils.dist(b.x,b.y,tower.x,tower.y);if(d<tower.r+b.r){if(tower.invuln<=0)tower.hit(b.damage,b.kind==='boss'?{type:'Boss'}:null);bulletPool.release(b);game.ents.b.splice(i,1);continue;}if(!b.grazed&&d<tower.r+b.r+18){b.grazed=true;run.graze++;AudioSys.play('graze',1500,900,'sine',.08,.08);}if(b.x<-30||b.x>canvas.width+30||b.y<-30||b.y>canvas.height+30){bulletPool.release(b);game.ents.b.splice(i,1);}}
     for(let i = game.ents.e.length - 1; i >= 0; i--) {
       let e = game.ents.e[i];
       if(e.hp <= 0) { game.ents.e.splice(i,1); continue; } 
