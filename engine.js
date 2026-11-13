@@ -327,6 +327,14 @@
   function getCost(k, isW) { const d=statDefs[k]; let l=isW?player.ws[k]:(run.stats[k]||0); return Math.floor(d.c*Math.pow(d.cm, l)); }
   function hasSkill(id) { return player.skills.includes(id); }
 
+  function getWaveEnemyCount(wave) {
+    const w = Math.max(1, Math.floor(Number(wave) || 1));
+    if (w <= 20) return 9 + Math.floor(w * 1.25);
+    if (w <= 50) return 34 + Math.floor((w - 20) * 0.7);
+    if (w <= 100) return 55 + Math.floor((w - 50) * 0.3);
+    return 70 + Math.floor((w - 100) * 0.35);
+  }
+
   /** MAIN LOOP & RENDERING **/
   function startGame() {
     clearRunCheckpoint();
@@ -418,7 +426,7 @@
     game = {
       running:true, paused:!!checkpoint.pendingPerk, dt:0, last:performance.now(),
       shake:0, playSaveT:0, achievementCheckT:0, spawnT:0.25,
-      toSpawn:9 + Math.floor(run.wave * 1.25),
+      toSpawn:getWaveEnemyCount(run.wave),
       ents:{e:[],p:[],b:[],part:[],txt:[]},
       cx:canvas.width/2, cy:canvas.height/2
     };
@@ -527,7 +535,7 @@
     if(game.toSpawn <= 0 && game.ents.e.length === 0) {
       run.wave++;
       if(tower) { const repairPct=parseFloat(getVal('waveRepair'))+parseFloat(getVal('repairBurst')); if(repairPct>0) tower.hp=Math.min(tower.maxHp,tower.hp+tower.maxHp*repairPct/100); }
-      game.toSpawn = 9 + Math.floor(run.wave * 1.25);
+      game.toSpawn = getWaveEnemyCount(run.wave);
       run.coins += Math.max(1, Math.floor((Math.floor(run.wave/2) + 2 + Math.floor(parseFloat(getVal('coinCache'))) ) * 0.4)); run.cash += Math.floor(parseFloat(getVal('waveBonus')) + Math.floor(run.wave*parseFloat(getVal('waveDividend'))/100));
       updateHUD(); AudioSys.coin(); checkAchievements();
       const milestonePerk = (run.wave-1)%5===0;
