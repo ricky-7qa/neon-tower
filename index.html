@@ -8,7 +8,7 @@
   <!-- Game favicon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' stroke='%230ff' stroke-width='10' fill='none'/><circle cx='50' cy='50' r='15' fill='%23ff3366'/></svg>">
   
-  <link rel="stylesheet" href="style.css?v=20261113-no-doubletap-zoom2">
+  <link rel="stylesheet" href="style.css?v=20261113-no-doubletap-zoom3">
   <script>
     window.neonAnalyticsQueue = window.neonAnalyticsQueue || [];
     window.neonTrack = function(eventData) {
@@ -190,17 +190,18 @@
 
 <script>
   (function () {
-    var app = document.getElementById('app');
-    if (!app) return;
     var lastTouchEnd = 0;
-    app.addEventListener('touchend', function (event) {
+    document.addEventListener('touchend', function (event) {
       var now = Date.now();
-      if (now - lastTouchEnd <= 350) {
-        if (event.cancelable) event.preventDefault();
+      if (now - lastTouchEnd <= 400 && event.cancelable) {
+        event.preventDefault();
       }
       lastTouchEnd = now;
-    }, { passive: false });
-    app.addEventListener('dblclick', function (event) {
+    }, { passive: false, capture: true });
+    document.addEventListener('dblclick', function (event) {
+      if (event.cancelable) event.preventDefault();
+    }, { passive: false, capture: true });
+    document.addEventListener('gesturestart', function (event) {
       if (event.cancelable) event.preventDefault();
     }, { passive: false });
   })();
