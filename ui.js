@@ -200,6 +200,7 @@
       }
       updateHUD();
       AudioSys.coin();
+      if (typeof window.saveRunCheckpoint === 'function') window.saveRunCheckpoint(false);
     }
   }
 
