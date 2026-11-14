@@ -198,7 +198,10 @@
       }
 
       // Gentle, predictable scaling: later waves get tougher without becoming exponential walls.
-      const waveScale = Math.pow(1.075, Math.max(0, w - 1));
+      const earlyWaveLevels = Math.min(19, Math.max(0, w - 1));
+      const middleWaveLevels = Math.max(0, Math.min(30, w - 20));
+      const lateWaveLevels = Math.max(0, w - 50);
+      const waveScale = Math.pow(1.075, earlyWaveLevels + lateWaveLevels) * Math.pow(1.15, middleWaveLevels);
       this.maxHp = 24 * waveScale * hpM; this.hp = this.maxHp;
       this.dmg = (3.2 * Math.pow(1.045, Math.max(0, w - 1))) * damageM;
       this.spd = (68 + Math.min(30, w * 1.1)) * speedM;
