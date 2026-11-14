@@ -158,7 +158,7 @@
       const overloadSpeed = Object.entries(run.perks?.overload || {}).reduce((sum,[rarity,count])=>sum+(perkDefs.find(p=>p.id==='overload').speedValues[rarity]||0)*count,0);
       const perkFireRate = 1 + (getPerkValue('rapid') + overloadSpeed) / 100;
       const perkRange = 1 + getPerkValue('radar') / 100;
-      const totalRegen = parseFloat(getVal('regen')) + parseFloat(getVal('nanoMatrix')) + getPerkValue('repair');
+      const totalRegen = parseFloat(getVal('regen')) + parseFloat(getVal('nanoMatrix')) + tower.maxHp * getPerkValue('repair') / 100;
       const cashBonus = (parseFloat(getVal('cashBonus')) + getPerkValue('fortune'));
       document.getElementById('st-dmg').innerText = Math.round(parseFloat(getVal('damage')) * perkDamage);
       document.getElementById('st-spd').innerText = (parseFloat(getVal('speed')) * perkFireRate).toFixed(2).replace(/\\.00$/, '').replace(/0$/, '') + '/s';
