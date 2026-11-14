@@ -1,6 +1,13 @@
   /** MENUS & HUD **/
   const DEVICE_MODE_KEY = 'neonTowerDeviceMode';
 
+  const visibleUpgradeKeys = {
+    ATTACK: ['damage', 'speed', 'critC', 'critD', 'multishot'],
+    DEFENSE: ['hp', 'regen'],
+    UTILITY: ['range', 'cashBonus', 'waveBonus', 'bossBounty']
+  };
+  const isVisibleUpgrade = key => Object.values(visibleUpgradeKeys).some(keys => keys.includes(key));
+
   function applyDeviceMode(mode) {
     const app = document.getElementById('app');
     app.classList.remove('device-desktop', 'device-mobile');
@@ -43,7 +50,7 @@
       const section=document.createElement('section'); section.className='workshop-section';
       section.innerHTML='<h2 class="workshop-heading">'+category+'</h2><div class="grid workshop-grid"></div>';
       const grid=section.querySelector('.grid');
-      Object.keys(statDefs).filter(k=>statDefs[k].category===category).forEach(k=>{
+      Object.keys(statDefs).filter(k=>isVisibleUpgrade(k) && statDefs[k].category===category).forEach(k=>{
         let d=statDefs[k],lvl=player.ws[k]||0,cost=getCost(k,true),val=getVal(k,true),isMax=d.max&&lvl>=d.max;
         grid.insertAdjacentHTML('beforeend',`<div class="card">
           <div><h3><span style="color:${d.col}">${d.n}</span><span>LVL ${lvl}${d.max?' / '+d.max:''}</span></h3><p>${d.d}<br><br><span style="color:#fff;">Current: ${val}</span></p></div>
@@ -105,7 +112,7 @@
     });
   }
 
-  function buyWs(k) { let c=getCost(k,true); if(player.coins>=c && (!statDefs[k].max || (player.ws[k]||0)<statDefs[k].max)){player.coins-=c;player.ws[k]=(player.ws[k]||0)+1;saveGame();} }
+  function buyWs(k) { if (!isVisibleUpgrade(k)) return; let c=getCost(k,true); if(player.coins>=c && (!statDefs[k].max || (player.ws[k]||0)<statDefs[k].max)){player.coins-=c;player.ws[k]=(player.ws[k]||0)+1;saveGame();} }
   function buySkill(id) {
     let s = skillDefs[id]; if(hasSkill(id)) return;
     if(player.coins >= s.cost) { player.coins -= s.cost; player.skills.push(id); saveGame(); buildSkillTree(); AudioSys.coin(); }
@@ -123,13 +130,13 @@
     });
     document.getElementById('upg-category-title').innerText = category + ' UPGRADES';
     document.querySelectorAll('.upg-btn').forEach(btn => {
-      btn.style.display = statDefs[btn.dataset.stat].category === category ? 'flex' : 'none';
+      btn.style.display = isVisibleUpgrade(btn.dataset.stat) && statDefs[btn.dataset.stat].category === category ? 'flex' : 'none';
     });
   }
 
   function initUpgBar() {
     let ub = document.getElementById('upg-content'); ub.innerHTML = "";
-    Object.keys(statDefs).forEach(k => {
+    Object.keys(statDefs).filter(isVisibleUpgrade).forEach(k => {
       let btn = document.createElement("button");
       btn.className = "btn upg-btn";
       btn.id = "btn-upg-" + k;
@@ -173,7 +180,7 @@
        tui.classList.remove('visible');
     }
 
-    Object.keys(statDefs).forEach(k => {
+    Object.keys(statDefs).filter(isVisibleUpgrade).forEach(k => {
       const d=statDefs[k], l=run.stats[k]||0, c=getCost(k, false), m=!!(d.max && (player.ws[k]||0)+l>=d.max);
       const btn=document.getElementById('btn-upg-'+k);
       if(btn) {
@@ -187,6 +194,7 @@
   }
 
   function buyRunUpg(k) {
+    if (!isVisibleUpgrade(k)) return;
     const d=statDefs[k];
     if(!d || run.wave<(d.unlockWave||1)) return;
     const c=getCost(k,false);
