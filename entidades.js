@@ -180,7 +180,7 @@
       let hpM = 1, speedM = 1, damageM = 1, rewardM = 1;
       if (game.toSpawn === 1 && w % 5 === 0) {
         this.type = "Boss"; this.c = "#9900ff"; this.r = 34;
-        hpM = 120; speedM = 0.58; damageM = 1.8; rewardM = 18;
+        hpM = 60; speedM = 0.58; damageM = 1.8; rewardM = 18;
         this.attackStep = 0; this.bossPulse = 0; this.bossPhase = 0; this.phaseFlash = 0;
         notify("WARNING", "BOSS APPROACHING");
       } else if (w >= 3 && rand < 0.14) {
