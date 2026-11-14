@@ -76,12 +76,12 @@
 
   /** DATABASE EN **/
   const statDefs = {
-    damage: { n: "DAMAGE", d: "Increases base damage with tiered growth: +7% (1–30), +5% (31–60), +3% (61–100), +2% (101–200), then gradually less every 100 levels.", category:"ATTACK", b:15, i:5, c:10, cm:1.15, isD:false, col:"#0ff", unlockWave:1 },
-    speed: { n:"ATTACK SPEED", d:"Increases shots per second: +3% per level (1–30), then +2.5% (31–50). Maximum level: 50.", category:"ATTACK", b:1.5, i:.2, c:15, cm:1.25, isD:true, col:"#0ff", unlockWave:1, max:50 },
+    damage: { n: "DAMAGE", d: "Each level adds damage using a growing increment: the added amount compounds by +7% (levels 2–30), +5% (31–60), +3% (61–100), +2% (101–200), then progressively smaller rates.", category:"ATTACK", b:15, i:5, c:10, cm:1.15, isD:false, col:"#0ff", unlockWave:1 },
+    speed: { n:"ATTACK SPEED", d:"Each level adds shots per second using a growing increment: +3% (levels 2–30), then +2.5% (31–50). Maximum level: 50.", category:"ATTACK", b:1.5, i:.2, c:15, cm:1.25, isD:true, col:"#0ff", unlockWave:1, max:50 },
     critC: { n:"CRITICAL CHANCE", d:"Chance for a critical hit.", category:"ATTACK", b:0, i:5, c:50, cm:1.4, isD:false, col:"#ff3366", unlockWave:3, max:15 },
     critD: { n:"CRITICAL DAMAGE", d:"Multiplier applied to critical hits.", category:"ATTACK", b:1.5, i:.2, c:50, cm:1.4, isD:true, col:"#ff3366", unlockWave:5 },
     multishot: { n:"MULTI-SHOT", d:"Fire up to four homing projectiles at one target.", category:"ATTACK", b:0, i:1, c:100, cm:1.42, isD:false, col:"#ff9b42", max:3, unlockWave:5 },
-    hp: { n:"MAX HEALTH", d:"Increases maximum health with tiered growth: +4% (1–30), +3% (31–60), +2% (61–100), +1.5% (101–200), then gradually less every 100 levels.", category:"DEFENSE", b:200, i:30, c:10, cm:1.15, isD:false, col:"#0f0", unlockWave:1 },
+    hp: { n:"MAX HEALTH", d:"Each level adds maximum health using a growing increment: +4% (levels 2–30), +3% (31–60), +2% (61–100), +1.5% (101–200), then progressively smaller rates.", category:"DEFENSE", b:200, i:30, c:10, cm:1.15, isD:false, col:"#0f0", unlockWave:1 },
     regen: { n:"HEALTH REGEN", d:"Starts at 0.5 HP per second. Each level adds a larger regeneration increase than the previous level; that increase grows by +15% per level (levels 2–10), then +10%, +7%, +4%, +2%, +1%, +0.5%, and +0.25% from level 501 onward.", category:"DEFENSE", b:0, i:0.5, c:25, cm:1.3, isD:true, col:"#0f0", unlockWave:4 },
     armor: { n:"DAMAGE REDUCTION", d:"Reduces damage from every hit.", category:"DEFENSE", b:0, i:2, c:35, cm:1.28, isD:false, col:"#53d6ff", unlockWave:7, max:20 },
     dodge: { n:"DODGE CHANCE", d:"Chance to completely avoid a hit.", category:"DEFENSE", b:0, i:2, c:80, cm:1.38, isD:false, col:"#9b8cff", unlockWave:12, max:20 },
@@ -362,16 +362,36 @@
         v = 0;
       }
     } else if(k==='damage') {
-      v=d.b*getTieredMultiplier(l,[0.07,0.05,0.03,0.02,0.015,0.011,0.008,0.006,0.0045,0.003,0.002]);
+      v=getCumulativeTieredValue(d.b,d.i,l,[0.07,0.05,0.03,0.02,0.015,0.011,0.008,0.006,0.0045,0.003,0.002]);
     } else if(k==='speed') {
-      v=d.b*getTieredMultiplier(Math.min(l,50),[0.03,0.025,0.015,0.0125,0.009,0.007,0.005,0.0035,0.0025,0.002,0.001]);
+      v=getCumulativeTieredValue(d.b,d.i,l,[0.03,0.025,0.015,0.0125,0.009,0.007,0.005,0.0035,0.0025,0.002,0.001],50);
     } else if(k==='hp') {
-      v=d.b*getTieredMultiplier(l,[0.04,0.03,0.02,0.015,0.011,0.0085,0.0065,0.0045,0.003,0.002,0.0015]);
+      v=getCumulativeTieredValue(d.b,d.i,l,[0.04,0.03,0.02,0.015,0.011,0.0085,0.0065,0.0045,0.003,0.002,0.0015]);
     } else {
       v=d.b+(l*d.i);
     }
     return (d.isD||k==='damage')?v.toFixed(2):Math.floor(v);
   }
+  function getCumulativeTieredValue(base, initialIncrease, level, rates, maxLevel = Infinity) {
+    const effectiveLevel = Math.min(Math.max(0, Math.floor(Number(level) || 0)), maxLevel);
+    let total = base;
+    let increase = initialIncrease;
+    const tierSizes = [30, 30, 40, 100, 100, 100, 100, 100, 100, 100, Infinity];
+    for (let currentLevel = 1; currentLevel <= effectiveLevel; currentLevel++) {
+      if (currentLevel > 1) {
+        let remaining = currentLevel - 1;
+        let tierIndex = 0;
+        while (tierIndex < tierSizes.length - 1 && remaining > tierSizes[tierIndex]) {
+          remaining -= tierSizes[tierIndex];
+          tierIndex++;
+        }
+        increase *= 1 + rates[tierIndex];
+      }
+      total += increase;
+    }
+    return total;
+  }
+
   function getCost(k, isW) { const d=statDefs[k]; let l=isW?player.ws[k]:(run.stats[k]||0); return Math.floor(d.c*Math.pow(d.cm, l)); }
   function hasSkill(id) { return player.skills.includes(id); }
 
