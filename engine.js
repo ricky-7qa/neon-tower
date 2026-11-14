@@ -133,7 +133,7 @@
     {id:'rapid',name:'Rapid Calibration',icon:'⚡',desc:'Increases attack speed.',values:{common:2,rare:4,epic:6,legendary:9},unit:'% FIRE RATE',maxStacks:3},
     {id:'fortune',name:'Golden Core',icon:'◈',desc:'Increases cash earned from enemy kills.',values:{common:5,rare:8,epic:12,legendary:18},unit:'% CASH',maxStacks:3},
     {id:'radar',name:'Extended Radar',icon:'◎',desc:'Increases tower targeting range.',values:{common:4,rare:7,epic:10,legendary:15},unit:'% RANGE',maxStacks:3},
-    {id:'repair',name:'Nanite Repair',icon:'✚',desc:'Regenerates tower health every second.',values:{common:0.5,rare:1,epic:1.5,legendary:2.5},unit:'HP / SEC',maxStacks:3},
+    {id:'repair',name:'Nanite Repair',icon:'✚',desc:'Regenerates a percentage of maximum tower health every second.',values:{common:0.5,rare:1,epic:1.5,legendary:2.5},unit:'% MAX HP / SEC',maxStacks:3},
     {id:'overload',name:'Overload Protocol',icon:'✧',desc:'Boosts both damage and attack speed.',values:{common:3,rare:5,epic:7,legendary:10},speedValues:{common:2,rare:4,epic:6,legendary:8},unit:'% DAMAGE · FIRE RATE',maxStacks:3}
   ];
   function getPerkValue(id) {
@@ -313,7 +313,7 @@
     renderRunPerks();
     const panel=document.getElementById('perk-choice');
     panel.classList.remove('visible'); panel.innerHTML='';
-    if(id==='repair' && tower) tower.hp=Math.min(tower.maxHp,tower.hp+selectedPerk.values[rarity]*4);
+    if(id==='repair' && tower) tower.hp=Math.min(tower.maxHp,tower.hp+tower.maxHp*selectedPerk.values[rarity]*4/100);
     game.paused=false; game.last=performance.now(); updateHUD();
     saveRunCheckpoint(false);
     notify('PERK UNLOCKED',selectedPerk.name+' · '+perkRarities[rarity].label);
