@@ -82,7 +82,7 @@
     critD: { n:"CRITICAL DAMAGE", d:"Multiplier applied to critical hits.", category:"ATTACK", b:1.5, i:.2, c:50, cm:1.4, isD:true, col:"#ff3366", unlockWave:5 },
     multishot: { n:"MULTI-SHOT", d:"Fire up to four homing projectiles at one target.", category:"ATTACK", b:0, i:1, c:100, cm:1.42, isD:false, col:"#ff9b42", max:3, unlockWave:5 },
     hp: { n:"MAX HEALTH", d:"Increases maximum health with tiered growth: +4% (1–30), +3% (31–60), +2% (61–100), +1.5% (101–200), then gradually less every 100 levels.", category:"DEFENSE", b:200, i:30, c:10, cm:1.15, isD:false, col:"#0f0", unlockWave:1 },
-    regen: { n:"HEALTH REGEN", d:"Restores health every second. Each level adds a larger regeneration increase than the previous level; that increase grows by +15% per level (levels 2–10), then +10%, +7%, +4%, +2%, +1%, +0.5%, and +0.25% from level 501 onward.", category:"DEFENSE", b:0, i:0.8, c:25, cm:1.3, isD:true, col:"#0f0", unlockWave:4 },
+    regen: { n:"HEALTH REGEN", d:"Starts at 0.5 HP per second. Each level adds a larger regeneration increase than the previous level; that increase grows by +15% per level (levels 2–10), then +10%, +7%, +4%, +2%, +1%, +0.5%, and +0.25% from level 501 onward.", category:"DEFENSE", b:0, i:0.5, c:25, cm:1.3, isD:true, col:"#0f0", unlockWave:4 },
     armor: { n:"DAMAGE REDUCTION", d:"Reduces damage from every hit.", category:"DEFENSE", b:0, i:2, c:35, cm:1.28, isD:false, col:"#53d6ff", unlockWave:7, max:20 },
     dodge: { n:"DODGE CHANCE", d:"Chance to completely avoid a hit.", category:"DEFENSE", b:0, i:2, c:80, cm:1.38, isD:false, col:"#9b8cff", unlockWave:12, max:20 },
     shieldRecharge: { n:"SHIELD RECHARGE", d:"Shortens the shield's cooldown.", category:"DEFENSE", b:0, i:1, c:90, cm:1.4, isD:false, col:"#55f5dc", unlockWave:15, max:8 },
@@ -341,8 +341,8 @@
     let v;
     if(k==='regen'){
       if (l > 0) {
-        v = 0.8;
-        let increase = 0.8;
+        v = 0.5;
+        let increase = 0.5;
         const tiers = [
           { end: 10, rate: 0.15 },
           { end: 25, rate: 0.10 },
