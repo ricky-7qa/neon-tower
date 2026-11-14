@@ -109,13 +109,6 @@
     coinCache: { n:"COIN CACHE", d:"Gain extra permanent coins when clearing waves.", category:"UTILITY", b:0, i:1, c:1500, cm:1.7, isD:false, col:"#ffe66d", unlockWave:150, max:10 }
   };
 
-  const visibleUpgradeKeys = {
-    ATTACK: ['damage', 'speed', 'critC', 'critD', 'multishot'],
-    DEFENSE: ['hp', 'regen'],
-    UTILITY: ['range', 'cashBonus', 'waveBonus', 'bossBounty']
-  };
-  const isVisibleUpgrade = key => Object.values(visibleUpgradeKeys).some(keys => keys.includes(key));
-
   const skillDefs = {
     start:{id:'start',req:null,cost:0,n:'Core Systems',d:'Unlocks the tower progression network.'},
     multishot:{id:'multishot',req:'start',cost:100,n:'Multi-Shot Core',d:'Adds a bonus shot to each firing burst.'},
