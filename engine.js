@@ -83,30 +83,10 @@
     multishot: { n:"MULTI-SHOT", d:"Fire up to four homing projectiles at one target.", category:"ATTACK", b:0, i:1, c:100, cm:1.42, isD:false, col:"#ff9b42", max:3, unlockWave:5 },
     hp: { n:"MAX HEALTH", d:"Each level adds maximum health using a growing increment: +4% (levels 2–30), +3% (31–60), +2% (61–100), +1.5% (101–200), then progressively smaller rates.", category:"DEFENSE", b:200, i:30, c:10, cm:1.15, isD:false, col:"#0f0", unlockWave:1 },
     regen: { n:"HEALTH REGEN", d:"Starts at 0.5 HP per second. Each level adds a larger regeneration increase than the previous level; that increase grows by +15% per level (levels 2–10), then +10%, +7%, +4%, +2%, +1%, +0.5%, and +0.25% from level 501 onward.", category:"DEFENSE", b:0, i:0.5, c:25, cm:1.3, isD:true, col:"#0f0", unlockWave:4 },
-    armor: { n:"DAMAGE REDUCTION", d:"Reduces damage from every hit.", category:"DEFENSE", b:0, i:2, c:35, cm:1.28, isD:false, col:"#53d6ff", unlockWave:7, max:20 },
-    dodge: { n:"DODGE CHANCE", d:"Chance to completely avoid a hit.", category:"DEFENSE", b:0, i:2, c:80, cm:1.38, isD:false, col:"#9b8cff", unlockWave:12, max:20 },
-    shieldRecharge: { n:"SHIELD RECHARGE", d:"Shortens the shield's cooldown.", category:"DEFENSE", b:0, i:1, c:90, cm:1.4, isD:false, col:"#55f5dc", unlockWave:15, max:8 },
     range: { n:"TARGETING RANGE", d:"Detects enemies from farther away.", category:"UTILITY", b:300, i:50, c:30, cm:1.2, isD:false, col:"#ffd700", unlockWave:1, max:10 },
     cashBonus: { n:"CASH BONUS", d:"Earn more cash for every enemy defeated.", category:"UTILITY", b:0, i:10, c:45, cm:1.25, isD:false, col:"#ffd700", unlockWave:5, max:10 },
     waveBonus: { n:"WAVE INCOME", d:"Earn extra cash when a wave is cleared.", category:"UTILITY", b:0, i:5, c:55, cm:1.3, isD:false, col:"#ffd700", unlockWave:8, max:10 },
-    projectileSpeed: { n:"PROJECTILE VELOCITY", d:"Your shots travel faster and reach enemies sooner.", category:"ATTACK", b:900, i:90, c:70, cm:1.45, isD:false, col:"#39d5ff", unlockWave:6, max:8 },
-    bossDamage: { n:"BOSS HUNTER", d:"Deal bonus damage to Boss enemies.", category:"ATTACK", b:0, i:8, c:120, cm:1.5, isD:false, col:"#ff5b5b", unlockWave:12, max:10 },
-    bulletGuard: { n:"ENERGY PLATING", d:"Reduce damage received from enemy attacks.", category:"DEFENSE", b:0, i:3, c:100, cm:1.45, isD:false, col:"#75e0ff", unlockWave:10, max:10 },
-    waveRepair: { n:"WAVE REPAIR", d:"Restore a percentage of maximum health after each wave.", category:"DEFENSE", b:0, i:4, c:110, cm:1.45, isD:false, col:"#75ff9b", unlockWave:10, max:10 },
     bossBounty: { n:"BOSS BOUNTY", d:"Earn extra cash when defeating a Boss.", category:"UTILITY", b:0, i:15, c:130, cm:1.5, isD:false, col:"#ffd166", unlockWave:15, max:10 },
-    salvage: { n:"SALVAGE PROTOCOL", d:"Gain extra cash from every defeated enemy.", category:"UTILITY", b:0, i:3, c:150, cm:1.48, isD:false, col:"#ffe66d", unlockWave:20, max:10 },
-    plasmaCore: { n:"PLASMA CORE", d:"Increase damage dealt by all tower weapons.", category:"ATTACK", b:0, i:5, c:500, cm:1.55, isD:false, col:"#ff7bff", unlockWave:30, max:12 },
-    precisionArray: { n:"PRECISION ARRAY", d:"Increase the chance of landing critical hits.", category:"ATTACK", b:0, i:2, c:650, cm:1.58, isD:false, col:"#ff6688", unlockWave:40, max:10 },
-    executionProtocol: { n:"EXECUTION PROTOCOL", d:"Deal bonus damage to enemies below 30% health.", category:"ATTACK", b:0, i:8, c:900, cm:1.62, isD:false, col:"#ff5252", unlockWave:50, max:10 },
-    overclockDrive: { n:"OVERCLOCK DRIVE", d:"Increase the tower's firing rate.", category:"ATTACK", b:0, i:4, c:1200, cm:1.65, isD:false, col:"#ffb347", unlockWave:60, max:10 },
-    nanoMatrix: { n:"NANO MATRIX", d:"Continuously restore additional tower health.", category:"DEFENSE", b:0, i:2, c:550, cm:1.55, isD:false, col:"#62ffc4", unlockWave:70, max:10 },
-    adaptiveArmor: { n:"ADAPTIVE ARMOR", d:"Further reduce damage from all incoming attacks.", category:"DEFENSE", b:0, i:2, c:800, cm:1.6, isD:false, col:"#64c8ff", unlockWave:80, max:10 },
-    bossWard: { n:"BOSS WARD", d:"Reduce damage from Boss attacks.", category:"DEFENSE", b:0, i:4, c:1000, cm:1.62, isD:false, col:"#a88bff", unlockWave:90, max:10 },
-    repairBurst: { n:"REPAIR BURST", d:"Restore more health whenever a wave is cleared.", category:"DEFENSE", b:0, i:3, c:1300, cm:1.65, isD:false, col:"#7dff8b", unlockWave:100, max:10 },
-    waveDividend: { n:"WAVE DIVIDEND", d:"Earn extra cash every time a wave is cleared.", category:"UTILITY", b:0, i:8, c:600, cm:1.55, isD:false, col:"#ffe36e", unlockWave:110, max:10 },
-    killContract: { n:"KILL CONTRACT", d:"Earn extra cash for every enemy defeated.", category:"UTILITY", b:0, i:5, c:850, cm:1.6, isD:false, col:"#ffd166", unlockWave:120, max:10 },
-    bossContract: { n:"BOSS CONTRACT", d:"Earn bonus cash for defeating Boss enemies.", category:"UTILITY", b:0, i:20, c:1100, cm:1.65, isD:false, col:"#ffbf69", unlockWave:135, max:10 },
-    coinCache: { n:"COIN CACHE", d:"Gain extra permanent coins when clearing waves.", category:"UTILITY", b:0, i:1, c:1500, cm:1.7, isD:false, col:"#ffe66d", unlockWave:150, max:10 }
   };
 
   const skillDefs = {
@@ -602,9 +582,8 @@
 
     if(game.toSpawn <= 0 && game.ents.e.length === 0) {
       run.wave++;
-      if(tower) { const repairPct=parseFloat(getVal('waveRepair'))+parseFloat(getVal('repairBurst')); if(repairPct>0) tower.hp=Math.min(tower.maxHp,tower.hp+tower.maxHp*repairPct/100); }
       game.toSpawn = getWaveEnemyCount(run.wave);
-      run.coins += Math.max(1, Math.floor((Math.floor(run.wave/2) + 2 + Math.floor(parseFloat(getVal('coinCache'))) ) * 0.4)); run.cash += Math.floor(parseFloat(getVal('waveBonus')) + Math.floor(run.wave*parseFloat(getVal('waveDividend'))/100));
+      run.coins += Math.max(1, Math.floor((Math.floor(run.wave/2) + 2) * 0.4)); run.cash += Math.floor(parseFloat(getVal('waveBonus')));
       updateHUD(); AudioSys.coin(); checkAchievements();
       const milestonePerk = (run.wave-1)%5===0;
       if(milestonePerk) showPerkChoice();
@@ -627,8 +606,6 @@
         } 
         else if(p.collide(e)) {
           let dmg = p instanceof Laser ? p.d * game.dt : p.d;
-          if(e.type === 'Boss') dmg *= 1 + parseFloat(getVal('bossDamage'))/100;
-          if(e.hp <= e.maxHp*0.3) dmg *= 1 + parseFloat(getVal('executionProtocol'))/100;
           if(!(p instanceof Laser)) {
              game.ents.txt.push(new FText(e.x, e.y-e.r, Math.floor(dmg), p.crit ? "#ff3366" : "#fff", p.crit ? 24 : 14));
              createParts(p.x, p.y, p.crit ? "#ff3366" : "#0ff", p.crit?10:3, 3);
