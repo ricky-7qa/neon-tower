@@ -29,7 +29,7 @@
       this.shield = hasSkill('shield'); this.shieldCd = 0;
     }
     update(dt) {
-      let reg = parseFloat(getVal('regen')) + parseFloat(getVal('nanoMatrix')) + this.maxHp * getPerkValue('repair') / 100; if(reg>0 && this.hp<this.maxHp) this.hp = Math.min(this.maxHp, this.hp + reg*dt);
+      let baseReg = parseFloat(getVal('regen')) + parseFloat(getVal('nanoMatrix')); let reg = baseReg * (1 + getPerkValue('repair') / 100); if(reg>0 && this.hp<this.maxHp) this.hp = Math.min(this.maxHp, this.hp + reg*dt);
       if(this.shieldCd > 0) this.shieldCd -= dt; else if(hasSkill('shield')) this.shield = true;
       
       let range = parseFloat(getVal('range')) * (1+getPerkValue('radar')/100);
