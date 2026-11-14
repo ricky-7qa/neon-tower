@@ -313,7 +313,7 @@
     renderRunPerks();
     const panel=document.getElementById('perk-choice');
     panel.classList.remove('visible'); panel.innerHTML='';
-    if(id==='repair' && tower) tower.hp=Math.min(tower.maxHp,tower.hp+tower.maxHp*selectedPerk.values[rarity]*4/100);
+    if(id==='repair' && tower) { const baseRegen=parseFloat(getVal('regen'))+parseFloat(getVal('nanoMatrix')); tower.hp=Math.min(tower.maxHp,tower.hp+baseRegen*selectedPerk.values[rarity]*4/100); }
     game.paused=false; game.last=performance.now(); updateHUD();
     saveRunCheckpoint(false);
     notify('PERK UNLOCKED',selectedPerk.name+' · '+perkRarities[rarity].label);
