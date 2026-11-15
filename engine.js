@@ -652,8 +652,9 @@
       run.coins += Math.max(1, Math.floor((Math.floor(run.wave/2) + 2 + Math.floor(parseFloat(getVal('coinCache'))) ) * 0.4 * (run.activeDecision === 'power_failure' ? 1.5 : 1))); run.cash += Math.floor((parseFloat(getVal('waveBonus')) + Math.floor(run.wave*parseFloat(getVal('waveDividend'))/100)) * (run.activeDecision === 'endless_assault' ? 1.35 : 1));
       updateHUD(); AudioSys.coin(); checkAchievements();
       run.activeDecision = null;
-      const perkMilestone = run.wave % 10 === 5;
-      const decisionMilestone = run.wave % 10 === 0;
+      const completedWave = run.wave - 1;
+      const perkMilestone = completedWave % 10 === 5;
+      const decisionMilestone = completedWave % 10 === 0;
       const perksAvailable = perkDefs.some(p => getPerkStacks(p.id) < p.maxStacks);
       const showPerk = perkMilestone && perksAvailable;
       const showDecision = decisionMilestone || (perkMilestone && !perksAvailable);
