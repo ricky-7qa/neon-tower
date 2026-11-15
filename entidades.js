@@ -202,10 +202,12 @@
       const middleWaveLevels = Math.max(0, Math.min(30, w - 20));
       const lateWaveLevels = Math.max(0, w - 50);
       const waveScale = Math.pow(1.075, earlyWaveLevels + lateWaveLevels) * Math.pow(1.15, middleWaveLevels);
-      this.maxHp = 24 * waveScale * hpM; this.hp = this.maxHp;
-      this.dmg = (3.2 * Math.pow(1.045, Math.max(0, w - 1))) * damageM;
+      const decision = run.activeDecision;
+      const decisionHp = decision === 'elite_hunt' ? 1.35 : decision === 'boss_contract' && this.type === 'Boss' ? 1.25 : 1;
+      this.maxHp = 24 * waveScale * hpM * decisionHp; this.hp = this.maxHp;
+      this.dmg = (3.2 * Math.pow(1.045, Math.max(0, w - 1))) * damageM * (decision === 'power_failure' ? 1.2 : 1);
       this.spd = (68 + Math.min(30, w * 1.1)) * speedM;
-      this.val = Math.floor((5 * Math.pow(1.055, Math.max(0, w - 1))) * rewardM);
+      this.val = Math.floor((5 * Math.pow(1.055, Math.max(0, w - 1))) * rewardM * (decision === 'elite_hunt' ? 1.75 : 1));
       this.fireCd = (this.type === "Boss" ? 1.25 : 0.9) + Math.random() * 1.5;
       this.isAttackingTower = false;
       this.contactAngle = 0;
@@ -348,10 +350,11 @@
           (1 + parseFloat(getVal("cashBonus"))/100) *
           (1 + parseFloat(getVal("killContract"))/100) *
           (1 + getPerkValue('fortune')/100));
+        if (run.activeDecision === 'treasure_hunt' && Math.random() < 0.12) run.coins = (run.coins || 0) + 1;
         if (hasSkill("vampire") && tower) tower.hp = Math.min(tower.maxHp, tower.hp + tower.maxHp * 0.02);
         run.cash += Math.floor(this.val * parseFloat(getVal("salvage"))/100);
         if (this.type === "Boss") {
-          player.bossKills++; run.bossKills = (run.bossKills || 0) + 1; run.coins += 15;
+          player.bossKills++; run.bossKills = (run.bossKills || 0) + 1; run.coins += 15 + (run.activeDecision === 'boss_contract' ? 25 : 0);
           run.cash += Math.floor(this.val * (parseFloat(getVal("bossBounty")) + parseFloat(getVal("bossContract")))/100);
           game.shake = 0.35; createParts(this.x, this.y, this.c, 45, 7, 1.2);
           notify("BOSS DEFEATED", "BONUS REWARDS");
