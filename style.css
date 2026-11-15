@@ -1739,3 +1739,108 @@
   padding:3px 7px !important;
   font-size:6px !important;
 }
+
+
+/* HAMBURGER MENU — keep secondary navigation tucked away until requested. */
+#app #menu { position:relative; }
+#app #menu .menu-hamburger {
+  position:absolute;
+  top:18px;
+  right:20px;
+  z-index:35;
+  width:44px;
+  height:42px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  border:1px solid rgba(0,238,255,.55);
+  border-radius:9px;
+  background:rgba(2,18,30,.9);
+  box-shadow:0 0 16px rgba(0,220,255,.12);
+  cursor:pointer;
+}
+#app #menu .menu-hamburger span {
+  display:block;
+  width:20px;
+  height:2px;
+  border-radius:2px;
+  background:#20efff;
+  box-shadow:0 0 7px rgba(0,238,255,.5);
+  transition:transform .2s,opacity .2s;
+}
+#app #menu .menu-hamburger.active span:first-child { transform:translateY(7px) rotate(45deg); }
+#app #menu .menu-hamburger.active span:nth-child(2) { opacity:0; }
+#app #menu .menu-hamburger.active span:last-child { transform:translateY(-7px) rotate(-45deg); }
+#app #menu .menu-drawer {
+  position:absolute;
+  top:68px;
+  right:18px;
+  z-index:34;
+  display:none;
+  flex-direction:column;
+  gap:12px;
+  width:min(370px,calc(100% - 36px));
+  max-height:calc(100% - 88px);
+  overflow-y:auto;
+  padding:16px;
+  border:1px solid rgba(0,225,255,.32);
+  border-radius:13px;
+  background:linear-gradient(145deg,rgba(4,19,34,.98),rgba(1,5,14,.99));
+  box-shadow:0 16px 42px rgba(0,0,0,.7),0 0 24px rgba(0,220,255,.1);
+  backdrop-filter:blur(16px);
+}
+#app #menu .menu-drawer.open { display:flex; }
+#app #menu .menu-drawer .resume-run-panel { width:100%; }
+#app #menu .menu-drawer .menu-nav {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  width:100%;
+  margin:0;
+  gap:8px;
+}
+#app #menu .menu-drawer .menu-nav .btn {
+  min-width:0;
+  min-height:42px;
+  padding:9px 6px;
+  font-size:9px;
+  letter-spacing:.6px;
+}
+#app #menu .menu-drawer .menu-footer-actions {
+  justify-content:flex-start;
+  flex-wrap:wrap;
+  margin-top:2px;
+  padding:10px 0 0;
+  border-top:1px solid rgba(100,150,175,.16);
+  background:transparent;
+}
+#app #menu .menu-drawer .menu-footer-actions .btn {
+  min-height:28px !important;
+  padding:6px 9px !important;
+  font-size:7px !important;
+}
+#app #menu .menu-primary-action { width:min(620px,calc(100% - 84px)); }
+#app #menu .menu-header { padding-right:58px; padding-left:58px; }
+@media (max-width:700px) {
+  #app #menu .menu-hamburger {
+    top:calc(10px + env(safe-area-inset-top));
+    right:10px;
+    width:38px;
+    height:36px;
+    gap:4px;
+  }
+  #app #menu .menu-hamburger span { width:18px; }
+  #app #menu .menu-drawer {
+    top:calc(54px + env(safe-area-inset-top));
+    right:9px;
+    width:min(330px,calc(100% - 18px));
+    max-height:calc(100% - 68px - env(safe-area-inset-top));
+    padding:12px;
+    gap:9px;
+  }
+  #app #menu .menu-drawer .menu-nav { gap:7px; }
+  #app #menu .menu-drawer .menu-nav .btn { min-height:39px; font-size:8px; }
+  #app #menu .menu-primary-action { width:calc(100% - 74px); margin-left:12px; margin-right:auto; }
+  #app #menu .menu-header { padding-right:48px; padding-left:48px; }
+}
