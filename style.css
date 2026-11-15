@@ -1607,3 +1607,106 @@
   background:transparent !important;
   box-shadow:none !important;
 }
+
+
+/* MAIN MENU REORGANIZATION — clearer hierarchy, same features and game systems. */
+#app #menu { gap:0; }
+#app #menu .menu-header { padding-bottom:8px; }
+#app #menu .menu-header h1 { margin-bottom:5px; }
+#app #menu .menu-device-row { margin-top:7px; }
+#app #menu .menu-primary-action {
+  flex:0 0 auto;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+  width:min(620px,calc(100% - 32px));
+  margin:8px auto 14px;
+}
+#app #menu .start-game-button {
+  width:100%;
+  min-height:66px;
+  padding:15px 24px !important;
+  border:1px solid #39f5ff;
+  border-radius:12px;
+  background:linear-gradient(105deg,rgba(0,95,115,.95),rgba(0,35,58,.98));
+  color:#eaffff;
+  font:1000 clamp(18px,2vw,24px) Orbitron,sans-serif;
+  letter-spacing:3px;
+  text-shadow:0 0 14px rgba(0,255,255,.55);
+  box-shadow:0 0 22px rgba(0,220,255,.16),inset 0 0 22px rgba(0,220,255,.09);
+}
+#app #menu .start-game-button:hover { background:linear-gradient(105deg,#087e91,#06405b); box-shadow:0 0 28px rgba(0,220,255,.3); }
+#app #menu .resume-run-panel {
+  box-sizing:border-box;
+  width:100%;
+  margin:0;
+  padding:9px 12px;
+  border:1px solid rgba(0,255,255,.3);
+  border-radius:10px;
+  background:linear-gradient(145deg,rgba(0,35,48,.8),rgba(3,8,18,.95));
+  text-align:center;
+}
+#app #menu .resume-run-label { margin-bottom:7px; color:#9db8c8; font-size:9px; letter-spacing:1.7px; }
+#app #menu .resume-run-label strong { color:#0ff; }
+#app #menu .resume-run-button { padding:8px 20px !important; border-color:#0ff; color:#0ff; font-size:12px !important; }
+#app #menu .menu-nav {
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  width:min(920px,calc(100% - 32px));
+  margin:0 auto 10px;
+  gap:9px;
+}
+#app #menu .menu-nav .btn { min-height:43px; padding:10px 8px; border-radius:8px; font-size:10px; letter-spacing:1px; }
+#app #menu > .menu-stats {
+  flex:0 0 auto;
+  display:flex;
+  justify-content:center;
+  gap:clamp(18px,6vw,58px) !important;
+  margin:0 auto 8px !important;
+  padding:8px 18px;
+  border:1px solid rgba(0,220,255,.13);
+  border-radius:10px;
+  background:linear-gradient(90deg,rgba(3,15,28,.55),rgba(0,25,38,.7),rgba(3,15,28,.55)) !important;
+}
+#app #menu .menu-stats .stat-box { min-width:120px; padding:4px 8px; border:0; background:transparent; text-align:center; }
+#app #menu .menu-stats .stat-box span:first-child { color:#829aaa; font-size:9px !important; font-weight:800; letter-spacing:1.5px; }
+#app #menu .menu-stats .stat-val { display:block; margin-top:3px; font-size:19px; }
+#app #menu .menu-footer-actions {
+  flex:0 0 auto;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  padding:8px 12px calc(8px + env(safe-area-inset-bottom));
+  border-top:1px solid rgba(100,150,175,.12);
+  background:rgba(0,0,0,.72);
+}
+#app #menu .menu-footer-label { margin-right:3px; color:#536d7d; font-size:8px; font-weight:900; letter-spacing:2px; }
+#app #menu .menu-footer-actions .btn { min-height:30px; padding:6px 11px !important; border-radius:7px; font-size:8px !important; letter-spacing:1px; }
+#app #menu .wipe-save-btn { border-color:rgba(255,51,102,.38); color:#ff6688; box-shadow:none; }
+#app.device-desktop #menu .menu-primary-action { margin-top:12px; margin-bottom:16px; }
+#app.device-mobile #menu .menu-header { padding-top:calc(13px + env(safe-area-inset-top)); }
+#app.device-mobile #menu .menu-primary-action { width:calc(100% - 28px); margin:7px auto 10px; gap:6px; }
+#app.device-mobile #menu .start-game-button { min-height:56px; padding:12px 15px !important; font-size:17px !important; letter-spacing:2px; }
+#app.device-mobile #menu .menu-nav { grid-template-columns:repeat(2,minmax(0,1fr)); width:calc(100% - 28px); margin:0 auto 8px; gap:7px; }
+#app.device-mobile #menu .menu-nav .btn { min-height:40px; padding:8px 5px; font-size:9px; }
+#app.device-mobile #menu > .menu-stats { width:calc(100% - 28px); box-sizing:border-box; gap:12px !important; padding:6px 8px; margin-bottom:5px !important; }
+#app.device-mobile #menu .menu-stats .stat-box { min-width:0; flex:1; padding:3px; }
+#app.device-mobile #menu .menu-stats .stat-box span:first-child { font-size:8px !important; }
+#app.device-mobile #menu .menu-stats .stat-val { font-size:17px; }
+#app.device-mobile #menu .menu-footer-actions { gap:7px; padding:7px 8px calc(7px + env(safe-area-inset-bottom)); }
+#app.device-mobile #menu .menu-footer-actions .btn { min-height:29px; padding:5px 8px !important; font-size:7px !important; }
+#app.device-mobile #menu .menu-footer-label { font-size:7px; }
+@media (max-width:700px) {
+  #app.device-desktop #menu .menu-nav { grid-template-columns:repeat(2,minmax(0,1fr)); width:calc(100% - 28px); }
+}
+@media (max-height:720px) {
+  #app #menu .menu-header { padding-top:8px; padding-bottom:5px; }
+  #app #menu .menu-primary-action { margin-top:4px; margin-bottom:7px; }
+  #app #menu .start-game-button { min-height:48px; }
+  #app #menu .menu-nav { margin-bottom:5px; }
+  #app #menu .menu-nav .btn { min-height:35px; }
+  #app #menu > .menu-stats { padding:4px 12px; }
+  #app #menu .menu-footer-actions { padding-top:4px; padding-bottom:4px; }
+}
