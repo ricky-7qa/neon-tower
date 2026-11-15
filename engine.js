@@ -209,11 +209,13 @@
     let checkpoint = null;
     try { checkpoint = JSON.parse(localStorage.getItem(RUN_CHECKPOINT_KEY) || 'null'); } catch (err) {}
     const exists = !!(checkpoint && checkpoint.version === 1 && checkpoint.run);
+    const primaryAction = document.querySelector('#menu .menu-primary-action');
     if (panel) {
-      panel.style.display = exists ? 'block' : 'none';
+      panel.style.display = exists ? 'flex' : 'none';
       const waveLabel = document.getElementById('resume-run-wave');
       if (waveLabel) waveLabel.textContent = exists ? 'WAVE ' + checkpoint.run.wave : '';
     }
+    if (primaryAction) primaryAction.classList.toggle('has-resume', exists);
     if (startButton) startButton.textContent = exists ? 'NEW RUN' : 'START GAME';
   }
   function saveRunCheckpoint(pendingPerk = false) {
