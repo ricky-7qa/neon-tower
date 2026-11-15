@@ -1938,3 +1938,7 @@
   #perk-choice .decision-option strong { font-size:10px; }
   #perk-choice .decision-option small { font-size:10px; }
 }
+
+
+/* Hide the optional mission tracker when continuing a saved run. */
+#mission-ui.mission-hidden-on-resume { display:none !important; }
