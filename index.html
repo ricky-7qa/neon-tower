@@ -8,7 +8,7 @@
   <!-- Game favicon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' stroke='%230ff' stroke-width='10' fill='none'/><circle cx='50' cy='50' r='15' fill='%23ff3366'/></svg>">
   
-  <link rel="stylesheet" href="style.css?v=20261115-hamburger-menu1">
+  <link rel="stylesheet" href="style.css?v=20261115-resume-side-by-side1">
   <script>
     window.neonAnalyticsQueue = window.neonAnalyticsQueue || [];
     window.neonTrack = function(eventData) {
@@ -126,12 +126,12 @@
     </button>
     <div class="menu-primary-action">
       <button id="start-new-run-button" class="btn start-game-button" onclick="startGame()" data-goatcounter-click="deploy-click" data-goatcounter-title="Start Game button clicked">START GAME</button>
-    </div>
-    <div id="menu-drawer" class="menu-drawer">
       <div id="resume-run-panel" class="resume-run-panel" style="display:none;">
         <div class="resume-run-label">RUN IN PROGRESS · <strong id="resume-run-wave">WAVE</strong></div>
-        <button class="btn resume-run-button" onclick="closeMenuDrawer(); resumeRun()">RESUME RUN</button>
+        <button class="btn resume-run-button" onclick="resumeRun()">RESUME RUN</button>
       </div>
+    </div>
+    <div id="menu-drawer" class="menu-drawer">
       <div class="menu-nav">
         <button class="btn btn-gold" onclick="switchTab('workshop'); closeMenuDrawer()">WORKSHOP</button>
         <button class="btn btn-gold" onclick="switchTab('skills'); closeMenuDrawer()">SKILL TREE</button>
@@ -236,7 +236,7 @@
   };
 </script>
 <script src="entidades.js?v=20261115-boss-health-3x"></script>
-<script src="engine.js?v=20261115-canvas-resize-on-start"></script>
+<script src="engine.js?v=20261115-resume-side-by-side1"></script>
 <script src="ui.js?v=20261114-nanite-regen-multiplier"></script>
 </body>
 </html>
