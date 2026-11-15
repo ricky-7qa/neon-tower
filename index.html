@@ -121,18 +121,28 @@
       <p style="color:#0ff; letter-spacing: 5px; font-weight: bold;">3D APEX EDITION</p>
       <div class="menu-device-row"><span id="menu-device-label">DESKTOP MODE</span></div>
     </div>
+    <button id="menu-hamburger" class="menu-hamburger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="menu-drawer" onclick="toggleMenuDrawer()">
+      <span></span><span></span><span></span>
+    </button>
     <div class="menu-primary-action">
-      <div id="resume-run-panel" class="resume-run-panel" style="display:none;">
-        <div class="resume-run-label">RUN IN PROGRESS · <strong id="resume-run-wave">WAVE</strong></div>
-        <button class="btn resume-run-button" onclick="resumeRun()">RESUME RUN</button>
-      </div>
       <button id="start-new-run-button" class="btn start-game-button" onclick="startGame()" data-goatcounter-click="deploy-click" data-goatcounter-title="Start Game button clicked">START GAME</button>
     </div>
-    <div class="menu-nav">
-      <button class="btn btn-gold" onclick="switchTab('workshop')">WORKSHOP</button>
-      <button class="btn btn-gold" onclick="switchTab('skills')">SKILL TREE</button>
-      <button class="btn btn-gold" onclick="switchTab('achievements')">ACHIEVEMENTS</button>
-      <button class="btn btn-gold" onclick="switchTab('leaderboard')">LEADERBOARD</button>
+    <div id="menu-drawer" class="menu-drawer">
+      <div id="resume-run-panel" class="resume-run-panel" style="display:none;">
+        <div class="resume-run-label">RUN IN PROGRESS · <strong id="resume-run-wave">WAVE</strong></div>
+        <button class="btn resume-run-button" onclick="closeMenuDrawer(); resumeRun()">RESUME RUN</button>
+      </div>
+      <div class="menu-nav">
+        <button class="btn btn-gold" onclick="switchTab('workshop'); closeMenuDrawer()">WORKSHOP</button>
+        <button class="btn btn-gold" onclick="switchTab('skills'); closeMenuDrawer()">SKILL TREE</button>
+        <button class="btn btn-gold" onclick="switchTab('achievements'); closeMenuDrawer()">ACHIEVEMENTS</button>
+        <button class="btn btn-gold" onclick="switchTab('leaderboard'); closeMenuDrawer()">LEADERBOARD</button>
+      </div>
+      <div class="menu-footer-actions">
+        <span class="menu-footer-label">SYSTEM</span>
+        <button class="btn change-device-btn" onclick="closeMenuDrawer(); changeDeviceMode()">CHANGE DEVICE</button>
+        <button class="btn wipe-save-btn" onclick="closeMenuDrawer(); resetSave()">WIPE SAVE</button>
+      </div>
     </div>
     <div class="top-bar menu-stats">
       <div class="stat-box"><span>GLOBAL COINS</span><span class="stat-val c-gold" id="menu-coins">$0</span></div>
@@ -151,11 +161,6 @@
       </section>
     </div>
     
-    <div class="menu-footer-actions">
-      <span class="menu-footer-label">SYSTEM</span>
-      <button class="btn change-device-btn" onclick="changeDeviceMode()">CHANGE DEVICE</button>
-      <button class="btn wipe-save-btn" onclick="resetSave()">WIPE SAVE</button>
-    </div>
   </div>
 
   <div id="gameover" class="layer" style="justify-content: center; align-items: center;">
