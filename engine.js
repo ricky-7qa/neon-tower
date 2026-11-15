@@ -310,6 +310,7 @@
     const decision = waveDecisionDefs.find(d => d.id === id);
     if (!decision || !game || !game.running) return;
     run.activeDecision = id;
+    if (id === 'endless_assault') game.toSpawn = Math.ceil((game.toSpawn || 0) * 1.2);
     if (id === 'black_market') {
       const exchanged = Math.floor((run.cash || 0) * 0.15);
       run.cash = Math.max(0, (run.cash || 0) - exchanged);
@@ -438,8 +439,10 @@
 
   function getWaveEnemyCount(wave) {
     const w = Math.max(1, Math.floor(Number(wave) || 1));
-    const base = w <= 20 ? 9 + Math.floor(w * 1.25) : w <= 50 ? 34 + Math.floor((w - 20) * 0.7) : w <= 100 ? 55 + Math.floor((w - 50) * 0.3) : 70 + Math.floor((w - 100) * 0.35);
-    return Math.ceil(base * (run?.activeDecision === 'endless_assault' ? 1.2 : 1));
+    if (w <= 20) return 9 + Math.floor(w * 1.25);
+    if (w <= 50) return 34 + Math.floor((w - 20) * 0.7);
+    if (w <= 100) return 55 + Math.floor((w - 50) * 0.3);
+    return 70 + Math.floor((w - 100) * 0.35);
   }
 
   /** MAIN LOOP & RENDERING **/
