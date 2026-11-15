@@ -411,6 +411,7 @@
       return;
     }
     AudioSys.init();
+    resize(); // Recalculate the canvas after the device/layout selection and before starting the run.
     gameSessionStartedAt = Date.now();
     gameDurationTracked = false;
     gameSessionSource = 'site';
@@ -484,6 +485,7 @@
       return;
     }
     AudioSys.init();
+    resize(); // Recalculate the canvas after the device/layout selection and before restoring the run.
     gameSessionStartedAt = Date.now();
     gameDurationTracked = false;
     gameSessionSource = 'resume';
