@@ -215,6 +215,26 @@
     }, { passive: false });
   })();
 </script>
+<script>
+  window.toggleMenuDrawer = function () {
+    var drawer = document.getElementById('menu-drawer');
+    var button = document.getElementById('menu-hamburger');
+    if (!drawer || !button) return;
+    var isOpen = drawer.classList.toggle('open');
+    button.classList.toggle('active', isOpen);
+    button.setAttribute('aria-expanded', String(isOpen));
+    button.setAttribute('aria-label', isOpen ? 'Close menu' : 'Open menu');
+  };
+  window.closeMenuDrawer = function () {
+    var drawer = document.getElementById('menu-drawer');
+    var button = document.getElementById('menu-hamburger');
+    if (!drawer || !button) return;
+    drawer.classList.remove('open');
+    button.classList.remove('active');
+    button.setAttribute('aria-expanded', 'false');
+    button.setAttribute('aria-label', 'Open menu');
+  };
+</script>
 <script src="entidades.js?v=20261115-boss-health-3x"></script>
 <script src="engine.js?v=20261115-canvas-resize-on-start"></script>
 <script src="ui.js?v=20261114-nanite-regen-multiplier"></script>
