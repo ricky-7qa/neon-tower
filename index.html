@@ -119,18 +119,24 @@
     <div class="menu-header">
       <h1>NEON TOWER</h1>
       <p style="color:#0ff; letter-spacing: 5px; font-weight: bold;">3D APEX EDITION</p>
-      <div class="menu-device-row"><span id="menu-device-label">DESKTOP MODE</span><button class="btn change-device-btn" onclick="changeDeviceMode()">CHANGE DEVICE</button></div>
+      <div class="menu-device-row"><span id="menu-device-label">DESKTOP MODE</span></div>
+    </div>
+    <div class="menu-primary-action">
+      <div id="resume-run-panel" class="resume-run-panel" style="display:none;">
+        <div class="resume-run-label">RUN IN PROGRESS · <strong id="resume-run-wave">WAVE</strong></div>
+        <button class="btn resume-run-button" onclick="resumeRun()">RESUME RUN</button>
+      </div>
+      <button id="start-new-run-button" class="btn start-game-button" onclick="startGame()" data-goatcounter-click="deploy-click" data-goatcounter-title="Start Game button clicked">START GAME</button>
     </div>
     <div class="menu-nav">
       <button class="btn btn-gold" onclick="switchTab('workshop')">WORKSHOP</button>
       <button class="btn btn-gold" onclick="switchTab('skills')">SKILL TREE</button>
       <button class="btn btn-gold" onclick="switchTab('achievements')">ACHIEVEMENTS</button>
       <button class="btn btn-gold" onclick="switchTab('leaderboard')">LEADERBOARD</button>
-      <button class="btn" style="border-color:#ff3366; color:#ff3366;" onclick="resetSave()">WIPE SAVE</button>
     </div>
-    <div class="top-bar" style="justify-content: center; gap: 50px; background: transparent; border: none; margin-bottom: 20px;">
-      <div class="stat-box"><span style="font-size:14px; color:#aaa;">GLOBAL COINS</span><span class="stat-val c-gold" id="menu-coins">$0</span></div>
-      <div class="stat-box"><span style="font-size:14px; color:#aaa;">HIGHEST WAVE</span><span class="stat-val c-cyan" id="menu-wave">1</span></div>
+    <div class="top-bar menu-stats">
+      <div class="stat-box"><span>GLOBAL COINS</span><span class="stat-val c-gold" id="menu-coins">$0</span></div>
+      <div class="stat-box"><span>HIGHEST WAVE</span><span class="stat-val c-cyan" id="menu-wave">1</span></div>
     </div>
     
     <div id="tab-workshop" class="scroll-area"><div class="grid" id="ws-grid"></div></div>
@@ -145,12 +151,10 @@
       </section>
     </div>
     
-    <div style="padding: 20px; text-align: center; background: #000; border-top: 1px solid #333; z-index: 10;">
-      <div id="resume-run-panel" style="display:none; margin:0 auto 12px; max-width:520px; padding:14px; border:1px solid rgba(0,255,255,.35); border-radius:10px; background:linear-gradient(145deg,rgba(0,35,48,.8),rgba(3,8,18,.95));">
-        <div style="color:#9db8c8; font-size:11px; letter-spacing:2px; margin-bottom:9px;">RUN IN PROGRESS · <strong id="resume-run-wave" style="color:#0ff;">WAVE</strong></div>
-        <button class="btn" style="font-size:20px; padding:12px 35px; border-color:#0ff; color:#0ff;" onclick="resumeRun()">RESUME RUN</button>
-      </div>
-      <button id="start-new-run-button" class="btn" style="font-size: 24px; padding: 15px 60px;" onclick="startGame()" data-goatcounter-click="deploy-click" data-goatcounter-title="Start Game button clicked">START GAME</button>
+    <div class="menu-footer-actions">
+      <span class="menu-footer-label">SYSTEM</span>
+      <button class="btn change-device-btn" onclick="changeDeviceMode()">CHANGE DEVICE</button>
+      <button class="btn wipe-save-btn" onclick="resetSave()">WIPE SAVE</button>
     </div>
   </div>
 
