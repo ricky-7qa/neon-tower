@@ -438,10 +438,8 @@
 
   function getWaveEnemyCount(wave) {
     const w = Math.max(1, Math.floor(Number(wave) || 1));
-    if (w <= 20) return 9 + Math.floor(w * 1.25);
-    if (w <= 50) return 34 + Math.floor((w - 20) * 0.7);
-    if (w <= 100) return 55 + Math.floor((w - 50) * 0.3);
-    return 70 + Math.floor((w - 100) * 0.35);
+    const base = w <= 20 ? 9 + Math.floor(w * 1.25) : w <= 50 ? 34 + Math.floor((w - 20) * 0.7) : w <= 100 ? 55 + Math.floor((w - 50) * 0.3) : 70 + Math.floor((w - 100) * 0.35);
+    return Math.ceil(base * (run?.activeDecision === 'endless_assault' ? 1.2 : 1));
   }
 
   /** MAIN LOOP & RENDERING **/
@@ -648,7 +646,7 @@
       run.wave++;
       if(tower) { const repairPct=parseFloat(getVal('waveRepair'))+parseFloat(getVal('repairBurst')); if(repairPct>0) tower.hp=Math.min(tower.maxHp,tower.hp+tower.maxHp*repairPct/100); }
       game.toSpawn = getWaveEnemyCount(run.wave);
-      run.coins += Math.max(1, Math.floor((Math.floor(run.wave/2) + 2 + Math.floor(parseFloat(getVal('coinCache'))) ) * 0.4)); run.cash += Math.floor(parseFloat(getVal('waveBonus')) + Math.floor(run.wave*parseFloat(getVal('waveDividend'))/100));
+      run.coins += Math.max(1, Math.floor((Math.floor(run.wave/2) + 2 + Math.floor(parseFloat(getVal('coinCache'))) ) * 0.4 * (run.activeDecision === 'power_failure' ? 1.5 : 1))); run.cash += Math.floor((parseFloat(getVal('waveBonus')) + Math.floor(run.wave*parseFloat(getVal('waveDividend'))/100)) * (run.activeDecision === 'endless_assault' ? 1.35 : 1));
       updateHUD(); AudioSys.coin(); checkAchievements();
       run.activeDecision = null;
       const perkMilestone = run.wave % 10 === 5;
