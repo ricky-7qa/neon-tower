@@ -256,7 +256,7 @@
     if (status) status.textContent = message;
   }
 
-  function saveLeaderboardName() {
+  async function saveLeaderboardName() {
     const input = document.getElementById('leaderboard-name');
     const name = (input?.value || '').trim();
     if (!/^[a-zA-Z0-9 _-]{3,16}$/.test(name)) {
@@ -264,8 +264,22 @@
       return;
     }
     localStorage.setItem(LEADERBOARD_NAME_KEY, name);
-    setLeaderboardStatus('PLAYER NAME SAVED');
-    loadLeaderboard();
+    if (!leaderboardClient) {
+      setLeaderboardStatus('PLAYER NAME SAVED LOCALLY');
+      return;
+    }
+    try {
+      const { error } = await leaderboardClient
+        .from('leaderboard_entries')
+        .update({ player_name: name })
+        .eq('player_id', leaderboardPlayerId);
+      if (error) throw error;
+      setLeaderboardStatus('PLAYER NAME UPDATED');
+      await loadLeaderboard();
+    } catch (error) {
+      console.error('Leaderboard name update failed:', error);
+      setLeaderboardStatus('NAME SAVED LOCALLY — RANKING UPDATE FAILED');
+    }
   }
 
   async function loadLeaderboard() {
