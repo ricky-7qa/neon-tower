@@ -464,7 +464,7 @@
       {id:'kills', title:'ELIMINATE 30 ENEMIES', description:'Defeat 30 enemies during this run.', target:30, reward:25},
       {id:'survive', title:'SURVIVE 2 MINUTES', description:'Stay alive for 120 seconds.', target:120, reward:25}
     ];
-    document.getElementById('mission-ui')?.classList.remove('mission-complete');
+    document.getElementById('mission-ui')?.classList.remove('mission-complete', 'mission-hidden-on-resume');
     run.mission = {...missionOptions[Math.floor(Math.random()*missionOptions.length)], progress:0, complete:false};
     document.getElementById('mission-title').textContent = run.mission.title;
     document.getElementById('mission-desc').textContent = run.mission.description;
@@ -535,6 +535,8 @@
     document.getElementById('gameover').classList.remove('active-layer');
     document.getElementById('hud').classList.add('active-hud');
     run = checkpoint.run;
+    // Keep the saved mission and its progress, but hide the tracker for resumed runs.
+    document.getElementById('mission-ui')?.classList.add('mission-hidden-on-resume');
     game = {
       running:true, paused:!!checkpoint.pendingPerk, dt:0, last:performance.now(),
       shake:0, playSaveT:0, achievementCheckT:0, spawnT:0.25,
