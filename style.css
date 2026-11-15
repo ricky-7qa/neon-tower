@@ -1441,6 +1441,9 @@
   #app.device-mobile .leaderboard-heading h2 { font-size:19px; letter-spacing:1px; }
   #app.device-mobile .leaderboard-heading p { font-size:10px; }
   #app.device-mobile .leaderboard-profile { padding:10px; }
+  #app.device-mobile .leaderboard-name-row { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:stretch; gap:8px; }
+  #app.device-mobile .leaderboard-name-row input { display:block; width:100%; min-width:0; flex:none; box-sizing:border-box; }
+  #app.device-mobile .leaderboard-name-row .btn { display:block; width:auto; min-width:76px; flex:none; padding:8px 12px; font-size:10px; white-space:nowrap; }
   #app.device-mobile .leaderboard-name-row input { padding:9px 8px; font-size:12px; }
   #app.device-mobile .leaderboard-name-row .btn { min-width:64px; padding:8px; font-size:9px; }
   #app.device-mobile .leaderboard-row { grid-template-columns:31px minmax(0,1fr) 43px 52px; gap:6px; padding:9px 7px; }
