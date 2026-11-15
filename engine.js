@@ -218,7 +218,7 @@
     if (primaryAction) primaryAction.classList.toggle('has-resume', exists);
     if (startButton) startButton.textContent = exists ? 'NEW RUN' : 'START GAME';
   }
-  function saveRunCheckpoint(pendingPerk = false) {
+  function saveRunCheckpoint(pendingPerk = false, pendingDecision = false) {
     if (!game || !game.running || !tower) return;
     try {
       const previous = JSON.parse(localStorage.getItem(RUN_CHECKPOINT_KEY) || 'null');
@@ -232,7 +232,8 @@
         version: 1,
         run: savedRun,
         tower: { hp: tower.hp, shield: tower.shield },
-        pendingPerk: !!pendingPerk
+        pendingPerk: !!pendingPerk,
+        pendingDecision: !!pendingDecision
       }));
     } catch (err) { console.warn('Could not save run checkpoint', err); }
     refreshResumeUI();
@@ -273,7 +274,7 @@
   function showPerkChoice() {
     if(!game || !game.running) return;
     const available = perkDefs.filter(p => getPerkStacks(p.id) < p.maxStacks);
-    if (!available.length) { notify('PERKS MAXED', 'All run perks have reached their limits.'); return; }
+    if (!available.length) { showWaveDecisionChoice(); return; }
     game.paused = true;
     const panel = document.getElementById('perk-choice');
     const picks = rollPerkOptions(available,3);
@@ -283,6 +284,44 @@
       return '<button class="perk-option rarity-'+p.rarity+'" onclick="choosePerk(\''+p.id+'\',\''+p.rarity+'\')"><span>'+p.icon+'</span><strong>'+p.name+'</strong><small class="perk-rarity-label">'+perkRarities[p.rarity].label+'</small><small>'+p.desc+'</small><small class="perk-stack-limit">'+effect+'</small><span class="perk-stars" aria-label="'+getPerkStacks(p.id)+' of '+p.maxStacks+' perk stars">'+'★'.repeat(getPerkStacks(p.id))+'<span class="perk-star-empty">'+'☆'.repeat(p.maxStacks-getPerkStacks(p.id))+'</span></span></button>';
     }).join('')+'</div></div>';
     panel.classList.add('visible');
+  }
+
+  const waveDecisionDefs = [
+    {id:'elite_hunt',name:'ELITE HUNT',icon:'◆',desc:'Enemies in the next wave have 35% more health, but each kill gives 75% more cash.'},
+    {id:'endless_assault',name:'ENDLESS ASSAULT',icon:'♢',desc:'Face 20% more enemies in the next wave. Clearing it gives 35% more wave cash.'},
+    {id:'boss_contract',name:'BOSS CONTRACT',icon:'☠',desc:'The next Boss has 25% more health. Defeating it grants 25 extra run coins.'},
+    {id:'black_market',name:'BLACK MARKET',icon:'◈',desc:'Trade 15% of your current run cash for 8 run coins immediately.'},
+    {id:'treasure_hunt',name:'TREASURE HUNT',icon:'✧',desc:'Enemies in the next wave have a 12% chance to drop an extra run coin.'},
+    {id:'power_failure',name:'POWER FAILURE',icon:'⚡',desc:'Enemies deal 20% more damage in the next wave, but clearing it grants 50% more run coins.'}
+  ];
+
+  function showWaveDecisionChoice() {
+    if (!game || !game.running) return;
+    game.paused = true;
+    const panel = document.getElementById('perk-choice');
+    const picks = [...waveDecisionDefs].sort(() => Math.random() - 0.5).slice(0, 3);
+    panel.innerHTML = '<div class="perk-dialog decision-dialog"><span class="perk-eyebrow">WAVE MILESTONE</span><h2>CHOOSE YOUR STRATEGY</h2><p>These choices change the next wave. Some offer greater rewards at a higher risk.</p><div class="perk-options decision-options">' +
+      picks.map(d => '<button class="perk-option decision-option" onclick="chooseWaveDecision(\'' + d.id + '\')"><span>' + d.icon + '</span><strong>' + d.name + '</strong><small>' + d.desc + '</small></button>').join('') +
+      '</div></div>';
+    panel.classList.add('visible');
+  }
+
+  function chooseWaveDecision(id) {
+    const decision = waveDecisionDefs.find(d => d.id === id);
+    if (!decision || !game || !game.running) return;
+    run.activeDecision = id;
+    if (id === 'black_market') {
+      const exchanged = Math.floor((run.cash || 0) * 0.15);
+      run.cash = Math.max(0, (run.cash || 0) - exchanged);
+      run.coins = (run.coins || 0) + 8;
+    }
+    const panel = document.getElementById('perk-choice');
+    panel.classList.remove('visible');
+    panel.innerHTML = '';
+    game.paused = false;
+    game.last = performance.now();
+    updateHUD();
+    saveRunCheckpoint(false, false);
   }
 
   function renderRunPerks() {
@@ -511,6 +550,7 @@
     updateHUD();
     refreshResumeUI();
     if (checkpoint.pendingPerk) showPerkChoice();
+    else if (checkpoint.pendingDecision) showWaveDecisionChoice();
     requestAnimationFrame(loop);
   }
   window.resumeRun = resumeRun;
@@ -610,9 +650,15 @@
       game.toSpawn = getWaveEnemyCount(run.wave);
       run.coins += Math.max(1, Math.floor((Math.floor(run.wave/2) + 2 + Math.floor(parseFloat(getVal('coinCache'))) ) * 0.4)); run.cash += Math.floor(parseFloat(getVal('waveBonus')) + Math.floor(run.wave*parseFloat(getVal('waveDividend'))/100));
       updateHUD(); AudioSys.coin(); checkAchievements();
-      const milestonePerk = (run.wave-1)%5===0;
-      if(milestonePerk) showPerkChoice();
-      saveRunCheckpoint(milestonePerk); 
+      run.activeDecision = null;
+      const perkMilestone = run.wave % 10 === 5;
+      const decisionMilestone = run.wave % 10 === 0;
+      const perksAvailable = perkDefs.some(p => getPerkStacks(p.id) < p.maxStacks);
+      const showPerk = perkMilestone && perksAvailable;
+      const showDecision = decisionMilestone || (perkMilestone && !perksAvailable);
+      if (showPerk) showPerkChoice();
+      else if (showDecision) showWaveDecisionChoice();
+      saveRunCheckpoint(showPerk, showDecision); 
     }
     game.spawnT -= game.dt;
     if(game.spawnT <= 0 && game.toSpawn > 0) { game.ents.e.push(new Enemy(run.wave)); game.toSpawn--; game.spawnT = Math.max(0.48, 0.82 - (run.wave*0.006)); updateHUD(); }
