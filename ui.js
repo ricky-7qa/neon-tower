@@ -338,6 +338,15 @@
       cloudSaveReady = true;
       cloudSaveLoadingUserId = '';
       setAuthStatus('CLOUD SAVE SYNCED. YOUR PROGRESS IS LINKED TO THIS ACCOUNT.');
+      // Publish an existing local/cloud personal best when the player signs in.
+      if (typeof submitLeaderboardResult === 'function' && Number(player?.highestWave || 0) > 15) {
+        submitLeaderboardResult({
+          wave: player.highestWave,
+          kills: player.bestKills || 0,
+          bossKills: player.bestBosses || 0,
+          elapsed: player.bestDuration || 0
+        });
+      }
       if (document.getElementById('tab-leaderboard')?.style.display !== 'none') showLeaderboardView();
     } catch (error) {
       console.error('Cloud save initialization failed:', error);
