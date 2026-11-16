@@ -2744,3 +2744,14 @@
     line-height:1;
   }
 }
+
+.game-settings-end-action {
+  border:1px solid rgba(255,75,112,.58);
+  color:#ff8ba2;
+  background:linear-gradient(145deg,rgba(58,13,29,.92),rgba(20,5,14,.96));
+  box-shadow:0 0 12px rgba(255,50,100,.12),inset 0 0 10px rgba(255,60,100,.06);
+}
+.game-settings-end-action:active {
+  background:rgba(100,18,42,.95);
+  border-color:#ff6688;
+}
