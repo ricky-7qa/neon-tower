@@ -259,6 +259,7 @@
     } else {
       cloudSaveReady = false;
       cloudSaveUserId = '';
+      cloudSaveLoadingUserId = '';
       if (cloudSaveTimer) { clearTimeout(cloudSaveTimer); cloudSaveTimer = null; }
     }
     const nameInput = document.getElementById('leaderboard-name');
@@ -271,6 +272,7 @@
   }
 
   let cloudSaveUserId = '';
+  let cloudSaveLoadingUserId = '';
   let cloudSaveReady = false;
   let cloudSaveTimer = null;
   let cloudSaveWriteQueue = Promise.resolve();
@@ -307,8 +309,9 @@
   async function initializeNeonCloudSave(session) {
     const userId = session && session.user ? session.user.id : '';
     if (!userId || !leaderboardClient || !window.getNeonTowerCloudSave) return;
-    if (cloudSaveUserId === userId && cloudSaveReady) return;
+    if (cloudSaveUserId === userId && (cloudSaveReady || cloudSaveLoadingUserId === userId)) return;
     cloudSaveUserId = userId;
+    cloudSaveLoadingUserId = userId;
     cloudSaveReady = false;
     if (cloudSaveTimer) { clearTimeout(cloudSaveTimer); cloudSaveTimer = null; }
     setAuthStatus('SYNCING YOUR CLOUD SAVE...');
@@ -333,11 +336,13 @@
         if (insertError) throw insertError;
       }
       cloudSaveReady = true;
+      cloudSaveLoadingUserId = '';
       setAuthStatus('CLOUD SAVE SYNCED. YOUR PROGRESS IS LINKED TO THIS ACCOUNT.');
       if (document.getElementById('tab-leaderboard')?.style.display !== 'none') showLeaderboardView();
     } catch (error) {
       console.error('Cloud save initialization failed:', error);
       cloudSaveReady = false;
+      cloudSaveLoadingUserId = '';
       if (leaderboardPlayerId === userId) setAuthStatus('CLOUD SAVE UNAVAILABLE. PLEASE REFRESH AND TRY AGAIN.');
     }
   }
