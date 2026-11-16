@@ -2200,3 +2200,17 @@
     letter-spacing:.45px;
   }
 }
+
+
+/* Permanent Utility speed control */
+.speed-control-card{gap:12px;border-color:rgba(255,215,0,.35);background:linear-gradient(145deg,rgba(30,24,8,.72),rgba(5,8,14,.98))}
+.speed-control-card h3{align-items:center;gap:8px}
+.speed-control-card p{color:#a9a6a0;font-size:12px;line-height:1.55;margin-top:7px}
+.speed-upgrade-btn{width:100%;min-height:38px;font-size:10px;letter-spacing:1px}
+.game-speed-btn{display:inline-flex;align-items:center;justify-content:center;pointer-events:auto;min-height:38px;padding:8px 12px;border:1px solid #ffd700;border-radius:7px;background:rgba(18,14,3,.9);color:#ffd700;font-family:inherit;font-size:10px;font-weight:900;letter-spacing:1px;cursor:pointer;white-space:nowrap}
+.game-speed-btn.speed-boost-active{background:#ffd700;color:#080600;box-shadow:0 0 15px rgba(255,215,0,.45)}
+.game-speed-btn:disabled{opacity:.7;cursor:default}
+@media(max-width:600px){
+  .game-speed-btn{min-height:32px;padding:6px 8px;font-size:8px;letter-spacing:.5px}
+  .speed-control-card{padding:13px}
+}
