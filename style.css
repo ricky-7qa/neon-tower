@@ -2494,7 +2494,11 @@
 #app #menu .menu-drawer .menu-nav .btn.active,
 #app #menu .menu-drawer .menu-nav .btn.selected,
 #app #menu .menu-drawer .menu-nav .btn.is-active,
-#app #menu .menu-drawer .menu-nav .btn[aria-current="page"] {
+#app #menu .menu-drawer .menu-nav .btn[aria-current="page"],
+#app.device-mobile #menu .menu-nav .btn:last-child,
+#app.device-mobile #menu .menu-nav .btn:last-child:hover:not(:disabled),
+#app.device-mobile #menu .menu-nav .btn:last-child:focus,
+#app.device-mobile #menu .menu-nav .btn:last-child:active:not(:disabled) {
   color:#ffd700 !important;
   -webkit-text-fill-color:#ffd700 !important;
   background:rgba(0,18,28,.78) !important;
