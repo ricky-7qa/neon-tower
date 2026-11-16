@@ -2484,3 +2484,21 @@
   #app.device-desktop #menu .menu-stats { padding:4px 12px; }
   #app.device-desktop #menu .scroll-area { padding-top:5px; }
 }
+
+/* Keep selected in-game upgrade tab labels readable on every device. */
+#app .upg-tab.active,
+#app .upg-tab.defense-tab.active,
+#app .upg-tab.utility-tab.active {
+  color:#06111a !important;
+  -webkit-text-fill-color:#06111a !important;
+  opacity:1 !important;
+  text-shadow:0 1px 0 rgba(255,255,255,.38),0 0 3px rgba(255,255,255,.18) !important;
+  font-weight:900 !important;
+}
+#app .upg-tab.active *,
+#app .upg-tab.defense-tab.active *,
+#app .upg-tab.utility-tab.active * {
+  color:inherit !important;
+  -webkit-text-fill-color:inherit !important;
+  opacity:1 !important;
+}
