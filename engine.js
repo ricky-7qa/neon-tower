@@ -61,13 +61,20 @@
   /** AUDIO SYSTEM **/
   const AudioSys = {
     ctx: null, master: null,
+    enabled: localStorage.getItem('neonTowerSoundEnabled') !== 'false',
     init() {
-      if(this.ctx) return; 
+      if(this.ctx) return;
       this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-      this.master = this.ctx.createGain(); this.master.gain.value = 0.3; this.master.connect(this.ctx.destination);
+      this.master = this.ctx.createGain(); this.master.gain.value = this.enabled ? 0.3 : 0; this.master.connect(this.ctx.destination);
+    },
+    setEnabled(enabled) {
+      this.enabled = !!enabled;
+      localStorage.setItem('neonTowerSoundEnabled', this.enabled ? 'true' : 'false');
+      if(this.master) this.master.gain.setTargetAtTime(this.enabled ? 0.3 : 0, this.ctx.currentTime, 0.02);
+      return this.enabled;
     },
     play(type, freqStart, freqEnd, typeW, duration, vol) {
-      if(!this.ctx || this.ctx.state !== 'running') return;
+      if(!this.enabled || !this.ctx || this.ctx.state !== 'running') return;
       const t = this.ctx.currentTime;
       const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
       osc.type = typeW; osc.frequency.setValueAtTime(freqStart, t);
