@@ -1,0 +1,9 @@
+{
+  "appId": "com.neontower.apex",
+  "appName": "Neon Tower",
+  "webDir": "www",
+  "backgroundColor": "#010103",
+  "ios": {
+    "contentInset": "automatic"
+  }
+}
