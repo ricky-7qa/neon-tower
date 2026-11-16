@@ -2014,35 +2014,15 @@
   line-height:1.5;
 }
 #app .auth-back-button { display:block; margin:0 auto; }
-#app .leaderboard-account-bar {
+#app .leaderboard-footer-actions {
   display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:10px;
-  min-width:0;
-  margin-bottom:12px;
-  color:#8bb1c2;
-  font-size:9px;
+  justify-content:flex-end;
+  margin:18px 0 8px;
 }
-#app .leaderboard-account-bar > span {
-  display:block;
-  flex:1 1 0;
-  min-width:0;
-  line-height:1.5;
-  overflow-wrap:anywhere;
-  word-break:break-word;
-}
-#app .leaderboard-account-bar strong {
-  display:inline;
-  color:#70eaff;
-  overflow-wrap:anywhere;
-  word-break:break-all;
-}
-#app .leaderboard-account-bar .btn { flex:0 0 auto; padding:7px 10px; font-size:9px; }
+#app .leaderboard-footer-actions .btn { padding:8px 14px; font-size:9px; }
 #app .auth-reset-note { color:#9fc4d4; font-size:11px; text-align:center; }
 @media(max-width:600px) {
   #app .leaderboard-auth-card { padding:14px 12px; }
-  #app .leaderboard-account-bar { align-items:center; gap:8px; font-size:8px; }
-  #app .leaderboard-account-bar > span { flex-basis:0; }
-  #app .leaderboard-account-bar .btn { font-size:8px; }
+  #app .leaderboard-footer-actions { justify-content:center; margin-top:16px; }
+  #app .leaderboard-footer-actions .btn { font-size:9px; }
 }
