@@ -260,6 +260,21 @@
     leaderboardClient = window.supabase.createClient(LEADERBOARD_URL, LEADERBOARD_KEY, {
       auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
     });
+    if (!cloudNetworkListenersBound) {
+      window.addEventListener('offline', () => {
+        if (leaderboardSession) setCloudSyncStatus('offline', 'OFFLINE — PROGRESS IS SAVED ON THIS DEVICE');
+      });
+      window.addEventListener('online', () => {
+        if (!leaderboardSession) return;
+        if (cloudSaveReady) {
+          setCloudSyncStatus('syncing', 'CONNECTION RESTORED — SYNCING...');
+          persistNeonCloudSave();
+        } else {
+          setCloudSyncStatus('warning', 'CONNECTION RESTORED — RELOAD TO SYNC SAFELY');
+        }
+      });
+      cloudNetworkListenersBound = true;
+    }
     leaderboardClient.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY') passwordRecoveryPending = true;
       setLeaderboardSession(session);
@@ -285,6 +300,8 @@
       cloudSaveReady = false;
       cloudSaveUserId = '';
       cloudSaveLoadingUserId = '';
+      cloudSavePendingOffline = false;
+      setCloudSyncStatus('signed-out', 'NOT SIGNED IN — CLOUD SAVE DISABLED');
       if (cloudSaveTimer) { clearTimeout(cloudSaveTimer); cloudSaveTimer = null; }
     }
     const nameInput = document.getElementById('leaderboard-name');
@@ -304,9 +321,25 @@
   let cloudSaveReady = false;
   let cloudSaveTimer = null;
   let cloudSaveWriteQueue = Promise.resolve();
+  let cloudNetworkListenersBound = false;
+  let cloudSavePendingOffline = false;
+
+  function setCloudSyncStatus(state, message) {
+    const status = document.getElementById('cloud-sync-status');
+    if (!status) return;
+    status.dataset.state = state;
+    status.textContent = message;
+  }
 
   function scheduleNeonCloudSave() {
-    if (!cloudSaveReady || !leaderboardSession || !leaderboardPlayerId) return;
+    if (!leaderboardSession || !leaderboardPlayerId) return;
+    if (!navigator.onLine) {
+      if (cloudSaveReady) cloudSavePendingOffline = true;
+      setCloudSyncStatus('offline', 'OFFLINE — PROGRESS IS SAVED ON THIS DEVICE');
+      return;
+    }
+    if (!cloudSaveReady) return;
+    setCloudSyncStatus('syncing', 'SAVE QUEUED — SYNCING...');
     if (cloudSaveTimer) clearTimeout(cloudSaveTimer);
     cloudSaveTimer = setTimeout(() => {
       cloudSaveTimer = null;
@@ -317,7 +350,13 @@
 
   function persistNeonCloudSave() {
     if (!cloudSaveReady || !leaderboardSession || !leaderboardPlayerId || !window.getNeonTowerCloudSave) return;
+    if (!navigator.onLine) {
+      cloudSavePendingOffline = true;
+      setCloudSyncStatus('offline', 'OFFLINE — PROGRESS IS SAVED ON THIS DEVICE');
+      return;
+    }
     const userId = leaderboardPlayerId;
+    setCloudSyncStatus('syncing', 'SYNCING YOUR PROGRESS...');
     const snapshot = window.getNeonTowerCloudSave();
     cloudSaveWriteQueue = cloudSaveWriteQueue.then(async () => {
       if (!leaderboardSession || leaderboardPlayerId !== userId) return;
@@ -328,9 +367,20 @@
         updated_at: new Date().toISOString()
       }, { onConflict: 'user_id' });
       if (error) throw error;
+      if (leaderboardPlayerId === userId) {
+        cloudSavePendingOffline = false;
+        setCloudSyncStatus('saved', 'CLOUD SYNCED — ALL PROGRESS SAVED');
+      }
     }).catch(error => {
       console.error('Cloud save failed:', error);
-      if (leaderboardPlayerId === userId) setAuthStatus('CLOUD SAVE COULD NOT SYNC. CHECK YOUR CONNECTION.');
+      if (leaderboardPlayerId === userId) {
+        if (!navigator.onLine) {
+          cloudSavePendingOffline = true;
+          setCloudSyncStatus('offline', 'OFFLINE — PROGRESS IS SAVED ON THIS DEVICE');
+        } else {
+          setCloudSyncStatus('error', 'CLOUD SYNC FAILED — YOUR LOCAL PROGRESS IS SAFE');
+        }
+      }
     });
   }
 
@@ -342,6 +392,11 @@
     cloudSaveLoadingUserId = userId;
     cloudSaveReady = false;
     if (cloudSaveTimer) { clearTimeout(cloudSaveTimer); cloudSaveTimer = null; }
+    if (!navigator.onLine) {
+      setCloudSyncStatus('offline', 'OFFLINE — SIGN IN AGAIN WHEN CONNECTED TO SYNC');
+      return;
+    }
+    setCloudSyncStatus('syncing', 'LOADING YOUR CLOUD SAVE...');
     setAuthStatus('SYNCING YOUR CLOUD SAVE...');
     try {
       const { data, error } = await leaderboardClient
@@ -365,6 +420,8 @@
       }
       cloudSaveReady = true;
       cloudSaveLoadingUserId = '';
+      cloudSavePendingOffline = false;
+      setCloudSyncStatus('saved', 'CLOUD SYNCED — ALL PROGRESS SAVED');
       setAuthStatus('CLOUD SAVE SYNCED. YOUR PROGRESS IS LINKED TO THIS ACCOUNT.');
       // Publish the existing local/cloud personal best before refreshing the leaderboard.
       if (typeof submitLeaderboardResult === 'function' && Number(player?.highestWave || 0) > 15) {
@@ -382,7 +439,11 @@
       console.error('Cloud save initialization failed:', error);
       cloudSaveReady = false;
       cloudSaveLoadingUserId = '';
-      if (leaderboardPlayerId === userId) setAuthStatus('CLOUD SAVE UNAVAILABLE. PLEASE REFRESH AND TRY AGAIN.');
+      if (leaderboardPlayerId === userId) {
+        if (!navigator.onLine) setCloudSyncStatus('offline', 'OFFLINE — PROGRESS IS SAVED ON THIS DEVICE');
+        else setCloudSyncStatus('error', 'CLOUD SAVE UNAVAILABLE — LOCAL PROGRESS IS SAFE');
+        setAuthStatus('CLOUD SAVE UNAVAILABLE. PLEASE REFRESH AND TRY AGAIN.');
+      }
     }
   }
 
