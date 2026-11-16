@@ -65,6 +65,7 @@
   }
 
   function updateMenuUI() {
+    if (typeof completeSpeed3Fabrication === 'function') completeSpeed3Fabrication();
     document.getElementById('menu-coins').innerText = '$' + formatMoney(player.coins);
     document.getElementById('menu-wave').innerText = player.highestWave;
     renderPlayerStats();
