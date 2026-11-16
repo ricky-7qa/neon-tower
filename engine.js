@@ -179,12 +179,43 @@
   ];
 
   /** SAVE SYSTEM **/
-  let player = { coins: 0, highestWave: 1, totalKills: 0, bossKills: 0, playTime: 0, runsPlayed: 0, bestKills: 0, bestBosses: 0, bestDuration: 0, ws: {}, skills: ['start'], achievements: [], tutorialSeen: false };
+  let player = { coins: 0, highestWave: 1, totalKills: 0, bossKills: 0, playTime: 0, runsPlayed: 0, bestKills: 0, bestBosses: 0, bestDuration: 0, ws: {}, speedControlLevel: 0, skills: ['start'], achievements: [], tutorialSeen: false };
   let run = {stats:{},cash:0,coins:0,wave:1,kills:0,combo:0,comboTimer:0,graze:0};
   let targetEnemy = null;
   let gameSessionStartedAt = 0;
   let gameDurationTracked = false;
   let gameSessionSource = 'site';
+
+  let selectedGameSpeed = 1;
+  function getUnlockedGameSpeeds() {
+    const level = Math.max(0, Math.min(2, Number(player.speedControlLevel) || 0));
+    return [1, ...(level >= 1 ? [1.5] : []), ...(level >= 2 ? [2] : [])];
+  }
+  function isBossSpeedLockActive() {
+    return !!(game && game.ents && game.ents.e && game.ents.e.some(enemy => enemy.type === 'Boss' && enemy.hp > 0));
+  }
+  function getEffectiveGameSpeed() {
+    return isBossSpeedLockActive() ? 1 : selectedGameSpeed;
+  }
+  function updateGameSpeedButton() {
+    const button = document.getElementById('game-speed-btn');
+    if (!button) return;
+    const unlocked = getUnlockedGameSpeeds();
+    const hasSpeedUpgrade = unlocked.length > 1;
+    button.style.display = hasSpeedUpgrade ? 'inline-flex' : 'none';
+    button.disabled = !hasSpeedUpgrade || !game || !game.running;
+    button.textContent = isBossSpeedLockActive() ? 'BOSS · 1X' : 'SPEED · ' + getEffectiveGameSpeed() + 'X';
+    button.classList.toggle('speed-boost-active', !isBossSpeedLockActive() && selectedGameSpeed > 1);
+  }
+  function cycleGameSpeed() {
+    if (!game || !game.running) return;
+    const speeds = getUnlockedGameSpeeds();
+    if (speeds.length < 2) return;
+    const current = speeds.indexOf(selectedGameSpeed);
+    selectedGameSpeed = speeds[(current + 1) % speeds.length];
+    updateGameSpeedButton();
+  }
+  window.cycleGameSpeed = cycleGameSpeed;
 
   function trackGameDuration(reason) {
     if (gameDurationTracked || !gameSessionStartedAt) return;
@@ -497,6 +528,7 @@
     gameSessionSource = 'site';
     document.getElementById('menu').classList.remove('active-layer'); document.getElementById('hud').classList.add('active-hud');
     run = { stats: {}, cash: 0, coins: 0, wave: 1, kills: 0, bossKills: 0, elapsed: 0, perks: {} };
+    selectedGameSpeed = 1;
     const missionOptions = [
       {id:'waves', title:'REACH WAVE 5', description:'Clear waves until you reach wave 5.', target:5, reward:25},
       {id:'kills', title:'ELIMINATE 30 ENEMIES', description:'Defeat 30 enemies during this run.', target:30, reward:25},
@@ -515,6 +547,7 @@
     
     tower = new Tower(); 
     initUpgBar();
+    updateGameSpeedButton();
     saveRunCheckpoint(false);
     updateHUD();
     requestAnimationFrame(loop);
@@ -573,6 +606,7 @@
     document.getElementById('gameover').classList.remove('active-layer');
     document.getElementById('hud').classList.add('active-hud');
     run = checkpoint.run;
+    selectedGameSpeed = 1;
     // Keep the saved mission and its progress, but hide the tracker for resumed runs.
     document.getElementById('mission-ui')?.classList.add('mission-hidden-on-resume');
     game = {
@@ -588,6 +622,7 @@
       tower.shield = !!checkpoint.tower.shield && hasSkill('shield');
     }
     initUpgBar();
+    updateGameSpeedButton();
     updateHUD();
     refreshResumeUI();
     if (checkpoint.pendingPerk) showPerkChoice();
@@ -659,10 +694,12 @@
   function loop(ts) {
     if(!game.running) return; requestAnimationFrame(loop);
     if(game.paused) { game.last = ts; return; }
-    game.dt = (ts - game.last)/1000; if(game.dt > 0.1) game.dt = 0.1; game.last = ts;
-    player.playTime = (player.playTime || 0) + game.dt;
+    const realDt = Math.min(0.075, Math.max(0, (ts - game.last) / 1000));
+    game.last = ts;
+    game.dt = realDt * getEffectiveGameSpeed();
+    player.playTime = (player.playTime || 0) + realDt;
     game.achievementCheckT += game.dt; game.playSaveT += game.dt;
-    run.elapsed = (run.elapsed || 0) + game.dt;
+    run.elapsed = (run.elapsed || 0) + realDt;
     updateMissionProgress();
     if(game.achievementCheckT >= 1) { game.achievementCheckT = 0; checkAchievements(); }
     if(game.playSaveT >= 15) { game.playSaveT = 0; saveGame(); }
@@ -800,5 +837,6 @@
     for(let i = game.ents.part.length - 1; i >= 0; i--) { let p = game.ents.part[i]; p.update(game.dt); p.draw(); if(p.l<=0) game.ents.part.splice(i,1); }
     for(let i = game.ents.txt.length - 1; i >= 0; i--) { let t = game.ents.txt[i]; t.update(game.dt); t.draw(); if(t.l<=0) game.ents.txt.splice(i,1); }
     
-    updateHUD(); 
+    updateHUD();
+    updateGameSpeedButton();
   }
