@@ -220,6 +220,7 @@
   let leaderboardClient = null;
   let leaderboardPlayerId = '';
   let leaderboardSession = null;
+  let passwordRecoveryPending = false;
   let authMode = 'signup';
 
   function escapeLeaderboardText(value) {
@@ -236,12 +237,12 @@
     });
     leaderboardClient.auth.onAuthStateChange((event, session) => {
       setLeaderboardSession(session);
-      if (event === 'PASSWORD_RECOVERY') setAuthMode('recovery');
+      if (event === 'PASSWORD_RECOVERY') { passwordRecoveryPending = true; setAuthMode('recovery'); }
     });
     leaderboardClient.auth.getSession().then(({ data, error }) => {
       if (error) throw error;
       setLeaderboardSession(data.session);
-      if (window.location.hash.includes('type=recovery')) setAuthMode('recovery');
+      if (window.location.hash.includes('type=recovery') || window.location.search.includes('auth=recovery')) { passwordRecoveryPending = true; setAuthMode('recovery'); }
     }).catch(error => {
       console.error('Auth session check failed:', error);
       setAuthStatus('COULD NOT CHECK YOUR ACCOUNT. PLEASE REFRESH.');
@@ -263,7 +264,7 @@
   function showLeaderboardView() {
     const authPanel = document.getElementById('leaderboard-auth');
     const boardPanel = document.getElementById('leaderboard-content');
-    const signedIn = !!leaderboardSession;
+    const signedIn = !!leaderboardSession && !passwordRecoveryPending;
     if (authPanel) authPanel.style.display = signedIn ? 'none' : 'block';
     if (boardPanel) boardPanel.style.display = signedIn ? 'block' : 'none';
     if (signedIn) {
@@ -401,8 +402,10 @@
     try {
       const { error } = await leaderboardClient.auth.updateUser({ password });
       if (error) throw error;
+      passwordRecoveryPending = false;
       setAuthStatus('PASSWORD UPDATED. YOU CAN NOW ACCESS THE LEADERBOARD.');
       setAuthMode('login');
+      showLeaderboardView();
     } catch (error) {
       console.error('Password update failed:', error);
       setAuthStatus(authErrorMessage(error));
