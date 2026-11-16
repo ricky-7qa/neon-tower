@@ -399,7 +399,7 @@
   ];
   function getWaveDecisionValue(id){return(run.decisionEffects||[]).filter(e=>e.id===id).reduce((s,e)=>s+(Number(e.value)||0),0);}
   function hasWaveDecision(id){return(run.decisionEffects||[]).some(e=>e.id===id);}
-  function tickWaveDecisionEffects(){run.decisionEffects=(run.decisionEffects||[]).filter(e=>{e.remaining=Math.max(0,(Number(e.remaining)||0)-1);if(e.id==='investment'&&e.remaining===0&&!e.paid){run.coins=(run.coins||0)+(e.payout||0);e.paid=true;}return e.remaining>0||(e.id==='investment'&&!e.paid);});}
+  function tickWaveDecisionEffects(){run.decisionEffects=(run.decisionEffects||[]).filter(e=>{e.remaining=Math.max(0,(Number(e.remaining)||0)-1);if(e.id==='investment'&&e.remaining===0&&!e.paid){run.coins=(run.coins||0)+(e.payout||0);e.paid=true;}if(e.id==='energy_shield'&&e.remaining===0&&tower)tower.tempShieldCharges=0;return e.remaining>0||(e.id==='investment'&&!e.paid);});}
   function rollWaveDecisionOptions(){
     const previous=new Set(run.lastDecisionOptions||[]);let pool=waveDecisionDefs.filter(d=>!previous.has(d.id));if(pool.length<3)pool=[...waveDecisionDefs];
     const low=!!(tower&&tower.maxHp>0&&tower.hp/tower.maxHp<.4),picks=[];
@@ -427,7 +427,7 @@
       case'double_trouble':effect(id,pct(.2),3);break;case'executioner':effect(id,pct(.3),3);break;case'piercing_shots':effect(id,Math.max(1,Math.round(scale)),3);break;
       case'rapid_fire':effect(id,pct(.2),2);break;case'boss_hunter':effect(id,pct(.3),5);break;
       case'emergency_repair':if(tower)tower.hp=Math.min(tower.maxHp,tower.hp+tower.maxHp*pct(.15));break;
-      case'energy_shield':if(tower)tower.tempShieldCharges=(tower.tempShieldCharges||0)+Math.max(1,Math.round(scale));break;
+      case'energy_shield':if(tower)tower.tempShieldCharges=(tower.tempShieldCharges||0)+Math.max(1,Math.round(scale));effect(id,Math.max(1,Math.round(scale)),1);break;
       case'reinforced_core':effect(id,pct(.2),3);break;case'nano_repair':effect(id,pct(.015),3);break;
       case'second_chance':run.secondChanceCharges=(run.secondChanceCharges||0)+1;run.secondChanceHeal=Math.max(Number(run.secondChanceHeal)||0,pct(.01));break;case'defensive_matrix':effect(id,pct(.25),3);break;
       case'gold_rush':run.coins=(run.coins||0)+Math.floor(75*scale);break;case'double_reward':effect(id,scale,1);break;
