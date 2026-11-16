@@ -429,7 +429,7 @@
       case'emergency_repair':if(tower)tower.hp=Math.min(tower.maxHp,tower.hp+tower.maxHp*pct(.15));break;
       case'energy_shield':if(tower)tower.tempShieldCharges=(tower.tempShieldCharges||0)+Math.max(1,Math.round(scale));break;
       case'reinforced_core':effect(id,pct(.2),3);break;case'nano_repair':effect(id,pct(.015),3);break;
-      case'second_chance':run.secondChanceCharges=(run.secondChanceCharges||0)+1;break;case'defensive_matrix':effect(id,pct(.25),3);break;
+      case'second_chance':run.secondChanceCharges=(run.secondChanceCharges||0)+1;run.secondChanceHeal=Math.max(Number(run.secondChanceHeal)||0,pct(.01));break;case'defensive_matrix':effect(id,pct(.25),3);break;
       case'gold_rush':run.coins=(run.coins||0)+Math.floor(75*scale);break;case'double_reward':effect(id,1,1);break;
       case'bounty_hunter':effect(id,pct(.5),3);break;
       case'investment':{const invested=Math.floor((run.coins||0)*.15);if(invested>0){run.coins-=invested;run.decisionEffects.push({id,value:invested*(1+.3*scale),remaining:3,payout:Math.floor(invested*(1+.3*scale)),paid:false,rarity});}break;}
