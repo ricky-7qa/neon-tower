@@ -82,18 +82,25 @@
         </div>`);
       });
       if (category === 'UTILITY') {
-        const speedLevel = Math.max(0, Math.min(2, Number(player.speedControlLevel) || 0));
+        const speedLevel = Math.max(0, Math.min(3, Number(player.speedControlLevel) || 0));
+        const craftStartedAt = Number(player.speed3CraftStartedAt) || 0;
+        const craftRemaining = craftStartedAt ? Math.max(0, 86400000 - (Date.now() - craftStartedAt)) : 0;
+        const craftHours = Math.ceil(craftRemaining / 3600000);
+        const isCraftingSpeed3 = speedLevel === 2 && craftStartedAt > 0 && craftRemaining > 0;
         const speedUpgrades = [
-          { level:1, name:'FAST FORWARD I', effect:'Unlocks 1.5x game speed.', cost:1500 },
-          { level:2, name:'FAST FORWARD II', effect:'Unlocks 2x game speed.', cost:5000 }
+          { level:1, name:'FAST FORWARD I', effect:'Unlocks 1.5x game speed. Requires reaching Wave 50.', cost:1500, wave:50 },
+          { level:2, name:'FAST FORWARD II', effect:'Unlocks 2x game speed. Requires reaching Wave 100.', cost:5000, wave:100 },
+          { level:3, name:'FAST FORWARD III', effect:'Unlocks 3x game speed. Requires reaching Wave 150. Fabrication takes 24 hours.', cost:10000, wave:150 }
         ];
         const speedSection = document.createElement('div');
         speedSection.className = 'card speed-control-card';
-        speedSection.innerHTML = '<div><h3><span style="color:#ffd700">SPEED CONTROL</span><span>LEVEL '+speedLevel+'/2</span></h3><p>Permanent speed upgrades. Switch between unlocked speeds during a run. Boss fights always remain at 1x.</p></div>' +
+        speedSection.innerHTML = '<div><h3><span style="color:#ffd700">SPEED CONTROL</span><span>LEVEL '+speedLevel+'/3</span></h3><p>Reach the required wave to purchase each permanent speed upgrade. Fast Forward III takes 24 hours to fabricate. Boss fights always remain at 1x.</p></div>' +
           speedUpgrades.map(item => {
             const owned = speedLevel >= item.level;
-            const available = speedLevel === item.level - 1;
-            const label = owned ? 'UNLOCKED' : available ? 'UNLOCK · $' + formatMoney(item.cost) : 'LOCKED';
+            const crafting = item.level === 3 && isCraftingSpeed3;
+            const available = speedLevel === item.level - 1 && !craftStartedAt && player.highestWave >= item.wave;
+            const waveLocked = player.highestWave < item.wave;
+            const label = owned ? 'UNLOCKED' : crafting ? 'FABRICATING · '+craftHours+'H LEFT' : waveLocked ? 'REACH WAVE '+item.wave : available ? 'UNLOCK · $' + formatMoney(item.cost) : 'LOCKED';
             return '<button class="btn btn-gold speed-upgrade-btn" '+(!available || player.coins < item.cost ? 'disabled' : '')+' onclick="buySpeedControl('+item.level+')">'+item.name+' · '+label+'</button>';
           }).join('');
         grid.appendChild(speedSection);
@@ -155,13 +162,18 @@
 
   function buyWs(k) { if (!isVisibleUpgrade(k)) return; let c=getCost(k,true); if(player.coins>=c && (!statDefs[k].max || (player.ws[k]||0)<statDefs[k].max)){player.coins-=c;player.ws[k]=(player.ws[k]||0)+1;saveGame();} }
   function buySpeedControl(level) {
-    const nextLevel = Math.max(0, Math.min(2, Number(player.speedControlLevel) || 0)) + 1;
-    const costs = {1:1500, 2:5000};
-    if (level !== nextLevel || !costs[level] || player.coins < costs[level]) return;
+    const currentLevel = Math.max(0, Math.min(3, Number(player.speedControlLevel) || 0));
+    const nextLevel = currentLevel + 1;
+    const costs = {1:1500, 2:5000, 3:10000};
+    const requiredWaves = {1:50, 2:100, 3:150};
+    if (level !== nextLevel || !costs[level] || player.highestWave < requiredWaves[level] || player.coins < costs[level]) return;
+    if (level === 3 && Number(player.speed3CraftStartedAt)) return;
     player.coins -= costs[level];
-    player.speedControlLevel = level;
+    if (level === 3) player.speed3CraftStartedAt = Date.now();
+    else player.speedControlLevel = level;
     saveGame();
     if (typeof updateGameSpeedButton === 'function') updateGameSpeedButton();
+    if (typeof updateMenuUI === 'function') updateMenuUI();
     AudioSys.coin();
   }
   function buySkill(id) {
