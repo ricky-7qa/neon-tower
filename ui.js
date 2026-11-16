@@ -42,7 +42,7 @@
   function switchTab(t) { ['workshop', 'skills', 'achievements', 'leaderboard'].forEach(x => { const tab = document.getElementById('tab-'+x); tab.style.display = (x===t?'flex':'none'); if (x===t) tab.scrollTop = 0; }); if (t==='skills') buildSkillTree(); if (t==='leaderboard') loadLeaderboard(); }
   
   function updateMenuUI() {
-    document.getElementById('menu-coins').innerText = ';
+    document.getElementById('menu-coins').innerText = '$' + formatMoney(player.coins);
     document.getElementById('menu-wave').innerText = player.highestWave;
     
     let ws = document.getElementById('ws-grid'); ws.innerHTML = "";
@@ -102,7 +102,7 @@
       const status = unlocked ? 'UNLOCKED' : locked ? 'LOCKED' : 'AVAILABLE';
       const action = unlocked ? '<span class="skill-status done">✓ ' + status + '</span>' :
         locked ? '<button class="btn skill-buy" disabled>' + status + '</button>' :
-        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\'' + s.id + '\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + (s.cost-player.coins) + ' COINS' : 'BUY · ' + s.cost + ' COINS')) + '</button>';
+        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\\'' + s.id + '\\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + formatMoney(s.cost-player.coins) + ' COINS' : 'BUY · ' + formatMoney(s.cost) + ' COINS')) + '</button>';
       grid.insertAdjacentHTML('beforeend', `<article class="skill-card ${unlocked?'is-unlocked':''} ${locked?'is-locked':''}">
         <div class="skill-card-top"><span class="skill-icon">${s.id==='start'?'◆':s.id==='multishot'?'⟡':s.id==='missiles'?'➤':s.id==='lasers'?'ϟ':s.id==='shield'?'⬡':s.id==='drone'?'◉':s.id==='overdrive'?'⚡':s.id==='vampire'?'✚':'✧'}</span><span class="skill-status ${unlocked?'done':locked?'locked':'ready'}">${status}</span></div>
         <h3>${s.n}</h3><p class="skill-description">${effect}</p>
@@ -150,8 +150,8 @@
   function updateHUD() {
     document.getElementById('hud-wave').innerText = run.wave;
     document.getElementById('hud-timer').innerText = game.toSpawn + game.ents.e.length;
-    document.getElementById('hud-cash').innerText = '
-    document.getElementById('hud-coins').innerText = '
+    document.getElementById('hud-cash').innerText = '$' + formatMoney(run.cash);
+    document.getElementById('hud-coins').innerText = '$' + formatMoney(run.coins);
 
     if (tower) {
       const perkDamage = 1 + (getPerkValue('power') + getPerkValue('overload')) / 100;
@@ -188,7 +188,7 @@
         const unlockWave=d.unlockWave||1;
         const waveLocked=run.wave<unlockWave;
         btn.disabled=waveLocked || (run.cash<c) || m;
-        const label=waveLocked ? 'LOCKED · WAVE '+unlockWave : m ? 'MAX' : ';
+        const label=waveLocked ? 'LOCKED · WAVE '+unlockWave : m ? 'MAX' : '$'+formatMoney(c);
         btn.innerHTML=`<span style="color:${d.col}">${d.n} · LVL ${Math.min(d.max||999,(player.ws[k]||0)+l)}</span><span style="color:${waveLocked?'#ffb45c':'#0f0'}">${label}</span>`;
       }
     });
@@ -426,7 +426,7 @@
       const status = unlocked ? 'UNLOCKED' : locked ? 'LOCKED' : 'AVAILABLE';
       const action = unlocked ? '<span class="skill-status done">✓ ' + status + '</span>' :
         locked ? '<button class="btn skill-buy" disabled>' + status + '</button>' :
-        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\'' + s.id + '\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + (s.cost-player.coins) + ' COINS' : 'BUY · ' + s.cost + ' COINS')) + '</button>';
+        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\\'' + s.id + '\\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + formatMoney(s.cost-player.coins) + ' COINS' : 'BUY · ' + formatMoney(s.cost) + ' COINS')) + '</button>';
       grid.insertAdjacentHTML('beforeend', `<article class="skill-card ${unlocked?'is-unlocked':''} ${locked?'is-locked':''}">
         <div class="skill-card-top"><span class="skill-icon">${s.id==='start'?'◆':s.id==='multishot'?'⟡':s.id==='missiles'?'➤':s.id==='lasers'?'ϟ':s.id==='shield'?'⬡':s.id==='drone'?'◉':s.id==='overdrive'?'⚡':s.id==='vampire'?'✚':'✧'}</span><span class="skill-status ${unlocked?'done':locked?'locked':'ready'}">${status}</span></div>
         <h3>${s.n}</h3><p class="skill-description">${effect}</p>
@@ -474,8 +474,8 @@
   function updateHUD() {
     document.getElementById('hud-wave').innerText = run.wave;
     document.getElementById('hud-timer').innerText = game.toSpawn + game.ents.e.length;
-    document.getElementById('hud-cash').innerText = '$'+run.cash;
-    document.getElementById('hud-coins').innerText = '$' + run.coins.toLocaleString('en-US');
+    document.getElementById('hud-cash').innerText = '$' + formatMoney(run.cash);
+    document.getElementById('hud-coins').innerText = '$' + formatMoney(run.coins);
 
     if (tower) {
       const perkDamage = 1 + (getPerkValue('power') + getPerkValue('overload')) / 100;
@@ -512,7 +512,7 @@
         const unlockWave=d.unlockWave||1;
         const waveLocked=run.wave<unlockWave;
         btn.disabled=waveLocked || (run.cash<c) || m;
-        const label=waveLocked ? 'LOCKED · WAVE '+unlockWave : m ? 'MAX' : '$'+c.toLocaleString('en-US');
+        const label=waveLocked ? 'LOCKED · WAVE '+unlockWave : m ? 'MAX' : '$'+formatMoney(c);
         btn.innerHTML=`<span style="color:${d.col}">${d.n} · LVL ${Math.min(d.max||999,(player.ws[k]||0)+l)}</span><span style="color:${waveLocked?'#ffb45c':'#0f0'}">${label}</span>`;
       }
     });
@@ -691,7 +691,7 @@
   initializeDeviceMode();
   initializeLeaderboard();
  + formatMoney(run.cash);
-    document.getElementById('hud-coins').innerText = '$' + run.coins.toLocaleString('en-US');
+    document.getElementById('hud-coins').innerText = '$' + formatMoney(run.coins);
 
     if (tower) {
       const perkDamage = 1 + (getPerkValue('power') + getPerkValue('overload')) / 100;
@@ -728,7 +728,7 @@
         const unlockWave=d.unlockWave||1;
         const waveLocked=run.wave<unlockWave;
         btn.disabled=waveLocked || (run.cash<c) || m;
-        const label=waveLocked ? 'LOCKED · WAVE '+unlockWave : m ? 'MAX' : '$'+c.toLocaleString('en-US');
+        const label=waveLocked ? 'LOCKED · WAVE '+unlockWave : m ? 'MAX' : '$'+formatMoney(c);
         btn.innerHTML=`<span style="color:${d.col}">${d.n} · LVL ${Math.min(d.max||999,(player.ws[k]||0)+l)}</span><span style="color:${waveLocked?'#ffb45c':'#0f0'}">${label}</span>`;
       }
     });
@@ -966,7 +966,7 @@
       const status = unlocked ? 'UNLOCKED' : locked ? 'LOCKED' : 'AVAILABLE';
       const action = unlocked ? '<span class="skill-status done">✓ ' + status + '</span>' :
         locked ? '<button class="btn skill-buy" disabled>' + status + '</button>' :
-        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\'' + s.id + '\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + (s.cost-player.coins) + ' COINS' : 'BUY · ' + s.cost + ' COINS')) + '</button>';
+        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\\'' + s.id + '\\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + formatMoney(s.cost-player.coins) + ' COINS' : 'BUY · ' + formatMoney(s.cost) + ' COINS')) + '</button>';
       grid.insertAdjacentHTML('beforeend', `<article class="skill-card ${unlocked?'is-unlocked':''} ${locked?'is-locked':''}">
         <div class="skill-card-top"><span class="skill-icon">${s.id==='start'?'◆':s.id==='multishot'?'⟡':s.id==='missiles'?'➤':s.id==='lasers'?'ϟ':s.id==='shield'?'⬡':s.id==='drone'?'◉':s.id==='overdrive'?'⚡':s.id==='vampire'?'✚':'✧'}</span><span class="skill-status ${unlocked?'done':locked?'locked':'ready'}">${status}</span></div>
         <h3>${s.n}</h3><p class="skill-description">${effect}</p>
@@ -1014,8 +1014,8 @@
   function updateHUD() {
     document.getElementById('hud-wave').innerText = run.wave;
     document.getElementById('hud-timer').innerText = game.toSpawn + game.ents.e.length;
-    document.getElementById('hud-cash').innerText = '$'+run.cash;
-    document.getElementById('hud-coins').innerText = '$' + run.coins.toLocaleString('en-US');
+    document.getElementById('hud-cash').innerText = '$' + formatMoney(run.cash);
+    document.getElementById('hud-coins').innerText = '$' + formatMoney(run.coins);
 
     if (tower) {
       const perkDamage = 1 + (getPerkValue('power') + getPerkValue('overload')) / 100;
@@ -1052,7 +1052,7 @@
         const unlockWave=d.unlockWave||1;
         const waveLocked=run.wave<unlockWave;
         btn.disabled=waveLocked || (run.cash<c) || m;
-        const label=waveLocked ? 'LOCKED · WAVE '+unlockWave : m ? 'MAX' : '$'+c.toLocaleString('en-US');
+        const label=waveLocked ? 'LOCKED · WAVE '+unlockWave : m ? 'MAX' : '$'+formatMoney(c);
         btn.innerHTML=`<span style="color:${d.col}">${d.n} · LVL ${Math.min(d.max||999,(player.ws[k]||0)+l)}</span><span style="color:${waveLocked?'#ffb45c':'#0f0'}">${label}</span>`;
       }
     });
@@ -1267,7 +1267,7 @@
         const unlockWave=d.unlockWave||1;
         const waveLocked=run.wave<unlockWave;
         btn.disabled=waveLocked || (run.cash<c) || m;
-        const label=waveLocked ? 'LOCKED · WAVE '+unlockWave : m ? 'MAX' : '$'+c.toLocaleString('en-US');
+        const label=waveLocked ? 'LOCKED · WAVE '+unlockWave : m ? 'MAX' : '$'+formatMoney(c);
         btn.innerHTML=`<span style="color:${d.col}">${d.n} · LVL ${Math.min(d.max||999,(player.ws[k]||0)+l)}</span><span style="color:${waveLocked?'#ffb45c':'#0f0'}">${label}</span>`;
       }
     });
@@ -1505,7 +1505,7 @@
       const status = unlocked ? 'UNLOCKED' : locked ? 'LOCKED' : 'AVAILABLE';
       const action = unlocked ? '<span class="skill-status done">✓ ' + status + '</span>' :
         locked ? '<button class="btn skill-buy" disabled>' + status + '</button>' :
-        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\'' + s.id + '\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + (s.cost-player.coins) + ' COINS' : 'BUY · ' + s.cost + ' COINS')) + '</button>';
+        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\\'' + s.id + '\\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + formatMoney(s.cost-player.coins) + ' COINS' : 'BUY · ' + formatMoney(s.cost) + ' COINS')) + '</button>';
       grid.insertAdjacentHTML('beforeend', `<article class="skill-card ${unlocked?'is-unlocked':''} ${locked?'is-locked':''}">
         <div class="skill-card-top"><span class="skill-icon">${s.id==='start'?'◆':s.id==='multishot'?'⟡':s.id==='missiles'?'➤':s.id==='lasers'?'ϟ':s.id==='shield'?'⬡':s.id==='drone'?'◉':s.id==='overdrive'?'⚡':s.id==='vampire'?'✚':'✧'}</span><span class="skill-status ${unlocked?'done':locked?'locked':'ready'}">${status}</span></div>
         <h3>${s.n}</h3><p class="skill-description">${effect}</p>
@@ -1553,8 +1553,8 @@
   function updateHUD() {
     document.getElementById('hud-wave').innerText = run.wave;
     document.getElementById('hud-timer').innerText = game.toSpawn + game.ents.e.length;
-    document.getElementById('hud-cash').innerText = '$'+run.cash;
-    document.getElementById('hud-coins').innerText = '$' + run.coins.toLocaleString('en-US');
+    document.getElementById('hud-cash').innerText = '$' + formatMoney(run.cash);
+    document.getElementById('hud-coins').innerText = '$' + formatMoney(run.coins);
 
     if (tower) {
       const perkDamage = 1 + (getPerkValue('power') + getPerkValue('overload')) / 100;
@@ -1591,7 +1591,7 @@
         const unlockWave=d.unlockWave||1;
         const waveLocked=run.wave<unlockWave;
         btn.disabled=waveLocked || (run.cash<c) || m;
-        const label=waveLocked ? 'LOCKED · WAVE '+unlockWave : m ? 'MAX' : '$'+c.toLocaleString('en-US');
+        const label=waveLocked ? 'LOCKED · WAVE '+unlockWave : m ? 'MAX' : '$'+formatMoney(c);
         btn.innerHTML=`<span style="color:${d.col}">${d.n} · LVL ${Math.min(d.max||999,(player.ws[k]||0)+l)}</span><span style="color:${waveLocked?'#ffb45c':'#0f0'}">${label}</span>`;
       }
     });
@@ -1770,7 +1770,7 @@
   initializeDeviceMode();
   initializeLeaderboard();
  + formatMoney(run.cash);
-    document.getElementById('hud-coins').innerText = '$' + run.coins.toLocaleString('en-US');
+    document.getElementById('hud-coins').innerText = '$' + formatMoney(run.coins);
 
     if (tower) {
       const perkDamage = 1 + (getPerkValue('power') + getPerkValue('overload')) / 100;
@@ -1807,7 +1807,7 @@
         const unlockWave=d.unlockWave||1;
         const waveLocked=run.wave<unlockWave;
         btn.disabled=waveLocked || (run.cash<c) || m;
-        const label=waveLocked ? 'LOCKED · WAVE '+unlockWave : m ? 'MAX' : '$'+c.toLocaleString('en-US');
+        const label=waveLocked ? 'LOCKED · WAVE '+unlockWave : m ? 'MAX' : '$'+formatMoney(c);
         btn.innerHTML=`<span style="color:${d.col}">${d.n} · LVL ${Math.min(d.max||999,(player.ws[k]||0)+l)}</span><span style="color:${waveLocked?'#ffb45c':'#0f0'}">${label}</span>`;
       }
     });
@@ -2045,7 +2045,7 @@
       const status = unlocked ? 'UNLOCKED' : locked ? 'LOCKED' : 'AVAILABLE';
       const action = unlocked ? '<span class="skill-status done">✓ ' + status + '</span>' :
         locked ? '<button class="btn skill-buy" disabled>' + status + '</button>' :
-        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\'' + s.id + '\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + (s.cost-player.coins) + ' COINS' : 'BUY · ' + s.cost + ' COINS')) + '</button>';
+        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\\'' + s.id + '\\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + formatMoney(s.cost-player.coins) + ' COINS' : 'BUY · ' + formatMoney(s.cost) + ' COINS')) + '</button>';
       grid.insertAdjacentHTML('beforeend', `<article class="skill-card ${unlocked?'is-unlocked':''} ${locked?'is-locked':''}">
         <div class="skill-card-top"><span class="skill-icon">${s.id==='start'?'◆':s.id==='multishot'?'⟡':s.id==='missiles'?'➤':s.id==='lasers'?'ϟ':s.id==='shield'?'⬡':s.id==='drone'?'◉':s.id==='overdrive'?'⚡':s.id==='vampire'?'✚':'✧'}</span><span class="skill-status ${unlocked?'done':locked?'locked':'ready'}">${status}</span></div>
         <h3>${s.n}</h3><p class="skill-description">${effect}</p>
@@ -2093,8 +2093,8 @@
   function updateHUD() {
     document.getElementById('hud-wave').innerText = run.wave;
     document.getElementById('hud-timer').innerText = game.toSpawn + game.ents.e.length;
-    document.getElementById('hud-cash').innerText = '$'+run.cash;
-    document.getElementById('hud-coins').innerText = '$' + run.coins.toLocaleString('en-US');
+    document.getElementById('hud-cash').innerText = '$' + formatMoney(run.cash);
+    document.getElementById('hud-coins').innerText = '$' + formatMoney(run.coins);
 
     if (tower) {
       const perkDamage = 1 + (getPerkValue('power') + getPerkValue('overload')) / 100;
@@ -2131,7 +2131,7 @@
         const unlockWave=d.unlockWave||1;
         const waveLocked=run.wave<unlockWave;
         btn.disabled=waveLocked || (run.cash<c) || m;
-        const label=waveLocked ? 'LOCKED · WAVE '+unlockWave : m ? 'MAX' : '$'+c.toLocaleString('en-US');
+        const label=waveLocked ? 'LOCKED · WAVE '+unlockWave : m ? 'MAX' : '$'+formatMoney(c);
         btn.innerHTML=`<span style="color:${d.col}">${d.n} · LVL ${Math.min(d.max||999,(player.ws[k]||0)+l)}</span><span style="color:${waveLocked?'#ffb45c':'#0f0'}">${label}</span>`;
       }
     });
@@ -2547,7 +2547,7 @@
       const status = unlocked ? 'UNLOCKED' : locked ? 'LOCKED' : 'AVAILABLE';
       const action = unlocked ? '<span class="skill-status done">✓ ' + status + '</span>' :
         locked ? '<button class="btn skill-buy" disabled>' + status + '</button>' :
-        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\'' + s.id + '\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + (s.cost-player.coins) + ' COINS' : 'BUY · ' + s.cost + ' COINS')) + '</button>';
+        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\\'' + s.id + '\\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + formatMoney(s.cost-player.coins) + ' COINS' : 'BUY · ' + formatMoney(s.cost) + ' COINS')) + '</button>';
       grid.insertAdjacentHTML('beforeend', `<article class="skill-card ${unlocked?'is-unlocked':''} ${locked?'is-locked':''}">
         <div class="skill-card-top"><span class="skill-icon">${s.id==='start'?'◆':s.id==='multishot'?'⟡':s.id==='missiles'?'➤':s.id==='lasers'?'ϟ':s.id==='shield'?'⬡':s.id==='drone'?'◉':s.id==='overdrive'?'⚡':s.id==='vampire'?'✚':'✧'}</span><span class="skill-status ${unlocked?'done':locked?'locked':'ready'}">${status}</span></div>
         <h3>${s.n}</h3><p class="skill-description">${effect}</p>
@@ -2595,8 +2595,8 @@
   function updateHUD() {
     document.getElementById('hud-wave').innerText = run.wave;
     document.getElementById('hud-timer').innerText = game.toSpawn + game.ents.e.length;
-    document.getElementById('hud-cash').innerText = '$'+run.cash;
-    document.getElementById('hud-coins').innerText = '$' + run.coins.toLocaleString('en-US');
+    document.getElementById('hud-cash').innerText = '$' + formatMoney(run.cash);
+    document.getElementById('hud-coins').innerText = '$' + formatMoney(run.coins);
 
     if (tower) {
       const perkDamage = 1 + (getPerkValue('power') + getPerkValue('overload')) / 100;
@@ -2633,7 +2633,7 @@
         const unlockWave=d.unlockWave||1;
         const waveLocked=run.wave<unlockWave;
         btn.disabled=waveLocked || (run.cash<c) || m;
-        const label=waveLocked ? 'LOCKED · WAVE '+unlockWave : m ? 'MAX' : '$'+c.toLocaleString('en-US');
+        const label=waveLocked ? 'LOCKED · WAVE '+unlockWave : m ? 'MAX' : '$'+formatMoney(c);
         btn.innerHTML=`<span style="color:${d.col}">${d.n} · LVL ${Math.min(d.max||999,(player.ws[k]||0)+l)}</span><span style="color:${waveLocked?'#ffb45c':'#0f0'}">${label}</span>`;
       }
     });
@@ -2812,7 +2812,7 @@
   initializeDeviceMode();
   initializeLeaderboard();
  + formatMoney(run.cash);
-    document.getElementById('hud-coins').innerText = '$' + run.coins.toLocaleString('en-US');
+    document.getElementById('hud-coins').innerText = '$' + formatMoney(run.coins);
 
     if (tower) {
       const perkDamage = 1 + (getPerkValue('power') + getPerkValue('overload')) / 100;
@@ -2849,7 +2849,7 @@
         const unlockWave=d.unlockWave||1;
         const waveLocked=run.wave<unlockWave;
         btn.disabled=waveLocked || (run.cash<c) || m;
-        const label=waveLocked ? 'LOCKED · WAVE '+unlockWave : m ? 'MAX' : '$'+c.toLocaleString('en-US');
+        const label=waveLocked ? 'LOCKED · WAVE '+unlockWave : m ? 'MAX' : '$'+formatMoney(c);
         btn.innerHTML=`<span style="color:${d.col}">${d.n} · LVL ${Math.min(d.max||999,(player.ws[k]||0)+l)}</span><span style="color:${waveLocked?'#ffb45c':'#0f0'}">${label}</span>`;
       }
     });
@@ -3087,7 +3087,7 @@
       const status = unlocked ? 'UNLOCKED' : locked ? 'LOCKED' : 'AVAILABLE';
       const action = unlocked ? '<span class="skill-status done">✓ ' + status + '</span>' :
         locked ? '<button class="btn skill-buy" disabled>' + status + '</button>' :
-        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\'' + s.id + '\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + (s.cost-player.coins) + ' COINS' : 'BUY · ' + s.cost + ' COINS')) + '</button>';
+        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\\'' + s.id + '\\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + formatMoney(s.cost-player.coins) + ' COINS' : 'BUY · ' + formatMoney(s.cost) + ' COINS')) + '</button>';
       grid.insertAdjacentHTML('beforeend', `<article class="skill-card ${unlocked?'is-unlocked':''} ${locked?'is-locked':''}">
         <div class="skill-card-top"><span class="skill-icon">${s.id==='start'?'◆':s.id==='multishot'?'⟡':s.id==='missiles'?'➤':s.id==='lasers'?'ϟ':s.id==='shield'?'⬡':s.id==='drone'?'◉':s.id==='overdrive'?'⚡':s.id==='vampire'?'✚':'✧'}</span><span class="skill-status ${unlocked?'done':locked?'locked':'ready'}">${status}</span></div>
         <h3>${s.n}</h3><p class="skill-description">${effect}</p>
@@ -3135,8 +3135,8 @@
   function updateHUD() {
     document.getElementById('hud-wave').innerText = run.wave;
     document.getElementById('hud-timer').innerText = game.toSpawn + game.ents.e.length;
-    document.getElementById('hud-cash').innerText = '$'+run.cash;
-    document.getElementById('hud-coins').innerText = '$' + run.coins.toLocaleString('en-US');
+    document.getElementById('hud-cash').innerText = '$' + formatMoney(run.cash);
+    document.getElementById('hud-coins').innerText = '$' + formatMoney(run.coins);
 
     if (tower) {
       const perkDamage = 1 + (getPerkValue('power') + getPerkValue('overload')) / 100;
@@ -3173,7 +3173,7 @@
         const unlockWave=d.unlockWave||1;
         const waveLocked=run.wave<unlockWave;
         btn.disabled=waveLocked || (run.cash<c) || m;
-        const label=waveLocked ? 'LOCKED · WAVE '+unlockWave : m ? 'MAX' : '$'+c.toLocaleString('en-US');
+        const label=waveLocked ? 'LOCKED · WAVE '+unlockWave : m ? 'MAX' : '$'+formatMoney(c);
         btn.innerHTML=`<span style="color:${d.col}">${d.n} · LVL ${Math.min(d.max||999,(player.ws[k]||0)+l)}</span><span style="color:${waveLocked?'#ffb45c':'#0f0'}">${label}</span>`;
       }
     });
@@ -3388,7 +3388,7 @@
         const unlockWave=d.unlockWave||1;
         const waveLocked=run.wave<unlockWave;
         btn.disabled=waveLocked || (run.cash<c) || m;
-        const label=waveLocked ? 'LOCKED · WAVE '+unlockWave : m ? 'MAX' : '$'+c.toLocaleString('en-US');
+        const label=waveLocked ? 'LOCKED · WAVE '+unlockWave : m ? 'MAX' : '$'+formatMoney(c);
         btn.innerHTML=`<span style="color:${d.col}">${d.n} · LVL ${Math.min(d.max||999,(player.ws[k]||0)+l)}</span><span style="color:${waveLocked?'#ffb45c':'#0f0'}">${label}</span>`;
       }
     });
@@ -3626,7 +3626,7 @@
       const status = unlocked ? 'UNLOCKED' : locked ? 'LOCKED' : 'AVAILABLE';
       const action = unlocked ? '<span class="skill-status done">✓ ' + status + '</span>' :
         locked ? '<button class="btn skill-buy" disabled>' + status + '</button>' :
-        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\'' + s.id + '\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + (s.cost-player.coins) + ' COINS' : 'BUY · ' + s.cost + ' COINS')) + '</button>';
+        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\\'' + s.id + '\\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + formatMoney(s.cost-player.coins) + ' COINS' : 'BUY · ' + formatMoney(s.cost) + ' COINS')) + '</button>';
       grid.insertAdjacentHTML('beforeend', `<article class="skill-card ${unlocked?'is-unlocked':''} ${locked?'is-locked':''}">
         <div class="skill-card-top"><span class="skill-icon">${s.id==='start'?'◆':s.id==='multishot'?'⟡':s.id==='missiles'?'➤':s.id==='lasers'?'ϟ':s.id==='shield'?'⬡':s.id==='drone'?'◉':s.id==='overdrive'?'⚡':s.id==='vampire'?'✚':'✧'}</span><span class="skill-status ${unlocked?'done':locked?'locked':'ready'}">${status}</span></div>
         <h3>${s.n}</h3><p class="skill-description">${effect}</p>
@@ -3674,8 +3674,8 @@
   function updateHUD() {
     document.getElementById('hud-wave').innerText = run.wave;
     document.getElementById('hud-timer').innerText = game.toSpawn + game.ents.e.length;
-    document.getElementById('hud-cash').innerText = '$'+run.cash;
-    document.getElementById('hud-coins').innerText = '$' + run.coins.toLocaleString('en-US');
+    document.getElementById('hud-cash').innerText = '$' + formatMoney(run.cash);
+    document.getElementById('hud-coins').innerText = '$' + formatMoney(run.coins);
 
     if (tower) {
       const perkDamage = 1 + (getPerkValue('power') + getPerkValue('overload')) / 100;
@@ -3712,7 +3712,7 @@
         const unlockWave=d.unlockWave||1;
         const waveLocked=run.wave<unlockWave;
         btn.disabled=waveLocked || (run.cash<c) || m;
-        const label=waveLocked ? 'LOCKED · WAVE '+unlockWave : m ? 'MAX' : '$'+c.toLocaleString('en-US');
+        const label=waveLocked ? 'LOCKED · WAVE '+unlockWave : m ? 'MAX' : '$'+formatMoney(c);
         btn.innerHTML=`<span style="color:${d.col}">${d.n} · LVL ${Math.min(d.max||999,(player.ws[k]||0)+l)}</span><span style="color:${waveLocked?'#ffb45c':'#0f0'}">${label}</span>`;
       }
     });
@@ -3891,7 +3891,7 @@
   initializeDeviceMode();
   initializeLeaderboard();
  + formatMoney(run.cash);
-    document.getElementById('hud-coins').innerText = '$' + run.coins.toLocaleString('en-US');
+    document.getElementById('hud-coins').innerText = '$' + formatMoney(run.coins);
 
     if (tower) {
       const perkDamage = 1 + (getPerkValue('power') + getPerkValue('overload')) / 100;
@@ -3928,7 +3928,7 @@
         const unlockWave=d.unlockWave||1;
         const waveLocked=run.wave<unlockWave;
         btn.disabled=waveLocked || (run.cash<c) || m;
-        const label=waveLocked ? 'LOCKED · WAVE '+unlockWave : m ? 'MAX' : '$'+c.toLocaleString('en-US');
+        const label=waveLocked ? 'LOCKED · WAVE '+unlockWave : m ? 'MAX' : '$'+formatMoney(c);
         btn.innerHTML=`<span style="color:${d.col}">${d.n} · LVL ${Math.min(d.max||999,(player.ws[k]||0)+l)}</span><span style="color:${waveLocked?'#ffb45c':'#0f0'}">${label}</span>`;
       }
     });
@@ -4166,7 +4166,7 @@
       const status = unlocked ? 'UNLOCKED' : locked ? 'LOCKED' : 'AVAILABLE';
       const action = unlocked ? '<span class="skill-status done">✓ ' + status + '</span>' :
         locked ? '<button class="btn skill-buy" disabled>' + status + '</button>' :
-        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\'' + s.id + '\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + (s.cost-player.coins) + ' COINS' : 'BUY · ' + s.cost + ' COINS')) + '</button>';
+        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\\'' + s.id + '\\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + formatMoney(s.cost-player.coins) + ' COINS' : 'BUY · ' + formatMoney(s.cost) + ' COINS')) + '</button>';
       grid.insertAdjacentHTML('beforeend', `<article class="skill-card ${unlocked?'is-unlocked':''} ${locked?'is-locked':''}">
         <div class="skill-card-top"><span class="skill-icon">${s.id==='start'?'◆':s.id==='multishot'?'⟡':s.id==='missiles'?'➤':s.id==='lasers'?'ϟ':s.id==='shield'?'⬡':s.id==='drone'?'◉':s.id==='overdrive'?'⚡':s.id==='vampire'?'✚':'✧'}</span><span class="skill-status ${unlocked?'done':locked?'locked':'ready'}">${status}</span></div>
         <h3>${s.n}</h3><p class="skill-description">${effect}</p>
@@ -4214,8 +4214,8 @@
   function updateHUD() {
     document.getElementById('hud-wave').innerText = run.wave;
     document.getElementById('hud-timer').innerText = game.toSpawn + game.ents.e.length;
-    document.getElementById('hud-cash').innerText = '$'+run.cash;
-    document.getElementById('hud-coins').innerText = '$' + run.coins.toLocaleString('en-US');
+    document.getElementById('hud-cash').innerText = '$' + formatMoney(run.cash);
+    document.getElementById('hud-coins').innerText = '$' + formatMoney(run.coins);
 
     if (tower) {
       const perkDamage = 1 + (getPerkValue('power') + getPerkValue('overload')) / 100;
@@ -4252,7 +4252,7 @@
         const unlockWave=d.unlockWave||1;
         const waveLocked=run.wave<unlockWave;
         btn.disabled=waveLocked || (run.cash<c) || m;
-        const label=waveLocked ? 'LOCKED · WAVE '+unlockWave : m ? 'MAX' : '$'+c.toLocaleString('en-US');
+        const label=waveLocked ? 'LOCKED · WAVE '+unlockWave : m ? 'MAX' : '$'+formatMoney(c);
         btn.innerHTML=`<span style="color:${d.col}">${d.n} · LVL ${Math.min(d.max||999,(player.ws[k]||0)+l)}</span><span style="color:${waveLocked?'#ffb45c':'#0f0'}">${label}</span>`;
       }
     });
