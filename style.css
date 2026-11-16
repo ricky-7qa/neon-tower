@@ -2117,3 +2117,86 @@
   #app .player-stat-value { font-size:21px; }
   #app .player-stat-note { font-size:9px; }
 }
+
+
+/* ACCOUNT UX — cloud save status. */
+#app .cloud-sync-status {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  width:fit-content;
+  max-width:100%;
+  box-sizing:border-box;
+  margin:0 auto 16px;
+  padding:9px 14px;
+  border:1px solid rgba(90,220,255,.2);
+  border-radius:999px;
+  background:rgba(0,18,30,.72);
+  color:#9fc4d4;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.8px;
+  line-height:1.4;
+  text-align:center;
+}
+#app .cloud-sync-indicator {
+  display:inline-block;
+  flex:0 0 7px;
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:#70b8ca;
+  box-shadow:0 0 9px currentColor;
+}
+#app .cloud-sync-status[data-state="saved"] {
+  color:#8fffd0;
+  border-color:rgba(80,255,180,.28);
+}
+#app .cloud-sync-status[data-state="saved"] .cloud-sync-indicator {
+  background:#54efad;
+}
+#app .cloud-sync-status[data-state="syncing"] {
+  color:#8deaff;
+  border-color:rgba(0,220,255,.28);
+}
+#app .cloud-sync-status[data-state="syncing"] .cloud-sync-indicator {
+  background:#4bdfff;
+  animation:cloudSyncPulse 1s ease-in-out infinite alternate;
+}
+#app .cloud-sync-status[data-state="offline"],
+#app .cloud-sync-status[data-state="warning"] {
+  color:#ffd58a;
+  border-color:rgba(255,190,90,.3);
+}
+#app .cloud-sync-status[data-state="offline"] .cloud-sync-indicator,
+#app .cloud-sync-status[data-state="warning"] .cloud-sync-indicator {
+  background:#ffc36b;
+}
+#app .cloud-sync-status[data-state="error"] {
+  color:#ff9da8;
+  border-color:rgba(255,90,120,.3);
+}
+#app .cloud-sync-status[data-state="error"] .cloud-sync-indicator {
+  background:#ff6f86;
+}
+#app .cloud-sync-status[data-state="signed-out"] {
+  color:#8298a8;
+  border-color:rgba(130,160,180,.18);
+}
+#app .cloud-sync-status[data-state="signed-out"] .cloud-sync-indicator {
+  background:#718595;
+}
+@keyframes cloudSyncPulse {
+  from { opacity:.45; box-shadow:0 0 3px currentColor; }
+  to { opacity:1; box-shadow:0 0 11px currentColor; }
+}
+@media(max-width:600px) {
+  #app .cloud-sync-status {
+    width:100%;
+    margin-bottom:12px;
+    padding:9px 10px;
+    font-size:8px;
+    letter-spacing:.45px;
+  }
+}
