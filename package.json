@@ -1,0 +1,22 @@
+{
+  "name": "neon-tower",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Neon Tower: Apex Edition",
+  "scripts": {
+    "build": "node scripts/copy-web.mjs",
+    "cap:sync": "npm run build && cap sync",
+    "cap:add:android": "npm run build && cap add android",
+    "cap:add:ios": "npm run build && cap add ios",
+    "cap:open:android": "npm run cap:sync && cap open android",
+    "cap:open:ios": "npm run cap:sync && cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.6.2",
+    "@capacitor/core": "8.6.2",
+    "@capacitor/ios": "8.6.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.6.2"
+  }
+}
