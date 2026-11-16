@@ -182,6 +182,41 @@
     if(player.coins >= s.cost) { player.coins -= s.cost; player.skills.push(id); saveGame(); buildSkillTree(); AudioSys.coin(); }
   }
 
+  function openGameSettings() {
+    const panel = document.getElementById('game-settings-panel');
+    if (!panel) return;
+    const soundButton = document.getElementById('settings-sound-toggle');
+    if (soundButton) soundButton.textContent = AudioSys.enabled ? 'SOUND · ON' : 'SOUND · OFF';
+    panel.classList.add('open');
+    panel.setAttribute('aria-hidden', 'false');
+  }
+  function closeGameSettings() {
+    const panel = document.getElementById('game-settings-panel');
+    if (!panel) return;
+    panel.classList.remove('open');
+    panel.setAttribute('aria-hidden', 'true');
+  }
+  function toggleGameSound() {
+    const enabled = AudioSys.setEnabled(!AudioSys.enabled);
+    const soundButton = document.getElementById('settings-sound-toggle');
+    if (soundButton) soundButton.textContent = enabled ? 'SOUND · ON' : 'SOUND · OFF';
+  }
+  function goBackToMenu() {
+    if (!game || !game.running) return;
+    const confirmed = window.confirm('RETURN TO THE MAIN MENU? Your current run will be saved and submitted if it qualifies for the leaderboard.');
+    if (!confirmed) return;
+    closeGameSettings();
+    processGameOver('voluntary');
+    document.getElementById('gameover').classList.remove('active-layer');
+    document.getElementById('hud').classList.remove('active-hud');
+    document.getElementById('menu').classList.add('active-layer');
+    updateMenuUI();
+  }
+  window.openGameSettings = openGameSettings;
+  window.closeGameSettings = closeGameSettings;
+  window.toggleGameSound = toggleGameSound;
+  window.goBackToMenu = goBackToMenu;
+
   let activeUpgCategory = 'ATTACK';
 
   function switchUpgCategory(category) {
