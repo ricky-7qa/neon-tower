@@ -363,7 +363,7 @@
         run.cash += Math.floor(this.val * parseFloat(getVal("salvage"))/100);
         if (this.type === "Boss") {
           player.bossKills++;run.bossKills=(run.bossKills||0)+1;run.coins+=Math.floor(15*(1+getWaveDecisionValue('boss_contract')+getWaveDecisionValue('boss_gamble_reward')));
-          run.cash += Math.floor(this.val * (parseFloat(getVal("bossBounty")) + parseFloat(getVal("bossContract")))/100);
+          run.cash += Math.floor(this.val * (parseFloat(getVal("bossBounty")) + parseFloat(getVal("bossContract")))/100 * (1+getWaveDecisionValue("boss_gamble_reward")));
           game.shake = 0.35; createParts(this.x, this.y, this.c, 45, 7, 1.2);
           notify("BOSS DEFEATED", "BONUS REWARDS");
         } else {
