@@ -2026,3 +2026,94 @@
   #app .leaderboard-footer-actions { justify-content:center; margin-top:16px; }
   #app .leaderboard-footer-actions .btn { font-size:9px; }
 }
+
+
+/* PLAYER STATS — lifetime progress cards. */
+#app #menu > #tab-player-stats {
+  flex:1 1 0;
+  min-height:0;
+  width:100%;
+  box-sizing:border-box;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  padding:18px 18px 28px !important;
+}
+#app .player-stats-panel {
+  width:min(900px,100%);
+  margin:0 auto;
+}
+#app .player-stats-heading {
+  margin:4px 0 22px;
+  text-align:center;
+}
+#app .player-stats-heading .eyebrow {
+  color:#62eaff;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:2px;
+}
+#app .player-stats-heading h2 {
+  margin:8px 0;
+  color:#e9fbff;
+  font-size:clamp(22px,4vw,32px);
+  letter-spacing:2px;
+  text-shadow:0 0 18px rgba(0,225,255,.22);
+}
+#app .player-stats-heading p {
+  margin:0;
+  color:#8ba9ba;
+  font-size:12px;
+}
+#app .player-stats-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+  gap:12px;
+}
+#app .player-stat-card {
+  display:flex;
+  min-height:126px;
+  flex-direction:column;
+  justify-content:center;
+  gap:9px;
+  box-sizing:border-box;
+  padding:17px;
+  border:1px solid rgba(0,220,255,.24);
+  border-radius:11px;
+  background:linear-gradient(145deg,rgba(8,27,42,.94),rgba(3,9,19,.96));
+  box-shadow:inset 0 0 22px rgba(0,210,255,.035),0 8px 20px rgba(0,0,0,.2);
+}
+#app .player-stat-label {
+  color:#78cddd;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:1.4px;
+}
+#app .player-stat-value {
+  color:#f1fcff;
+  font-size:clamp(23px,3vw,31px);
+  line-height:1.1;
+  overflow-wrap:anywhere;
+  text-shadow:0 0 14px rgba(0,220,255,.18);
+}
+#app .player-stat-note {
+  color:#7894a5;
+  font-size:10px;
+  line-height:1.4;
+}
+#app .player-stats-footnote {
+  margin:18px 0 4px;
+  color:#6f8999;
+  font-size:10px;
+  text-align:center;
+}
+@media(max-width:600px) {
+  #app #menu > #tab-player-stats { padding:12px 10px 20px !important; }
+  #app .player-stats-heading { margin:2px 0 15px; }
+  #app .player-stats-heading p { font-size:10px; }
+  #app .player-stats-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+  #app .player-stat-card { min-height:108px; padding:12px 10px; gap:7px; }
+  #app .player-stat-label { font-size:8px; letter-spacing:.8px; }
+  #app .player-stat-value { font-size:21px; }
+  #app .player-stat-note { font-size:9px; }
+}
