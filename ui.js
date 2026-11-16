@@ -40,9 +40,34 @@
   }
 
   
+  function formatPlayerStatTime(value) {
+    const total = Math.max(0, Math.floor(Number(value) || 0));
+    const hours = Math.floor(total / 3600);
+    const minutes = Math.floor((total % 3600) / 60);
+    const seconds = total % 60;
+    return hours > 0 ? hours + 'h ' + minutes + 'm' : minutes + 'm ' + seconds + 's';
+  }
+
+  function renderPlayerStats() {
+    const grid = document.getElementById('player-stats-grid');
+    if (!grid) return;
+    const number = value => Math.max(0, Math.floor(Number(value) || 0)).toLocaleString('en-US');
+    const stats = [
+      { label:'BEST WAVE', value:number(player.highestWave), note:'Highest wave reached' },
+      { label:'TOTAL KILLS', value:number(player.totalKills), note:'Enemies eliminated across all runs' },
+      { label:'TOTAL PLAYTIME', value:formatPlayerStatTime(player.playTime), note:'Time spent actively playing' },
+      { label:'TOTAL RUNS', value:number(player.runsPlayed), note:'Runs completed' },
+      { label:'BOSSES DEFEATED', value:number(player.bossKills), note:'Bosses defeated across all runs' },
+      { label:'BEST RUN KILLS', value:number(player.bestKills), note:'Most enemies eliminated in one run' },
+      { label:'LONGEST RUN', value:formatPlayerStatTime(player.bestDuration), note:'Longest single run' }
+    ];
+    grid.innerHTML = stats.map(stat => '<article class="player-stat-card"><span class="player-stat-label">' + stat.label + '</span><strong class="player-stat-value">' + stat.value + '</strong><small class="player-stat-note">' + stat.note + '</small></article>').join('');
+  }
+
   function updateMenuUI() {
     document.getElementById('menu-coins').innerText = '$' + formatMoney(player.coins);
     document.getElementById('menu-wave').innerText = player.highestWave;
+    renderPlayerStats();
     
     let ws = document.getElementById('ws-grid'); ws.innerHTML = "";
     ['ATTACK','DEFENSE','UTILITY'].forEach(category=>{
@@ -382,7 +407,7 @@
   }
 
   function switchTab(t) {
-    ['workshop', 'skills', 'achievements', 'leaderboard'].forEach(x => {
+    ['workshop', 'skills', 'achievements', 'player-stats', 'leaderboard'].forEach(x => {
       const tab = document.getElementById('tab-'+x);
       tab.style.display = (x===t?'flex':'none');
       if (x===t) tab.scrollTop = 0;
