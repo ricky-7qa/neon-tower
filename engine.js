@@ -430,7 +430,7 @@
       case'energy_shield':if(tower)tower.tempShieldCharges=(tower.tempShieldCharges||0)+Math.max(1,Math.round(scale));break;
       case'reinforced_core':effect(id,pct(.2),3);break;case'nano_repair':effect(id,pct(.015),3);break;
       case'second_chance':run.secondChanceCharges=(run.secondChanceCharges||0)+1;run.secondChanceHeal=Math.max(Number(run.secondChanceHeal)||0,pct(.01));break;case'defensive_matrix':effect(id,pct(.25),3);break;
-      case'gold_rush':run.coins=(run.coins||0)+Math.floor(75*scale);break;case'double_reward':effect(id,1,1);break;
+      case'gold_rush':run.coins=(run.coins||0)+Math.floor(75*scale);break;case'double_reward':effect(id,scale,1);break;
       case'bounty_hunter':effect(id,pct(.5),3);break;
       case'investment':{const invested=Math.floor((run.coins||0)*.15);if(invested>0){run.coins-=invested;run.decisionEffects.push({id,value:invested*(1+.3*scale),remaining:3,payout:Math.floor(invested*(1+.3*scale)),paid:false,rarity});}break;}
       case'treasure_hunt':effect(id,pct(.15),3);break;case'boss_contract':effect(id,pct(.5),5);break;
@@ -778,7 +778,7 @@
       game.toSpawn = getWaveEnemyCount(run.wave);
       run.coins += Math.max(1,Math.floor((Math.floor(run.wave/2)+2+Math.floor(parseFloat(getVal('coinCache'))))*0.4));
       const waveCashReward=Math.floor(parseFloat(getVal('waveBonus'))+Math.floor(run.wave*parseFloat(getVal('waveDividend'))/100));
-      run.cash+=Math.floor(waveCashReward*(hasWaveDecision('double_reward')?2:1)*(1+getWaveDecisionValue('chaos_cash')));
+      run.cash+=Math.floor(waveCashReward*(1+getWaveDecisionValue('double_reward'))*(1+getWaveDecisionValue('chaos_cash')));
       updateHUD(); AudioSys.coin(); checkAchievements();
       const completedWave = run.wave - 1;
       tickWaveDecisionEffects();
