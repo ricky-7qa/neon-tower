@@ -338,16 +338,18 @@
       cloudSaveReady = true;
       cloudSaveLoadingUserId = '';
       setAuthStatus('CLOUD SAVE SYNCED. YOUR PROGRESS IS LINKED TO THIS ACCOUNT.');
-      // Publish an existing local/cloud personal best when the player signs in.
+      // Publish the existing local/cloud personal best before refreshing the leaderboard.
       if (typeof submitLeaderboardResult === 'function' && Number(player?.highestWave || 0) > 15) {
-        submitLeaderboardResult({
+        await submitLeaderboardResult({
           wave: player.highestWave,
           kills: player.bestKills || 0,
           bossKills: player.bestBosses || 0,
           elapsed: player.bestDuration || 0
         });
       }
-      if (document.getElementById('tab-leaderboard')?.style.display !== 'none') showLeaderboardView();
+      if (document.getElementById('tab-leaderboard')?.style.display !== 'none') {
+        await loadLeaderboard();
+      }
     } catch (error) {
       console.error('Cloud save initialization failed:', error);
       cloudSaveReady = false;
