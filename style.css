@@ -2660,3 +2660,87 @@
     letter-spacing:0;
   }
 }
+
+
+/* IN-RUN SETTINGS PANEL */
+#hud .game-settings-btn {
+  pointer-events:auto;
+  min-height:34px;
+  padding:7px 9px;
+  border:1px solid rgba(0,255,255,.42);
+  border-radius:8px;
+  background:linear-gradient(145deg,rgba(5,35,48,.94),rgba(3,12,25,.97));
+  color:#a7f7ff;
+  font:900 9px Orbitron,sans-serif;
+  letter-spacing:.7px;
+  white-space:nowrap;
+  cursor:pointer;
+}
+#hud .game-settings-btn:active { border-color:#0ff; background:rgba(0,70,85,.95); }
+.game-settings-panel {
+  position:absolute;
+  inset:0;
+  z-index:100;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:rgba(0,4,14,.78);
+  -webkit-backdrop-filter:blur(8px);
+  backdrop-filter:blur(8px);
+  pointer-events:auto;
+}
+.game-settings-panel.open { display:flex; }
+.game-settings-card {
+  width:min(360px,100%);
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  padding:20px;
+  border:1px solid rgba(0,255,255,.42);
+  border-radius:15px;
+  background:linear-gradient(155deg,rgba(8,25,42,.98),rgba(2,7,17,.99));
+  box-shadow:0 0 35px rgba(0,220,255,.14);
+}
+.game-settings-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.game-settings-heading h2 {
+  margin:0;
+  color:#0ff;
+  font:900 18px Orbitron,sans-serif;
+  letter-spacing:2px;
+}
+.game-settings-close {
+  width:34px;
+  height:34px;
+  border:1px solid rgba(0,255,255,.35);
+  border-radius:8px;
+  background:rgba(0,20,35,.8);
+  color:#dff;
+  font-size:24px;
+  line-height:1;
+  cursor:pointer;
+}
+.game-settings-action {
+  width:100%;
+  min-height:46px;
+  padding:12px;
+  font:900 11px Orbitron,sans-serif;
+  letter-spacing:1px;
+}
+.game-settings-menu-action {
+  border-color:rgba(255,75,112,.5);
+  color:#ff9aad;
+}
+@media (orientation:portrait) and (pointer:coarse) {
+  #app.device-mobile .game-topbar .game-settings-btn {
+    min-height:31px;
+    padding:5px 6px;
+    font-size:0;
+    letter-spacing:0;
+  }
+  #app.device-mobile .game-topbar .game-settings-btn::after {
+    content:"⚙";
+    font-size:15px;
+    line-height:1;
+  }
+}
