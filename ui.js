@@ -102,7 +102,7 @@
       const status = unlocked ? 'UNLOCKED' : locked ? 'LOCKED' : 'AVAILABLE';
       const action = unlocked ? '<span class="skill-status done">✓ ' + status + '</span>' :
         locked ? '<button class="btn skill-buy" disabled>' + status + '</button>' :
-        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\\'' + s.id + '\\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + formatMoney(s.cost-player.coins) + ' COINS' : 'BUY · ' + formatMoney(s.cost) + ' COINS')) + '</button>';
+        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\'' + s.id + '\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + formatMoney(s.cost-player.coins) + ' COINS' : 'BUY · ' + formatMoney(s.cost) + ' COINS')) + '</button>';
       grid.insertAdjacentHTML('beforeend', `<article class="skill-card ${unlocked?'is-unlocked':''} ${locked?'is-locked':''}">
         <div class="skill-card-top"><span class="skill-icon">${s.id==='start'?'◆':s.id==='multishot'?'⟡':s.id==='missiles'?'➤':s.id==='lasers'?'ϟ':s.id==='shield'?'⬡':s.id==='drone'?'◉':s.id==='overdrive'?'⚡':s.id==='vampire'?'✚':'✧'}</span><span class="skill-status ${unlocked?'done':locked?'locked':'ready'}">${status}</span></div>
         <h3>${s.n}</h3><p class="skill-description">${effect}</p>
@@ -426,7 +426,7 @@
       const status = unlocked ? 'UNLOCKED' : locked ? 'LOCKED' : 'AVAILABLE';
       const action = unlocked ? '<span class="skill-status done">✓ ' + status + '</span>' :
         locked ? '<button class="btn skill-buy" disabled>' + status + '</button>' :
-        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\\'' + s.id + '\\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + formatMoney(s.cost-player.coins) + ' COINS' : 'BUY · ' + formatMoney(s.cost) + ' COINS')) + '</button>';
+        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\'' + s.id + '\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + formatMoney(s.cost-player.coins) + ' COINS' : 'BUY · ' + formatMoney(s.cost) + ' COINS')) + '</button>';
       grid.insertAdjacentHTML('beforeend', `<article class="skill-card ${unlocked?'is-unlocked':''} ${locked?'is-locked':''}">
         <div class="skill-card-top"><span class="skill-icon">${s.id==='start'?'◆':s.id==='multishot'?'⟡':s.id==='missiles'?'➤':s.id==='lasers'?'ϟ':s.id==='shield'?'⬡':s.id==='drone'?'◉':s.id==='overdrive'?'⚡':s.id==='vampire'?'✚':'✧'}</span><span class="skill-status ${unlocked?'done':locked?'locked':'ready'}">${status}</span></div>
         <h3>${s.n}</h3><p class="skill-description">${effect}</p>
@@ -966,7 +966,7 @@
       const status = unlocked ? 'UNLOCKED' : locked ? 'LOCKED' : 'AVAILABLE';
       const action = unlocked ? '<span class="skill-status done">✓ ' + status + '</span>' :
         locked ? '<button class="btn skill-buy" disabled>' + status + '</button>' :
-        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\\'' + s.id + '\\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + formatMoney(s.cost-player.coins) + ' COINS' : 'BUY · ' + formatMoney(s.cost) + ' COINS')) + '</button>';
+        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\'' + s.id + '\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + formatMoney(s.cost-player.coins) + ' COINS' : 'BUY · ' + formatMoney(s.cost) + ' COINS')) + '</button>';
       grid.insertAdjacentHTML('beforeend', `<article class="skill-card ${unlocked?'is-unlocked':''} ${locked?'is-locked':''}">
         <div class="skill-card-top"><span class="skill-icon">${s.id==='start'?'◆':s.id==='multishot'?'⟡':s.id==='missiles'?'➤':s.id==='lasers'?'ϟ':s.id==='shield'?'⬡':s.id==='drone'?'◉':s.id==='overdrive'?'⚡':s.id==='vampire'?'✚':'✧'}</span><span class="skill-status ${unlocked?'done':locked?'locked':'ready'}">${status}</span></div>
         <h3>${s.n}</h3><p class="skill-description">${effect}</p>
@@ -1505,7 +1505,7 @@
       const status = unlocked ? 'UNLOCKED' : locked ? 'LOCKED' : 'AVAILABLE';
       const action = unlocked ? '<span class="skill-status done">✓ ' + status + '</span>' :
         locked ? '<button class="btn skill-buy" disabled>' + status + '</button>' :
-        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\\'' + s.id + '\\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + formatMoney(s.cost-player.coins) + ' COINS' : 'BUY · ' + formatMoney(s.cost) + ' COINS')) + '</button>';
+        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\'' + s.id + '\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + formatMoney(s.cost-player.coins) + ' COINS' : 'BUY · ' + formatMoney(s.cost) + ' COINS')) + '</button>';
       grid.insertAdjacentHTML('beforeend', `<article class="skill-card ${unlocked?'is-unlocked':''} ${locked?'is-locked':''}">
         <div class="skill-card-top"><span class="skill-icon">${s.id==='start'?'◆':s.id==='multishot'?'⟡':s.id==='missiles'?'➤':s.id==='lasers'?'ϟ':s.id==='shield'?'⬡':s.id==='drone'?'◉':s.id==='overdrive'?'⚡':s.id==='vampire'?'✚':'✧'}</span><span class="skill-status ${unlocked?'done':locked?'locked':'ready'}">${status}</span></div>
         <h3>${s.n}</h3><p class="skill-description">${effect}</p>
@@ -2045,7 +2045,7 @@
       const status = unlocked ? 'UNLOCKED' : locked ? 'LOCKED' : 'AVAILABLE';
       const action = unlocked ? '<span class="skill-status done">✓ ' + status + '</span>' :
         locked ? '<button class="btn skill-buy" disabled>' + status + '</button>' :
-        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\\'' + s.id + '\\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + formatMoney(s.cost-player.coins) + ' COINS' : 'BUY · ' + formatMoney(s.cost) + ' COINS')) + '</button>';
+        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\'' + s.id + '\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + formatMoney(s.cost-player.coins) + ' COINS' : 'BUY · ' + formatMoney(s.cost) + ' COINS')) + '</button>';
       grid.insertAdjacentHTML('beforeend', `<article class="skill-card ${unlocked?'is-unlocked':''} ${locked?'is-locked':''}">
         <div class="skill-card-top"><span class="skill-icon">${s.id==='start'?'◆':s.id==='multishot'?'⟡':s.id==='missiles'?'➤':s.id==='lasers'?'ϟ':s.id==='shield'?'⬡':s.id==='drone'?'◉':s.id==='overdrive'?'⚡':s.id==='vampire'?'✚':'✧'}</span><span class="skill-status ${unlocked?'done':locked?'locked':'ready'}">${status}</span></div>
         <h3>${s.n}</h3><p class="skill-description">${effect}</p>
@@ -2547,7 +2547,7 @@
       const status = unlocked ? 'UNLOCKED' : locked ? 'LOCKED' : 'AVAILABLE';
       const action = unlocked ? '<span class="skill-status done">✓ ' + status + '</span>' :
         locked ? '<button class="btn skill-buy" disabled>' + status + '</button>' :
-        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\\'' + s.id + '\\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + formatMoney(s.cost-player.coins) + ' COINS' : 'BUY · ' + formatMoney(s.cost) + ' COINS')) + '</button>';
+        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\'' + s.id + '\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + formatMoney(s.cost-player.coins) + ' COINS' : 'BUY · ' + formatMoney(s.cost) + ' COINS')) + '</button>';
       grid.insertAdjacentHTML('beforeend', `<article class="skill-card ${unlocked?'is-unlocked':''} ${locked?'is-locked':''}">
         <div class="skill-card-top"><span class="skill-icon">${s.id==='start'?'◆':s.id==='multishot'?'⟡':s.id==='missiles'?'➤':s.id==='lasers'?'ϟ':s.id==='shield'?'⬡':s.id==='drone'?'◉':s.id==='overdrive'?'⚡':s.id==='vampire'?'✚':'✧'}</span><span class="skill-status ${unlocked?'done':locked?'locked':'ready'}">${status}</span></div>
         <h3>${s.n}</h3><p class="skill-description">${effect}</p>
@@ -3087,7 +3087,7 @@
       const status = unlocked ? 'UNLOCKED' : locked ? 'LOCKED' : 'AVAILABLE';
       const action = unlocked ? '<span class="skill-status done">✓ ' + status + '</span>' :
         locked ? '<button class="btn skill-buy" disabled>' + status + '</button>' :
-        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\\'' + s.id + '\\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + formatMoney(s.cost-player.coins) + ' COINS' : 'BUY · ' + formatMoney(s.cost) + ' COINS')) + '</button>';
+        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\'' + s.id + '\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + formatMoney(s.cost-player.coins) + ' COINS' : 'BUY · ' + formatMoney(s.cost) + ' COINS')) + '</button>';
       grid.insertAdjacentHTML('beforeend', `<article class="skill-card ${unlocked?'is-unlocked':''} ${locked?'is-locked':''}">
         <div class="skill-card-top"><span class="skill-icon">${s.id==='start'?'◆':s.id==='multishot'?'⟡':s.id==='missiles'?'➤':s.id==='lasers'?'ϟ':s.id==='shield'?'⬡':s.id==='drone'?'◉':s.id==='overdrive'?'⚡':s.id==='vampire'?'✚':'✧'}</span><span class="skill-status ${unlocked?'done':locked?'locked':'ready'}">${status}</span></div>
         <h3>${s.n}</h3><p class="skill-description">${effect}</p>
@@ -3626,7 +3626,7 @@
       const status = unlocked ? 'UNLOCKED' : locked ? 'LOCKED' : 'AVAILABLE';
       const action = unlocked ? '<span class="skill-status done">✓ ' + status + '</span>' :
         locked ? '<button class="btn skill-buy" disabled>' + status + '</button>' :
-        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\\'' + s.id + '\\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + formatMoney(s.cost-player.coins) + ' COINS' : 'BUY · ' + formatMoney(s.cost) + ' COINS')) + '</button>';
+        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\'' + s.id + '\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + formatMoney(s.cost-player.coins) + ' COINS' : 'BUY · ' + formatMoney(s.cost) + ' COINS')) + '</button>';
       grid.insertAdjacentHTML('beforeend', `<article class="skill-card ${unlocked?'is-unlocked':''} ${locked?'is-locked':''}">
         <div class="skill-card-top"><span class="skill-icon">${s.id==='start'?'◆':s.id==='multishot'?'⟡':s.id==='missiles'?'➤':s.id==='lasers'?'ϟ':s.id==='shield'?'⬡':s.id==='drone'?'◉':s.id==='overdrive'?'⚡':s.id==='vampire'?'✚':'✧'}</span><span class="skill-status ${unlocked?'done':locked?'locked':'ready'}">${status}</span></div>
         <h3>${s.n}</h3><p class="skill-description">${effect}</p>
@@ -4166,7 +4166,7 @@
       const status = unlocked ? 'UNLOCKED' : locked ? 'LOCKED' : 'AVAILABLE';
       const action = unlocked ? '<span class="skill-status done">✓ ' + status + '</span>' :
         locked ? '<button class="btn skill-buy" disabled>' + status + '</button>' :
-        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\\'' + s.id + '\\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + formatMoney(s.cost-player.coins) + ' COINS' : 'BUY · ' + formatMoney(s.cost) + ' COINS')) + '</button>';
+        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\'' + s.id + '\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + formatMoney(s.cost-player.coins) + ' COINS' : 'BUY · ' + formatMoney(s.cost) + ' COINS')) + '</button>';
       grid.insertAdjacentHTML('beforeend', `<article class="skill-card ${unlocked?'is-unlocked':''} ${locked?'is-locked':''}">
         <div class="skill-card-top"><span class="skill-icon">${s.id==='start'?'◆':s.id==='multishot'?'⟡':s.id==='missiles'?'➤':s.id==='lasers'?'ϟ':s.id==='shield'?'⬡':s.id==='drone'?'◉':s.id==='overdrive'?'⚡':s.id==='vampire'?'✚':'✧'}</span><span class="skill-status ${unlocked?'done':locked?'locked':'ready'}">${status}</span></div>
         <h3>${s.n}</h3><p class="skill-description">${effect}</p>
