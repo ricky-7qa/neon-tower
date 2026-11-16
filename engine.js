@@ -368,43 +368,73 @@
     panel.classList.add('visible');
   }
 
-  const waveDecisionDefs = [
-    {id:'elite_hunt',name:'ELITE HUNT',icon:'◆',desc:'Enemies in the next wave have 35% more health, but each kill gives 75% more cash.'},
-    {id:'endless_assault',name:'ENDLESS ASSAULT',icon:'♢',desc:'Face 20% more enemies in the next wave. Clearing it gives 35% more wave cash.'},
-    {id:'boss_contract',name:'BOSS CONTRACT',icon:'☠',desc:'The next Boss has 25% more health. Defeating it grants 50% more Boss coins.'},
-    {id:'black_market',name:'BLACK MARKET',icon:'◈',desc:'Trade 15% of your current run cash for 20% of your current run coins immediately.'},
-    {id:'treasure_hunt',name:'TREASURE HUNT',icon:'✧',desc:'Enemies in the next wave have a 12% chance to drop an extra run coin.'},
-    {id:'power_failure',name:'POWER FAILURE',icon:'⚡',desc:'Enemies deal 20% more damage in the next wave, but clearing it grants 50% more run coins.'}
+  const waveDecisionRarities={common:{label:'COMMON',weight:62,multiplier:1},rare:{label:'RARE',weight:25,multiplier:1.25},epic:{label:'EPIC',weight:10,multiplier:1.55},legendary:{label:'LEGENDARY',weight:3,multiplier:2}};
+  const waveDecisionDefs=[
+    {id:'overdrive',name:'OVERDRIVE',category:'COMBAT',icon:'⚡',desc:'+25% attack speed for 3 waves.',duration:3},
+    {id:'heavy_impact',name:'HEAVY IMPACT',category:'COMBAT',icon:'✹',desc:'+35% damage for 2 waves.',duration:2},
+    {id:'critical_focus',name:'CRITICAL FOCUS',category:'COMBAT',icon:'◎',desc:'+15% critical chance for 3 waves.',duration:3},
+    {id:'double_trouble',name:'DOUBLE TROUBLE',category:'COMBAT',icon:'✦',desc:'20% chance to fire an extra projectile for 3 waves.',duration:3},
+    {id:'executioner',name:'EXECUTIONER',category:'COMBAT',icon:'☠',desc:'+30% damage against enemies below 30% health for 3 waves.',duration:3},
+    {id:'piercing_shots',name:'PIERCING SHOTS',category:'COMBAT',icon:'➤',desc:'Projectiles pierce one additional enemy for 3 waves.',duration:3},
+    {id:'rapid_fire',name:'RAPID FIRE',category:'COMBAT',icon:'»',desc:'+20% attack speed for 2 waves.',duration:2},
+    {id:'boss_hunter',name:'BOSS HUNTER',category:'COMBAT',icon:'♛',desc:'+30% damage against Bosses in the next wave.',duration:1},
+    {id:'emergency_repair',name:'EMERGENCY REPAIR',category:'DEFENSE',icon:'✚',desc:'Restore 15% of maximum health immediately.',duration:0},
+    {id:'energy_shield',name:'ENERGY SHIELD',category:'DEFENSE',icon:'⬡',desc:'Gain a temporary shield that blocks one hit.',duration:0},
+    {id:'reinforced_core',name:'REINFORCED CORE',category:'DEFENSE',icon:'▣',desc:'Reduce all incoming damage by 20% for 3 waves.',duration:3},
+    {id:'nano_repair',name:'NANO REPAIR',category:'DEFENSE',icon:'✧',desc:'Restore an extra 1.5% of maximum health per second for 3 waves.',duration:3},
+    {id:'second_chance',name:'SECOND CHANCE',category:'DEFENSE',icon:'♡',desc:'Survive one otherwise fatal hit.',duration:0},
+    {id:'defensive_matrix',name:'DEFENSIVE MATRIX',category:'DEFENSE',icon:'◈',desc:'Reduce enemy projectile damage by 25% for 3 waves.',duration:3},
+    {id:'gold_rush',name:'GOLD RUSH',category:'ECONOMY',icon:'◆',desc:'Receive 75 bonus run coins immediately.',duration:0},
+    {id:'double_reward',name:'DOUBLE REWARD',category:'ECONOMY',icon:'＄',desc:'Double the next wave-clear cash reward.',duration:1},
+    {id:'bounty_hunter',name:'BOUNTY HUNTER',category:'ECONOMY',icon:'◇',desc:'Special enemies give 50% more cash for 3 waves.',duration:3},
+    {id:'investment',name:'INVESTMENT',category:'ECONOMY',icon:'▤',desc:'Invest 15% of your run coins and receive 30% extra after 3 waves.',duration:0},
+    {id:'treasure_hunt',name:'TREASURE HUNT',category:'ECONOMY',icon:'✧',desc:'Enemies have a 15% chance to drop an extra run coin for 3 waves.',duration:3},
+    {id:'boss_contract',name:'BOSS CONTRACT',category:'ECONOMY',icon:'♛',desc:'Defeating the next Boss grants 50% more Boss coins.',duration:1},
+    {id:'blood_money',name:'BLOOD MONEY',category:'RISK & REWARD',icon:'♦',desc:'Enemies deal 25% more damage, but give 50% more cash for 1 wave.',duration:1},
+    {id:'chaos_mode',name:'CHAOS MODE',category:'RISK & REWARD',icon:'※',desc:'Enemies move 20% faster, but wave rewards are 50% higher.',duration:1},
+    {id:'elite_invasion',name:'ELITE INVASION',category:'RISK & REWARD',icon:'◆',desc:'More special enemies appear and their rewards are 50% higher in the next wave.',duration:1},
+    {id:'glass_cannon',name:'GLASS CANNON',category:'RISK & REWARD',icon:'◇',desc:'+50% damage dealt, but you also take 35% more damage for 2 waves.',duration:2},
+    {id:'boss_gamble',name:'BOSS GAMBLE',category:'RISK & REWARD',icon:'☠',desc:'The next Boss has 30% more health, but its reward is doubled.',duration:1},
+    {id:'last_stand',name:'LAST STAND',category:'RISK & REWARD',icon:'⚔',desc:'Start the next wave at 50% health, but deal 50% more damage.',duration:1}
   ];
-
-  function showWaveDecisionChoice() {
-    if (!game || !game.running) return;
-    game.paused = true;
-    const panel = document.getElementById('perk-choice');
-    const picks = [...waveDecisionDefs].sort(() => Math.random() - 0.5).slice(0, 3);
-    panel.innerHTML = '<div class="perk-dialog decision-dialog"><span class="perk-eyebrow">WAVE MILESTONE</span><h2>CHOOSE YOUR STRATEGY</h2><p>These choices change the next wave. Some offer greater rewards at a higher risk.</p><div class="decision-wallet"><span>CASH <strong>$' + formatMoney(run.cash || 0) + '</strong></span><span>COINS <strong>' + formatMoney(run.coins || 0) + '</strong></span></div><div class="perk-options decision-options">' +
-      picks.map(d => '<button class="perk-option decision-option" onclick="chooseWaveDecision(\'' + d.id + '\')"><span>' + d.icon + '</span><strong>' + d.name + '</strong><small>' + d.desc + '</small></button>').join('') +
-      '</div></div>';
+  function getWaveDecisionValue(id){return(run.decisionEffects||[]).filter(e=>e.id===id).reduce((s,e)=>s+(Number(e.value)||0),0);}
+  function hasWaveDecision(id){return(run.decisionEffects||[]).some(e=>e.id===id);}
+  function tickWaveDecisionEffects(){run.decisionEffects=(run.decisionEffects||[]).filter(e=>{e.remaining=Math.max(0,(Number(e.remaining)||0)-1);if(e.id==='investment'&&e.remaining===0&&!e.paid){run.coins=(run.coins||0)+(e.payout||0);e.paid=true;}return e.remaining>0||(e.id==='investment'&&!e.paid);});}
+  function rollWaveDecisionOptions(){
+    const previous=new Set(run.lastDecisionOptions||[]);let pool=waveDecisionDefs.filter(d=>!previous.has(d.id));if(pool.length<3)pool=[...waveDecisionDefs];
+    const low=!!(tower&&tower.maxHp>0&&tower.hp/tower.maxHp<.4),picks=[];
+    while(pool.length&&picks.length<3){const weights=pool.map(d=>low&&d.category==='DEFENSE'?3.2:1),total=weights.reduce((a,b)=>a+b,0);let roll=Math.random()*total,i=0;for(;i<weights.length-1;i++){roll-=weights[i];if(roll<0)break;}picks.push(pool.splice(i,1)[0]);}
+    return picks.map(d=>{const keys=Object.keys(waveDecisionRarities),total=keys.reduce((s,k)=>s+waveDecisionRarities[k].weight,0);let roll=Math.random()*total,rarity='common';for(const k of keys){roll-=waveDecisionRarities[k].weight;if(roll<0){rarity=k;break;}}return{...d,rarity,multiplier:waveDecisionRarities[rarity].multiplier};});
+  }
+  function showWaveDecisionChoice(){
+    if(!game||!game.running)return;game.paused=true;const panel=document.getElementById('perk-choice'),picks=rollWaveDecisionOptions();run.lastDecisionOptions=picks.map(d=>d.id);
+    panel.innerHTML='<div class="perk-dialog decision-dialog"><span class="perk-eyebrow">WAVE '+(run.wave-1)+' COMPLETED</span><h2>SELECT YOUR ADVANTAGE</h2><p>Choose one upgrade for your next wave. Higher rarities have stronger effects.</p><div class="decision-wallet"><span>CASH <strong>$'+formatMoney(run.cash||0)+'</strong></span><span>COINS <strong>'+formatMoney(run.coins||0)+'</strong></span></div><div class="perk-options decision-options">'+picks.map(d=>'<button class="perk-option decision-option rarity-'+d.rarity+'" onclick="chooseWaveDecision(\''+d.id+'\',\''+d.rarity+'\')"><span>'+d.icon+'</span><strong>'+d.name+'</strong><small class="decision-category">'+d.category+'</small><small class="perk-rarity-label">'+waveDecisionRarities[d.rarity].label+'</small><small>'+d.desc.replace(/\\d+(?:\\.\\d+)?%/g,v=>Math.round(parseFloat(v)*d.multiplier*10)/10+'%')+'</small></button>').join('')+'</div></div>';
     panel.classList.add('visible');
   }
-
-  function chooseWaveDecision(id) {
-    const decision = waveDecisionDefs.find(d => d.id === id);
-    if (!decision || !game || !game.running) return;
-    run.activeDecision = id;
-    if (id === 'endless_assault') game.toSpawn = Math.ceil((game.toSpawn || 0) * 1.2);
-    if (id === 'black_market') {
-      const exchanged = Math.floor((run.cash || 0) * 0.15);
-      run.cash = Math.max(0, (run.cash || 0) - exchanged);
-      run.coins = (run.coins || 0) + Math.floor((run.coins || 0) * 0.20);
+  function chooseWaveDecision(id,rarity='common'){
+    const d=waveDecisionDefs.find(v=>v.id===id),r=waveDecisionRarities[rarity];if(!d||!r||!game||!game.running)return;
+    const scale=r.multiplier,pct=n=>n*scale;run.decisionEffects=run.decisionEffects||[];
+    const effect=(key,value,duration=d.duration)=>run.decisionEffects.push({id:key,value,remaining:Math.max(1,duration),rarity});
+    switch(id){
+      case'overdrive':effect(id,pct(.25),3);break;case'heavy_impact':effect(id,pct(.35),2);break;case'critical_focus':effect(id,pct(15),3);break;
+      case'double_trouble':effect(id,pct(.2),3);break;case'executioner':effect(id,pct(.3),3);break;case'piercing_shots':effect(id,Math.max(1,Math.round(scale)),3);break;
+      case'rapid_fire':effect(id,pct(.2),2);break;case'boss_hunter':effect(id,pct(.3),1);break;
+      case'emergency_repair':if(tower)tower.hp=Math.min(tower.maxHp,tower.hp+tower.maxHp*pct(.15));break;
+      case'energy_shield':if(tower)tower.tempShieldCharges=(tower.tempShieldCharges||0)+Math.max(1,Math.round(scale));break;
+      case'reinforced_core':effect(id,pct(.2),3);break;case'nano_repair':effect(id,pct(.015),3);break;
+      case'second_chance':run.secondChanceCharges=(run.secondChanceCharges||0)+1;break;case'defensive_matrix':effect(id,pct(.25),3);break;
+      case'gold_rush':run.coins=(run.coins||0)+Math.floor(75*scale);break;case'double_reward':effect(id,1,1);break;
+      case'bounty_hunter':effect(id,pct(.5),3);break;
+      case'investment':{const invested=Math.floor((run.coins||0)*.15);if(invested>0){run.coins-=invested;run.decisionEffects.push({id,value:invested*1.3,remaining:3,payout:Math.floor(invested*1.3),paid:false,rarity});}break;}
+      case'treasure_hunt':effect(id,pct(.15),3);break;case'boss_contract':effect(id,pct(.5),1);break;
+      case'blood_money':effect(id,pct(.25),1);effect('blood_money_cash',pct(.5),1);break;
+      case'chaos_mode':effect(id,pct(.2),1);effect('chaos_cash',pct(.5),1);break;
+      case'elite_invasion':effect(id,pct(.25),1);effect('elite_cash',pct(.5),1);break;
+      case'glass_cannon':effect(id,pct(.5),2);effect('glass_cannon_damage_taken',pct(.35),2);break;
+      case'boss_gamble':effect(id,pct(.3),1);effect('boss_gamble_reward',pct(1),1);break;
+      case'last_stand':if(tower)tower.hp=Math.max(1,tower.hp*.5);effect(id,pct(.5),1);break;
     }
-    const panel = document.getElementById('perk-choice');
-    panel.classList.remove('visible');
-    panel.innerHTML = '';
-    game.paused = false;
-    game.last = performance.now();
-    updateHUD();
-    saveRunCheckpoint(false, false);
+    const panel=document.getElementById('perk-choice');panel.classList.remove('visible');panel.innerHTML='';game.paused=false;game.last=performance.now();updateHUD();saveRunCheckpoint(false,false);
   }
 
   function renderRunPerks() {
@@ -739,10 +769,12 @@
       run.wave++;
       if(tower) { const repairPct=parseFloat(getVal('waveRepair'))+parseFloat(getVal('repairBurst')); if(repairPct>0) tower.hp=Math.min(tower.maxHp,tower.hp+tower.maxHp*repairPct/100); }
       game.toSpawn = getWaveEnemyCount(run.wave);
-      run.coins += Math.max(1, Math.floor((Math.floor(run.wave/2) + 2 + Math.floor(parseFloat(getVal('coinCache'))) ) * 0.4 * (run.activeDecision === 'power_failure' ? 1.5 : 1))); run.cash += Math.floor((parseFloat(getVal('waveBonus')) + Math.floor(run.wave*parseFloat(getVal('waveDividend'))/100)) * (run.activeDecision === 'endless_assault' ? 1.35 : 1));
+      run.coins += Math.max(1,Math.floor((Math.floor(run.wave/2)+2+Math.floor(parseFloat(getVal('coinCache'))))*0.4));
+      const waveCashReward=Math.floor(parseFloat(getVal('waveBonus'))+Math.floor(run.wave*parseFloat(getVal('waveDividend'))/100));
+      run.cash+=Math.floor(waveCashReward*(hasWaveDecision('double_reward')?2:1)*(1+getWaveDecisionValue('chaos_cash')));
       updateHUD(); AudioSys.coin(); checkAchievements();
-      run.activeDecision = null;
       const completedWave = run.wave - 1;
+      tickWaveDecisionEffects();
       const perkMilestone = completedWave % 10 === 5;
       const decisionMilestone = completedWave % 10 === 0;
       const perksAvailable = perkDefs.some(p => getPerkStacks(p.id) < p.maxStacks);
@@ -769,22 +801,23 @@
         } 
         else if(p.collide(e)) {
           let dmg = p instanceof Laser ? p.d * game.dt : p.d;
-          if(e.type === 'Boss') dmg *= 1 + parseFloat(getVal('bossDamage'))/100;
-          if(e.hp <= e.maxHp*0.3) dmg *= 1 + parseFloat(getVal('executionProtocol'))/100;
+          if(e.type === 'Boss') dmg *= 1 + parseFloat(getVal('bossDamage'))/100 + getWaveDecisionValue('boss_hunter');
+          if(e.hp <= e.maxHp*0.3) dmg *= 1 + parseFloat(getVal('executionProtocol'))/100 + getWaveDecisionValue('executioner');
           if(!(p instanceof Laser)) {
              game.ents.txt.push(new FText(e.x, e.y-e.r, Math.floor(dmg), p.crit ? "#ff3366" : "#fff", p.crit ? 24 : 14));
              createParts(p.x, p.y, p.crit ? "#ff3366" : "#0ff", p.crit?10:3, 3);
           }
           if(e.hit(dmg)) { game.ents.e.splice(j,1); updateHUD(); }
           
-          if(p instanceof Laser) { /* Pierce */ } 
-          else { hitSomething = true; break; }
+          if(p instanceof Laser) { /* Laser pierces all targets. */ }
+          else if((p.pierceRemaining||0)>0){p.pierceRemaining--;p.dead=false;}
+          else {hitSomething=true;break;}
         }
       }
       if(hitSomething) game.ents.p.splice(i,1);
     }
 
-    for(let i=game.ents.b.length-1;i>=0;i--){let b=game.ents.b[i];b.update(game.dt);b.draw();let d=MathUtils.dist(b.x,b.y,tower.x,tower.y);if(d<tower.r+b.r){if(tower.invuln<=0)tower.hit(b.damage,b.kind==='boss'?{type:'Boss'}:null);bulletPool.release(b);game.ents.b.splice(i,1);continue;}if(!b.grazed&&d<tower.r+b.r+18){b.grazed=true;run.graze++;AudioSys.play('graze',1500,900,'sine',.08,.08);}if(b.x<-30||b.x>canvas.width+30||b.y<-30||b.y>canvas.height+30){bulletPool.release(b);game.ents.b.splice(i,1);}}
+    for(let i=game.ents.b.length-1;i>=0;i--){let b=game.ents.b[i];b.update(game.dt);b.draw();let d=MathUtils.dist(b.x,b.y,tower.x,tower.y);if(d<tower.r+b.r){if(tower.invuln<=0)tower.hit(b.damage,{type:b.kind==='boss'?'Boss':'Projectile',isProjectile:true});bulletPool.release(b);game.ents.b.splice(i,1);continue;}if(!b.grazed&&d<tower.r+b.r+18){b.grazed=true;run.graze++;AudioSys.play('graze',1500,900,'sine',.08,.08);}if(b.x<-30||b.x>canvas.width+30||b.y<-30||b.y>canvas.height+30){bulletPool.release(b);game.ents.b.splice(i,1);}}
     for(let i = game.ents.e.length - 1; i >= 0; i--) {
       let e = game.ents.e[i];
       if(e.hp <= 0) { game.ents.e.splice(i,1); continue; } 
