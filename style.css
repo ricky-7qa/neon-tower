@@ -2393,3 +2393,10 @@
   #app.device-desktop #menu .menu-header h1 { font-size:38px; }
   #app.device-desktop #menu .scroll-area { padding-left:16px; padding-right:16px; }
 }
+
+
+/* Strategy selection wallet — show current run balances clearly */
+#perk-choice .decision-wallet{display:flex;justify-content:center;gap:12px;margin:0 auto 18px;flex-wrap:wrap}
+#perk-choice .decision-wallet span{display:flex;align-items:center;gap:8px;padding:9px 16px;border:1px solid rgba(255,190,75,.35);border-radius:10px;background:rgba(5,13,24,.8);color:#aab8c8;font:700 11px Arial,sans-serif;letter-spacing:1px}
+#perk-choice .decision-wallet strong{color:#fff;font-size:15px;letter-spacing:0;text-shadow:0 0 10px rgba(255,195,107,.35)}
+@media(max-width:600px){#perk-choice .decision-wallet{gap:7px;margin-bottom:12px}#perk-choice .decision-wallet span{padding:7px 11px;font-size:10px}#perk-choice .decision-wallet strong{font-size:13px}}
