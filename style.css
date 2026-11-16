@@ -2485,4 +2485,24 @@
   #app.device-desktop #menu .scroll-area { padding-top:5px; }
 }
 
-
+/* Menu navigation: keep the original gold labels on hover, focus and click. */
+#app #menu .menu-nav .btn,
+#app #menu .menu-nav .btn:hover:not(:disabled),
+#app #menu .menu-nav .btn:focus,
+#app #menu .menu-nav .btn:focus-visible,
+#app #menu .menu-nav .btn:active:not(:disabled) {
+  color:#ffd700 !important;
+  -webkit-text-fill-color:#ffd700 !important;
+  background:rgba(0,18,28,.78) !important;
+  border-color:#ffd700 !important;
+  text-shadow:0 0 8px rgba(255,215,0,.25);
+}
+#app #menu .menu-nav .btn:last-child,
+#app #menu .menu-nav .btn:last-child:hover:not(:disabled),
+#app #menu .menu-nav .btn:last-child:focus,
+#app #menu .menu-nav .btn:last-child:focus-visible,
+#app #menu .menu-nav .btn:last-child:active:not(:disabled) {
+  color:#ff718d !important;
+  -webkit-text-fill-color:#ff718d !important;
+  border-color:rgba(255,70,105,.55) !important;
+}
