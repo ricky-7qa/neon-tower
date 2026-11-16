@@ -163,7 +163,7 @@
       if(attacker && attacker.type==='Boss') reduced*=1-Math.min(50,parseFloat(getVal('bossWard')))/100;
       reduced=Math.max(1,reduced-parseFloat(getVal('armor')));
       this.hp-=reduced;
-      if(this.hp<=0&&(run.secondChanceCharges||0)>0){run.secondChanceCharges--;this.hp=Math.max(1,this.maxHp*.01);createParts(this.x,this.y,'#ffd166',28,6);return;}
+      if(this.hp<=0&&(run.secondChanceCharges||0)>0){run.secondChanceCharges--;this.hp=Math.max(1,this.maxHp*(Number(run.secondChanceHeal)||.01));createParts(this.x,this.y,'#ffd166',28,6);return;}
       game.shake=0.14;AudioSys.hit();
       game.ents.txt.push(new FText(this.x, this.y-40, `-${Math.floor(reduced)}`, "#f00", 24));
       
