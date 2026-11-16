@@ -236,13 +236,15 @@
       auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
     });
     leaderboardClient.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') passwordRecoveryPending = true;
       setLeaderboardSession(session);
-      if (event === 'PASSWORD_RECOVERY') { passwordRecoveryPending = true; setAuthMode('recovery'); }
+      if (event === 'PASSWORD_RECOVERY') { setAuthMode('recovery'); showLeaderboardView(); }
     });
     leaderboardClient.auth.getSession().then(({ data, error }) => {
       if (error) throw error;
+      passwordRecoveryPending = window.location.hash.includes('type=recovery') || window.location.search.includes('auth=recovery');
       setLeaderboardSession(data.session);
-      if (window.location.hash.includes('type=recovery') || window.location.search.includes('auth=recovery')) { passwordRecoveryPending = true; setAuthMode('recovery'); }
+      if (passwordRecoveryPending) { setAuthMode('recovery'); showLeaderboardView(); }
     }).catch(error => {
       console.error('Auth session check failed:', error);
       setAuthStatus('COULD NOT CHECK YOUR ACCOUNT. PLEASE REFRESH.');
