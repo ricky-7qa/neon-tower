@@ -187,9 +187,22 @@
   let gameSessionSource = 'site';
 
   let selectedGameSpeed = 1;
+  const SPEED3_CRAFT_DURATION = 24 * 60 * 60 * 1000;
+  function completeSpeed3Fabrication() {
+    if (Number(player.speedControlLevel) >= 3) return true;
+    const startedAt = Number(player.speed3CraftStartedAt) || 0;
+    if (startedAt && Date.now() - startedAt >= SPEED3_CRAFT_DURATION) {
+      player.speedControlLevel = 3;
+      player.speed3CraftStartedAt = 0;
+      saveGame();
+      return true;
+    }
+    return false;
+  }
   function getUnlockedGameSpeeds() {
-    const level = Math.max(0, Math.min(2, Number(player.speedControlLevel) || 0));
-    return [1, ...(level >= 1 ? [1.5] : []), ...(level >= 2 ? [2] : [])];
+    completeSpeed3Fabrication();
+    const level = Math.max(0, Math.min(3, Number(player.speedControlLevel) || 0));
+    return [1, ...(level >= 1 ? [1.5] : []), ...(level >= 2 ? [2] : []), ...(level >= 3 ? [3] : [])];
   }
   function isBossSpeedLockActive() {
     return !!(game && game.ents && game.ents.e && game.ents.e.some(enemy => enemy.type === 'Boss' && enemy.hp > 0));
