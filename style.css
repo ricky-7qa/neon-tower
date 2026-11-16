@@ -2602,3 +2602,61 @@
     backdrop-filter:none !important;
   }
 }
+
+/* iPhone home-screen HUD: keep the complete coin balance inside the safe viewport. */
+@media (orientation:portrait) and (pointer:coarse) and (max-width:430px) {
+  #app.device-mobile .game-topbar {
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:4px;
+    width:100%;
+    padding-left:calc(5px + env(safe-area-inset-left));
+    padding-right:calc(5px + env(safe-area-inset-right));
+  }
+  #app.device-mobile .topbar-left {
+    flex:1 1 auto;
+    min-width:0;
+    gap:3px;
+  }
+  #app.device-mobile .topbar-right {
+    flex:0 0 auto;
+    min-width:0;
+    gap:3px;
+    margin-left:0;
+  }
+  #app.device-mobile .game-topbar .stat-box {
+    flex:0 1 auto;
+    min-width:0;
+    padding:6px 5px;
+  }
+  #app.device-mobile .topbar-left .stat-box:first-child { flex:0 0 43px; }
+  #app.device-mobile .topbar-left .stat-box:nth-child(2) {
+    flex:1 1 76px;
+    min-width:66px;
+  }
+  #app.device-mobile .topbar-right .stat-box:first-child { flex:0 0 48px; }
+  #app.device-mobile .topbar-right .stat-box:nth-child(2) { flex:0 1 62px; }
+  #app.device-mobile #hud-coins,
+  #app.device-mobile #hud-cash {
+    display:block;
+    max-width:100%;
+    white-space:nowrap;
+    font-size:clamp(10px,3.1vw,13px);
+    letter-spacing:-.35px;
+    font-variant-numeric:tabular-nums;
+  }
+  #app.device-mobile .game-topbar .end-run-btn {
+    flex:0 0 auto;
+    padding:5px 5px;
+    font-size:6px;
+    letter-spacing:0;
+  }
+  #app.device-mobile .game-topbar .game-speed-btn {
+    flex:0 0 auto;
+    min-width:0;
+    padding:5px 5px;
+    font-size:7px;
+    letter-spacing:0;
+  }
+}
