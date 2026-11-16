@@ -2221,3 +2221,266 @@
 #perk-choice .decision-wallet span{display:flex;align-items:center;gap:8px;padding:9px 16px;border:1px solid rgba(255,190,75,.35);border-radius:10px;background:rgba(5,13,24,.8);color:#aab8c8;font:700 11px Arial,sans-serif;letter-spacing:1px}
 #perk-choice .decision-wallet strong{color:#fff;font-size:15px;letter-spacing:0;text-shadow:0 0 10px rgba(255,195,107,.35)}
 @media(max-width:600px){#perk-choice .decision-wallet{gap:7px;margin-bottom:12px}#perk-choice .decision-wallet span{padding:7px 11px;font-size:10px}#perk-choice .decision-wallet strong{font-size:13px}}
+
+
+/* DESKTOP VISUAL RESTORE — bring the desktop theme in line with the cleaner mobile design.
+   Layout remains landscape; gameplay, canvas sizing and mobile styles are untouched. */
+#app.device-desktop {
+  border:1px solid rgba(0,235,255,.48);
+  border-radius:14px;
+  background:radial-gradient(ellipse at 50% 0%,rgba(0,180,220,.1),transparent 48%),#030812;
+  box-shadow:0 0 55px rgba(0,220,255,.13);
+}
+#app.device-desktop #menu {
+  background:radial-gradient(ellipse at 50% -12%,rgba(0,210,255,.15),transparent 48%),linear-gradient(180deg,#050b16 0%,#02050c 62%,#030812 100%);
+}
+#app.device-desktop #menu .menu-header {
+  padding:22px 70px 12px;
+  border-bottom:1px solid rgba(0,255,255,.13);
+  background:linear-gradient(180deg,rgba(0,20,35,.7),rgba(0,8,18,.18));
+}
+#app.device-desktop #menu .menu-header h1 {
+  margin:0;
+  color:#f4fdff;
+  font-size:clamp(32px,4vw,46px);
+  font-weight:1000;
+  letter-spacing:clamp(4px,.8vw,8px);
+  line-height:1.12;
+  text-shadow:0 0 9px rgba(0,255,255,.55),0 0 28px rgba(0,190,255,.24);
+}
+#app.device-desktop #menu .menu-header > p {
+  margin:7px 0 0;
+  color:#80b7c9 !important;
+  font-size:9px !important;
+  letter-spacing:3px !important;
+}
+#app.device-desktop #menu .menu-device-row { margin-top:10px; }
+#app.device-desktop #menu-device-label {
+  padding:6px 10px;
+  border:1px solid rgba(0,255,255,.18);
+  border-radius:20px;
+  background:rgba(0,255,255,.055);
+  color:#8ebdca;
+  font-size:8px;
+  letter-spacing:1.5px;
+}
+#app.device-desktop #menu .change-device-btn {
+  min-height:28px;
+  padding:5px 10px;
+  border-color:rgba(0,255,255,.28);
+  border-radius:20px;
+  color:#8cefff;
+  font-size:8px;
+  box-shadow:none;
+}
+#app.device-desktop #menu .menu-primary-action {
+  width:min(620px,calc(100% - 120px));
+  margin:13px auto 12px;
+}
+#app.device-desktop #menu .start-game-button {
+  min-height:58px;
+  border-radius:10px;
+  background:linear-gradient(105deg,rgba(0,80,100,.82),rgba(0,35,58,.96));
+  box-shadow:0 0 18px rgba(0,220,255,.12),inset 0 0 18px rgba(0,220,255,.07);
+}
+#app.device-desktop #menu .menu-stats {
+  width:min(650px,calc(100% - 80px));
+  gap:24px !important;
+  margin:0 auto 9px !important;
+  padding:7px 14px;
+  border:1px solid rgba(0,220,255,.16);
+  border-radius:10px;
+  background:linear-gradient(145deg,rgba(7,25,39,.88),rgba(4,10,20,.94)) !important;
+}
+#app.device-desktop #menu .menu-stats .stat-box {
+  min-width:0;
+  flex:1;
+  padding:3px 8px;
+}
+#app.device-desktop #menu .menu-stats .stat-box span:first-child {
+  color:#7898a9 !important;
+  font-size:8px !important;
+  letter-spacing:1.1px;
+}
+#app.device-desktop #menu .menu-stats .stat-val { font-size:19px; }
+#app.device-desktop #menu .scroll-area {
+  padding:8px 26px 18px;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(0,220,255,.28) transparent;
+}
+#app.device-desktop #menu .grid {
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+#app.device-desktop #menu .workshop-section { margin:0 auto 18px; }
+#app.device-desktop #menu .workshop-heading {
+  margin:8px 1px 10px;
+  padding-bottom:8px;
+  color:#4cecff;
+  font-size:12px;
+  letter-spacing:2.5px;
+  border-bottom:1px solid rgba(0,220,255,.2);
+  text-shadow:0 0 12px rgba(0,220,255,.25);
+}
+#app.device-desktop #menu .workshop-grid .card,
+#app.device-desktop #menu .skill-card,
+#app.device-desktop #menu .achievement-card {
+  border:1px solid rgba(80,150,175,.22);
+  border-radius:11px;
+  background:linear-gradient(145deg,rgba(10,22,34,.96),rgba(5,9,17,.98));
+  box-shadow:0 5px 14px rgba(0,0,0,.22),inset 0 0 18px rgba(0,210,255,.025);
+}
+#app.device-desktop #menu .workshop-grid .card { padding:15px; gap:10px; }
+#app.device-desktop #menu .workshop-grid .card h3 { font-size:13px; line-height:1.35; }
+#app.device-desktop #menu .workshop-grid .card p { color:#8fa3b2; font-size:11px; line-height:1.5; }
+#app.device-desktop #menu .workshop-grid .card .btn {
+  min-height:39px;
+  padding:8px 10px;
+  border-radius:7px;
+  font-size:9px;
+  letter-spacing:1px;
+}
+#app.device-desktop #menu .menu-hamburger {
+  top:19px;
+  right:19px;
+  border-color:rgba(0,238,255,.42);
+  background:rgba(2,18,30,.78);
+  box-shadow:0 0 14px rgba(0,220,255,.1);
+}
+#app.device-desktop #menu .menu-drawer {
+  top:70px;
+  right:18px;
+  border:1px solid rgba(0,225,255,.3);
+  border-radius:13px;
+  background:linear-gradient(145deg,rgba(4,19,34,.98),rgba(1,5,14,.99));
+  box-shadow:0 16px 42px rgba(0,0,0,.55),0 0 24px rgba(0,220,255,.08);
+}
+#app.device-desktop #menu .menu-drawer .menu-nav .btn {
+  min-height:42px;
+  border-radius:8px;
+  background:linear-gradient(145deg,rgba(26,28,20,.78),rgba(10,11,9,.94));
+  font-size:9px;
+}
+#app.device-desktop #menu .menu-footer-actions {
+  border-top:1px solid rgba(0,255,255,.12);
+  background:transparent;
+}
+#app.device-desktop #menu .menu-footer-actions .btn { border-radius:7px; }
+
+/* In-run HUD: compact glass panels and the same restrained cyan palette. */
+#app.device-desktop .game-topbar {
+  padding:12px 16px;
+  background:linear-gradient(180deg,rgba(0,10,25,.92),rgba(0,10,25,.28));
+}
+#app.device-desktop .topbar-left,
+#app.device-desktop .topbar-right { gap:8px; }
+#app.device-desktop .game-topbar .stat-box {
+  min-width:68px;
+  padding:7px 10px;
+  border:1px solid rgba(0,220,255,.18);
+  border-radius:8px;
+  background:rgba(0,12,25,.78);
+  box-shadow:inset 0 0 12px rgba(0,200,255,.025);
+}
+#app.device-desktop .game-topbar .top-label { color:#7898a9; font-size:8px; letter-spacing:1.1px; }
+#app.device-desktop .game-topbar .stat-val { font-size:17px; }
+#app.device-desktop #stats-ui {
+  left:14px;
+  bottom:14px;
+  width:205px;
+  padding:11px 12px;
+  gap:7px;
+  border:1px solid rgba(0,220,255,.22);
+  border-radius:10px;
+  background:rgba(0,12,27,.88);
+  box-shadow:0 7px 22px rgba(0,0,0,.25),inset 0 0 18px rgba(0,200,255,.035);
+  font-size:10px;
+}
+#app.device-desktop #stats-ui .stat-row { font-size:10px; letter-spacing:.5px; }
+#app.device-desktop #target-ui {
+  left:14px;
+  bottom:170px;
+  width:205px;
+  padding:11px;
+  border:1px solid rgba(255,70,105,.55);
+  border-radius:10px;
+  background:rgba(13,8,20,.9);
+}
+#app.device-desktop #upg-panel {
+  width:330px;
+  border-left:1px solid rgba(0,255,120,.45);
+  border-radius:12px 0 0 12px;
+  background:linear-gradient(160deg,rgba(5,17,27,.98),rgba(2,6,14,.99));
+  box-shadow:-12px 0 35px rgba(0,0,0,.38),-2px 0 18px rgba(0,255,120,.06);
+}
+#app.device-desktop .panel-side-toggle {
+  left:-42px;
+  padding:14px 9px;
+  border-radius:9px 0 0 9px;
+  background:rgba(3,13,23,.96);
+  font-size:9px;
+  letter-spacing:1.5px;
+}
+#app.device-desktop .perk-side-toggle { border-color:#b66cff; }
+#app.device-desktop #upgrades-view::before {
+  background:linear-gradient(180deg,rgba(5,17,27,1),rgba(5,17,27,.98));
+  border-bottom-color:rgba(0,255,255,.14);
+}
+#app.device-desktop .upg-tab {
+  min-height:34px;
+  border-radius:7px;
+  background:rgba(5,20,32,.95);
+  font-size:8px;
+}
+#app.device-desktop #upg-category-title { color:#8eb5c5; font-size:9px; }
+#app.device-desktop #upg-content { padding:88px 11px 12px; gap:7px; }
+#app.device-desktop #upg-content .upg-btn {
+  min-height:56px;
+  padding:8px;
+  border-radius:8px;
+  background:linear-gradient(145deg,rgba(10,27,40,.96),rgba(4,9,18,.98));
+  font-size:10px;
+}
+#app.device-desktop #perks-view { padding:14px 12px; }
+#app.device-desktop .perks-panel-heading {
+  color:#e8faff;
+  border-bottom:1px solid rgba(0,220,255,.16);
+  padding:5px 0 10px;
+}
+#app.device-desktop .run-perk-card {
+  border-radius:8px;
+  background:linear-gradient(145deg,rgba(10,25,39,.96),rgba(4,9,18,.98));
+}
+#app.device-desktop #perk-choice {
+  padding:22px;
+  background:rgba(0,3,12,.82);
+}
+#app.device-desktop .perk-dialog {
+  max-height:88%;
+  overflow-y:auto;
+  border:1px solid rgba(0,220,255,.42);
+  border-radius:15px;
+  background:linear-gradient(145deg,#071526,#02050c);
+  box-shadow:0 0 45px rgba(0,220,255,.14);
+}
+#app.device-desktop .perk-option {
+  border-radius:10px;
+  background:linear-gradient(145deg,rgba(10,29,43,.92),rgba(4,9,18,.98));
+}
+#app.device-desktop #gameover > div {
+  border:1px solid rgba(0,220,255,.25) !important;
+  border-radius:14px !important;
+  background:linear-gradient(145deg,rgba(7,20,34,.96),rgba(2,6,14,.98)) !important;
+}
+#app.device-desktop .tutorial-card {
+  border-color:rgba(0,220,255,.35);
+  border-radius:15px;
+  background:linear-gradient(145deg,rgba(5,19,37,.98),rgba(2,7,18,.99));
+}
+@media (min-width:701px) and (max-height:720px) {
+  #app.device-desktop #menu .menu-header { padding-top:10px; padding-bottom:7px; }
+  #app.device-desktop #menu .menu-primary-action { margin-top:5px; margin-bottom:7px; }
+  #app.device-desktop #menu .start-game-button { min-height:46px; }
+  #app.device-desktop #menu .menu-stats { padding:4px 12px; }
+  #app.device-desktop #menu .scroll-area { padding-top:5px; }
+}
