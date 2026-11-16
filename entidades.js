@@ -354,7 +354,7 @@
         if (hasSkill("vampire") && tower) tower.hp = Math.min(tower.maxHp, tower.hp + tower.maxHp * 0.02);
         run.cash += Math.floor(this.val * parseFloat(getVal("salvage"))/100);
         if (this.type === "Boss") {
-          player.bossKills++; run.bossKills = (run.bossKills || 0) + 1; run.coins += 15 + (run.activeDecision === 'boss_contract' ? 25 : 0);
+          player.bossKills++; run.bossKills = (run.bossKills || 0) + 1; run.coins += 15 + (run.activeDecision === 'boss_contract' ? Math.floor(15 * 0.50) : 0);
           run.cash += Math.floor(this.val * (parseFloat(getVal("bossBounty")) + parseFloat(getVal("bossContract")))/100);
           game.shake = 0.35; createParts(this.x, this.y, this.c, 45, 7, 1.2);
           notify("BOSS DEFEATED", "BONUS REWARDS");
