@@ -8,7 +8,7 @@
   <!-- Game favicon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' stroke='%230ff' stroke-width='10' fill='none'/><circle cx='50' cy='50' r='15' fill='%23ff3366'/></svg>">
   
-  <link rel="stylesheet" href="style.css?v=20261116-player-stats1">
+  <link rel="stylesheet" href="style.css?v=20261116-account-ux1">
   <script>
     window.neonAnalyticsQueue = window.neonAnalyticsQueue || [];
     window.neonTrack = function(eventData) {
@@ -185,6 +185,7 @@
       </section>
       <section id="leaderboard-content" class="leaderboard-panel" style="display:none;">
         <div class="leaderboard-heading"><span class="eyebrow">NEON TOWER // GLOBAL</span><h2>WORLD LEADERBOARD</h2><p>Compete with players around the world.</p></div>
+        <div id="cloud-sync-status" class="cloud-sync-status" data-state="syncing" role="status" aria-live="polite"><span class="cloud-sync-indicator"></span><span>CHECKING CLOUD STATUS...</span></div>
         <div class="leaderboard-profile"><label for="leaderboard-name">PLAYER NAME</label><div class="leaderboard-name-row"><input id="leaderboard-name" maxlength="16" minlength="3" placeholder="Enter a player name" autocomplete="nickname"><button class="btn btn-gold" onclick="saveLeaderboardName()">SAVE</button></div><small>3–16 characters. Do not use your real name or personal information.</small></div>
         <div class="leaderboard-toolbar"><span id="leaderboard-status" role="status">CONNECTING...</span><button class="btn" onclick="loadLeaderboard()">REFRESH</button></div>
         <div id="leaderboard-list" class="leaderboard-list"><div class="leaderboard-empty">LOADING GLOBAL RANKINGS...</div></div>
@@ -268,6 +269,6 @@
 </script>
 <script src="entidades.js?v=20261115-boss-health-3x"></script>
 <script src="engine.js?v=20261116-cloud-save1"></script>
-<script src="ui.js?v=20261116-player-stats1"></script>
+<script src="ui.js?v=20261116-account-ux1"></script>
 </body>
 </html>
