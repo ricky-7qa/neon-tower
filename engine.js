@@ -8,7 +8,7 @@
     const suffix = amount >= 1e9 ? 'B' : 'M';
     const scaled = amount / (suffix === 'B' ? 1e9 : 1e6);
     const digits = scaled < 10 ? 2 : scaled < 100 ? 1 : 0;
-    return scaled.toFixed(digits).replace(/\.?0+$/, '') + suffix;
+    return scaled.toFixed(digits) + suffix;
   }
 
   const canvas = document.getElementById('gameCanvas'); const ctx = canvas.getContext('2d');
