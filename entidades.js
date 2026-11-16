@@ -29,7 +29,7 @@
       this.shield = hasSkill('shield'); this.shieldCd = 0;
     }
     update(dt) {
-      let baseReg = parseFloat(getVal('regen')) + parseFloat(getVal('nanoMatrix')); let reg = baseReg * (1 + getPerkValue('repair') / 100); if(reg>0 && this.hp<this.maxHp) this.hp = Math.min(this.maxHp, this.hp + reg*dt);
+      let baseReg=parseFloat(getVal('regen'))+parseFloat(getVal('nanoMatrix'))+this.maxHp*getWaveDecisionValue('nano_repair'); let reg=baseReg*(1+getPerkValue('repair')/100); if(reg>0 && this.hp<this.maxHp) this.hp = Math.min(this.maxHp, this.hp + reg*dt);
       if(this.shieldCd > 0) this.shieldCd -= dt; else if(hasSkill('shield')) this.shield = true;
       
       let range = parseFloat(getVal('range')) * (1+getPerkValue('radar')/100);
@@ -72,10 +72,11 @@
         AudioSys.shoot();
         this.muzzleFlash=0.09;
         let dmg=parseFloat(getVal('damage'))*(1+getPerkValue('power')/100+getPerkValue('overload')/100)*(1+parseFloat(getVal('plasmaCore'))/100);
-        let crit=(Math.random()*100)<Math.min(75,parseFloat(getVal('critC'))+parseFloat(getVal('precisionArray')));
+        dmg*=1+getWaveDecisionValue('heavy_impact')+getWaveDecisionValue('glass_cannon')+getWaveDecisionValue('last_stand');
+        let crit=(Math.random()*100)<Math.min(75,parseFloat(getVal('critC'))+parseFloat(getVal('precisionArray'))+getWaveDecisionValue('critical_focus'));
         let finalD=crit?dmg*parseFloat(getVal('critD')):dmg;
         const level=Math.min(3,Math.max(0,parseInt(getVal('multishot'))||0));
-        const totalShots=level+1;
+        const totalShots=level+1+(Math.random()<getWaveDecisionValue('double_trouble')?1:0);
         // Multi-shot projectiles all home onto the selected target. Their
         // tiny muzzle offsets keep the burst readable while guidance makes
         // every projectile converge instead of missing with a fixed spread.
@@ -83,9 +84,11 @@
         for(let shot=0;shot<totalShots;shot++){
           const lane=shot-(totalShots-1)/2;
           const offset=lane*5;
-          game.ents.p.push(new Projectile(this.x+sideX*offset,this.y+sideY*offset,this.angle,finalD,crit,'base',targetEnemy));
+          const projectile=new Projectile(this.x+sideX*offset,this.y+sideY*offset,this.angle,finalD,crit,'base',targetEnemy);
+          projectile.pierceRemaining=getWaveDecisionValue('piercing_shots');
+          game.ents.p.push(projectile);
         }
-        this.cdBase=1/(parseFloat(getVal('speed'))*(1+getPerkValue('rapid')/100+Object.entries(run.perks?.overload||{}).reduce((sum,[rarity,count])=>sum+(perkDefs.find(p=>p.id==='overload').speedValues[rarity]||0)*count,0)/100)*(1+parseFloat(getVal('overclockDrive'))/100)*(hasSkill('overdrive')?1.25:1));
+        this.cdBase=1/(parseFloat(getVal('speed'))*(1+getPerkValue('rapid')/100+Object.entries(run.perks?.overload||{}).reduce((sum,[rarity,count])=>sum+(perkDefs.find(p=>p.id==='overload').speedValues[rarity]||0)*count,0)/100+getWaveDecisionValue('overdrive')+getWaveDecisionValue('rapid_fire'))*(1+parseFloat(getVal('overclockDrive'))/100)*(hasSkill('overdrive')?1.25:1));
       }
 
       if(hasSkill('drone') && targetEnemy) {
@@ -151,13 +154,17 @@
     hit(dmg, attacker) {
       if(this.invuln>0)return;
       run.combo=0;run.comboTimer=0;
+      if(this.tempShieldCharges>0){this.tempShieldCharges--;game.shake=.10;createParts(this.x,this.y,'#55f5dc',18,5);return;}
       if(this.shield) { this.shield = false; this.shieldCd = Math.max(2,10-parseFloat(getVal('shieldRecharge'))); game.shake = 0.10; createParts(this.x, this.y, "#0096ff", 20, 5); return; }
       if(Math.random()*100<parseFloat(getVal('dodge'))) { createParts(this.x,this.y,"#9b8cff",12,4); return; }
       let reduced=dmg*(hasSkill('fortify')?0.9:1);
+      reduced*=1-Math.min(.75,getWaveDecisionValue('reinforced_core')+(attacker&&attacker.isProjectile?getWaveDecisionValue('defensive_matrix'):0)+getWaveDecisionValue('glass_cannon_damage_taken'));
       reduced*=1-Math.min(60,parseFloat(getVal('bulletGuard'))+parseFloat(getVal('adaptiveArmor')))/100;
       if(attacker && attacker.type==='Boss') reduced*=1-Math.min(50,parseFloat(getVal('bossWard')))/100;
       reduced=Math.max(1,reduced-parseFloat(getVal('armor')));
-      this.hp -= reduced; game.shake = 0.14; AudioSys.hit();
+      this.hp-=reduced;
+      if(this.hp<=0&&(run.secondChanceCharges||0)>0){run.secondChanceCharges--;this.hp=Math.max(1,this.maxHp*.01);createParts(this.x,this.y,'#ffd166',28,6);return;}
+      game.shake=0.14;AudioSys.hit();
       game.ents.txt.push(new FText(this.x, this.y-40, `-${Math.floor(reduced)}`, "#f00", 24));
       
       if(hasSkill('thorn') && attacker) { attacker.hit(reduced * 0.5); createParts(this.x, this.y, "#fff", 10, 3); }
@@ -202,12 +209,12 @@
       const middleWaveLevels = Math.max(0, Math.min(30, w - 20));
       const lateWaveLevels = Math.max(0, w - 50);
       const waveScale = Math.pow(1.075, earlyWaveLevels + lateWaveLevels) * Math.pow(1.15, middleWaveLevels);
-      const decision = run.activeDecision;
-      const decisionHp = decision === 'elite_hunt' ? 1.35 : decision === 'boss_contract' && this.type === 'Boss' ? 1.25 : 1;
-      this.maxHp = 24 * waveScale * hpM * decisionHp; this.hp = this.maxHp;
-      this.dmg = (3.2 * Math.pow(1.045, Math.max(0, w - 1))) * damageM * (decision === 'power_failure' ? 1.2 : 1);
-      this.spd = (68 + Math.min(30, w * 1.1)) * speedM;
-      this.val = Math.floor((5 * Math.pow(1.055, Math.max(0, w - 1))) * rewardM * (decision === 'elite_hunt' ? 1.75 : 1));
+      const eliteBoost=getWaveDecisionValue('elite_invasion');
+      if(w>=3&&this.type!=='Boss'&&Math.random()<eliteBoost){this.type='Elite';this.c='#ffd166';this.r=18;hpM*=1.8;damageM*=1.25;rewardM*=2.2;}
+      this.maxHp=24*waveScale*hpM*(1+(this.type==='Boss'?getWaveDecisionValue('boss_gamble'):0));this.hp=this.maxHp;
+      this.dmg=(3.2*Math.pow(1.045,Math.max(0,w-1)))*damageM*(1+getWaveDecisionValue('blood_money'))*(1+getWaveDecisionValue('glass_cannon_damage_taken'));
+      this.spd=(68+Math.min(30,w*1.1))*speedM*(1+getWaveDecisionValue('chaos_mode'));
+      this.val=Math.floor((5*Math.pow(1.055,Math.max(0,w-1)))*rewardM*(1+(this.type!=='Minion'?getWaveDecisionValue('bounty_hunter'):0)+getWaveDecisionValue('blood_money_cash')+getWaveDecisionValue('elite_cash')));
       this.fireCd = (this.type === "Boss" ? 1.25 : 0.9) + Math.random() * 1.5;
       this.isAttackingTower = false;
       this.contactAngle = 0;
@@ -349,12 +356,13 @@
         run.cash += Math.floor(this.val * (1 + Math.min(run.combo, 10) * 0.1) *
           (1 + parseFloat(getVal("cashBonus"))/100) *
           (1 + parseFloat(getVal("killContract"))/100) *
-          (1 + getPerkValue('fortune')/100));
-        if (run.activeDecision === 'treasure_hunt' && Math.random() < 0.12) run.coins = (run.coins || 0) + 1;
+          (1 + getPerkValue('fortune')/100) * (1 + getWaveDecisionValue('blood_money_cash')));
+        if(this.type!=='Minion')run.cash+=Math.floor(this.val*getWaveDecisionValue('bounty_hunter'));
+        if(Math.random()<getWaveDecisionValue('treasure_hunt'))run.coins=(run.coins||0)+1;
         if (hasSkill("vampire") && tower) tower.hp = Math.min(tower.maxHp, tower.hp + tower.maxHp * 0.02);
         run.cash += Math.floor(this.val * parseFloat(getVal("salvage"))/100);
         if (this.type === "Boss") {
-          player.bossKills++; run.bossKills = (run.bossKills || 0) + 1; run.coins += 15 + (run.activeDecision === 'boss_contract' ? Math.floor(15 * 0.50) : 0);
+          player.bossKills++;run.bossKills=(run.bossKills||0)+1;run.coins+=Math.floor(15*(1+getWaveDecisionValue('boss_contract')+getWaveDecisionValue('boss_gamble_reward')));
           run.cash += Math.floor(this.val * (parseFloat(getVal("bossBounty")) + parseFloat(getVal("bossContract")))/100);
           game.shake = 0.35; createParts(this.x, this.y, this.c, 45, 7, 1.2);
           notify("BOSS DEFEATED", "BONUS REWARDS");
