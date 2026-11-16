@@ -154,8 +154,30 @@
     <div id="tab-skills" class="scroll-area" style="display:none;"><div class="skill-tree" id="skill-tree-container"></div></div>
     <div id="tab-achievements" class="scroll-area" style="display:none;"><div class="grid" id="achv-grid"></div></div>
     <div id="tab-leaderboard" class="scroll-area leaderboard-area" style="display:none;">
-      <section class="leaderboard-panel">
+      <section id="leaderboard-auth" class="leaderboard-panel leaderboard-auth-panel">
+        <div class="leaderboard-heading"><span class="eyebrow">NEON TOWER // ACCOUNT</span><h2>JOIN THE GLOBAL LEADERBOARD</h2><p>Create a free account to compete with players around the world.</p></div>
+        <div class="leaderboard-auth-card">
+          <div id="auth-mode-tabs" class="auth-mode-tabs">
+            <button type="button" class="btn btn-gold" onclick="setAuthMode('signup')">CREATE ACCOUNT</button>
+            <button type="button" class="btn" onclick="setAuthMode('login')">LOG IN</button>
+          </div>
+          <label class="auth-field-label" for="auth-email">EMAIL ADDRESS</label>
+          <input id="auth-email" class="auth-input" type="email" autocomplete="email" placeholder="you@example.com">
+          <label id="auth-password-label" class="auth-field-label" for="auth-password">PASSWORD</label>
+          <input id="auth-password" class="auth-input" type="password" autocomplete="new-password" placeholder="At least 8 characters">
+          <input id="auth-confirm-password" class="auth-input" type="password" autocomplete="new-password" placeholder="Confirm password">
+          <div id="auth-reset-note" class="auth-reset-note" style="display:none;">Choose a new password for your account.</div>
+          <input id="auth-new-password" class="auth-input" type="password" autocomplete="new-password" placeholder="New password (at least 8 characters)" style="display:none;">
+          <button id="auth-submit" type="button" class="btn btn-gold auth-submit" onclick="submitLeaderboardAuth()">CREATE ACCOUNT</button>
+          <button id="auth-forgot" type="button" class="auth-text-button" onclick="sendPasswordReset()" style="display:none;">FORGOT PASSWORD?</button>
+          <p id="leaderboard-auth-status" class="leaderboard-auth-status" role="status">CREATE AN ACCOUNT TO ENTER THE GLOBAL LEADERBOARD.</p>
+        </div>
+        <p class="leaderboard-auth-footnote">You can still play the game without an account. Only verified accounts can appear on the leaderboard.</p>
+        <button type="button" class="btn auth-back-button" onclick="switchTab('workshop')">BACK TO GAME</button>
+      </section>
+      <section id="leaderboard-content" class="leaderboard-panel" style="display:none;">
         <div class="leaderboard-heading"><span class="eyebrow">NEON TOWER // GLOBAL</span><h2>WORLD LEADERBOARD</h2><p>Compete with players around the world.</p></div>
+        <div class="leaderboard-account-bar"><span>SIGNED IN: <strong id="leaderboard-account-email"></strong></span><button type="button" class="btn" onclick="signOutLeaderboard()">LOG OUT</button></div>
         <div class="leaderboard-profile"><label for="leaderboard-name">PLAYER NAME</label><div class="leaderboard-name-row"><input id="leaderboard-name" maxlength="16" minlength="3" placeholder="Enter a player name" autocomplete="nickname"><button class="btn btn-gold" onclick="saveLeaderboardName()">SAVE</button></div><small>3–16 characters. Do not use your real name or personal information.</small></div>
         <div class="leaderboard-toolbar"><span id="leaderboard-status" role="status">CONNECTING...</span><button class="btn" onclick="loadLeaderboard()">REFRESH</button></div>
         <div id="leaderboard-list" class="leaderboard-list"><div class="leaderboard-empty">LOADING GLOBAL RANKINGS...</div></div>
@@ -238,6 +260,6 @@
 </script>
 <script src="entidades.js?v=20261115-boss-health-3x"></script>
 <script src="engine.js?v=20261116-compact-money3"></script>
-<script src="ui.js?v=20261116-device-fix1"></script>
+<script src="ui.js?v=20261116-email-auth1"></script>
 </body>
 </html>
