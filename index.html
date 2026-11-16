@@ -13,7 +13,7 @@
   <!-- Game favicon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' stroke='%230ff' stroke-width='10' fill='none'/><circle cx='50' cy='50' r='15' fill='%23ff3366'/></svg>">
   
-  <link rel="stylesheet" href="style.css?v=20261116-ios-hud-fix1">
+  <link rel="stylesheet" href="style.css?v=20261116-game-settings1">
   <script>
     window.neonAnalyticsQueue = window.neonAnalyticsQueue || [];
     window.neonTrack = function(eventData) {
@@ -46,11 +46,22 @@
         <div class="stat-box"><span class="top-label">WAVE</span><span class="stat-val c-cyan" id="hud-wave">1</span></div>
         <div class="stat-box"><span class="top-label">COINS</span><span class="stat-val c-gold" id="hud-coins">$0</span></div>
         <button id="end-run-btn" class="end-run-btn" type="button" onclick="requestEndRun()">END RUN</button>
+        <button id="game-settings-btn" class="game-settings-btn" type="button" onclick="openGameSettings()" aria-label="Open settings">⚙ SETTINGS</button>
         <button id="game-speed-btn" class="game-speed-btn" type="button" onclick="cycleGameSpeed()" style="display:none;">SPEED · 1X</button>
       </div>
       <div class="topbar-right">
         <div class="stat-box"><span class="top-label">ENEMIES</span><span class="stat-val" id="hud-timer">0</span></div>
         <div class="stat-box"><span class="top-label">CASH</span><span class="stat-val c-green" id="hud-cash">$0</span></div>
+      </div>
+    </div>
+    <div id="game-settings-panel" class="game-settings-panel" role="dialog" aria-modal="true" aria-labelledby="game-settings-title" aria-hidden="true">
+      <div class="game-settings-card">
+        <div class="game-settings-heading">
+          <h2 id="game-settings-title">SETTINGS</h2>
+          <button class="game-settings-close" type="button" onclick="closeGameSettings()" aria-label="Close settings">×</button>
+        </div>
+        <button id="settings-sound-toggle" class="btn game-settings-action" type="button" onclick="toggleGameSound()">SOUND · ON</button>
+        <button class="btn game-settings-action game-settings-menu-action" type="button" onclick="goBackToMenu()">GO BACK TO MENU</button>
       </div>
     </div>
     <div id="mission-ui" aria-live="polite">
@@ -273,8 +284,8 @@
   };
 </script>
 <script src="entidades.js?v=20261116-layout-repair3"></script>
-<script src="engine.js?v=20261116-layout-repair3"></script>
-<script src="ui.js?v=20261116-layout-repair3"></script>
+<script src="engine.js?v=20261116-game-settings1"></script>
+<script src="ui.js?v=20261116-game-settings1"></script>
 <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", function () {
