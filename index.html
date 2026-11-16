@@ -8,7 +8,7 @@
   <!-- Game favicon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' stroke='%230ff' stroke-width='10' fill='none'/><circle cx='50' cy='50' r='15' fill='%23ff3366'/></svg>">
   
-  <link rel="stylesheet" href="style.css?v=20261116-account-ux1">
+  <link rel="stylesheet" href="style.css?v=20261116-speed-control1">
   <script>
     window.neonAnalyticsQueue = window.neonAnalyticsQueue || [];
     window.neonTrack = function(eventData) {
@@ -41,6 +41,7 @@
         <div class="stat-box"><span class="top-label">WAVE</span><span class="stat-val c-cyan" id="hud-wave">1</span></div>
         <div class="stat-box"><span class="top-label">COINS</span><span class="stat-val c-gold" id="hud-coins">$0</span></div>
         <button id="end-run-btn" class="end-run-btn" type="button" onclick="requestEndRun()">END RUN</button>
+        <button id="game-speed-btn" class="game-speed-btn" type="button" onclick="cycleGameSpeed()" style="display:none;">SPEED · 1X</button>
       </div>
       <div class="topbar-right">
         <div class="stat-box"><span class="top-label">ENEMIES</span><span class="stat-val" id="hud-timer">0</span></div>
@@ -268,6 +269,6 @@
 </script>
 <script src="entidades.js?v=20261115-boss-health-3x"></script>
 <script src="engine.js?v=20261116-cloud-save1"></script>
-<script src="ui.js?v=20261116-account-ux1"></script>
+<script src="ui.js?v=20261116-speed-control1"></script>
 </body>
 </html>
