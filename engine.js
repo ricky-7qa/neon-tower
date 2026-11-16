@@ -358,8 +358,8 @@
   const waveDecisionDefs = [
     {id:'elite_hunt',name:'ELITE HUNT',icon:'◆',desc:'Enemies in the next wave have 35% more health, but each kill gives 75% more cash.'},
     {id:'endless_assault',name:'ENDLESS ASSAULT',icon:'♢',desc:'Face 20% more enemies in the next wave. Clearing it gives 35% more wave cash.'},
-    {id:'boss_contract',name:'BOSS CONTRACT',icon:'☠',desc:'The next Boss has 25% more health. Defeating it grants 25 extra run coins.'},
-    {id:'black_market',name:'BLACK MARKET',icon:'◈',desc:'Trade 15% of your current run cash for 8 run coins immediately.'},
+    {id:'boss_contract',name:'BOSS CONTRACT',icon:'☠',desc:'The next Boss has 25% more health. Defeating it grants 50% more Boss coins.'},
+    {id:'black_market',name:'BLACK MARKET',icon:'◈',desc:'Trade 15% of your current run cash for 20% of your current run coins immediately.'},
     {id:'treasure_hunt',name:'TREASURE HUNT',icon:'✧',desc:'Enemies in the next wave have a 12% chance to drop an extra run coin.'},
     {id:'power_failure',name:'POWER FAILURE',icon:'⚡',desc:'Enemies deal 20% more damage in the next wave, but clearing it grants 50% more run coins.'}
   ];
@@ -369,7 +369,476 @@
     game.paused = true;
     const panel = document.getElementById('perk-choice');
     const picks = [...waveDecisionDefs].sort(() => Math.random() - 0.5).slice(0, 3);
-    panel.innerHTML = '<div class="perk-dialog decision-dialog"><span class="perk-eyebrow">WAVE MILESTONE</span><h2>CHOOSE YOUR STRATEGY</h2><p>These choices change the next wave. Some offer greater rewards at a higher risk.</p><div class="perk-options decision-options">' +
+    panel.innerHTML = '<div class="perk-dialog decision-dialog"><span class="perk-eyebrow">WAVE MILESTONE</span><h2>CHOOSE YOUR STRATEGY</h2><p>These choices change the next wave. Some offer greater rewards at a higher risk.</p><div class="decision-wallet"><span>CASH <strong>
+      '</div></div>';
+    panel.classList.add('visible');
+  }
+
+  function chooseWaveDecision(id) {
+    const decision = waveDecisionDefs.find(d => d.id === id);
+    if (!decision || !game || !game.running) return;
+    run.activeDecision = id;
+    if (id === 'endless_assault') game.toSpawn = Math.ceil((game.toSpawn || 0) * 1.2);
+    if (id === 'black_market') {
+      const exchanged = Math.floor((run.cash || 0) * 0.15);
+      run.cash = Math.max(0, (run.cash || 0) - exchanged);
+      run.coins = (run.coins || 0) + Math.floor((run.coins || 0) * 0.20);
+    }
+    const panel = document.getElementById('perk-choice');
+    panel.classList.remove('visible');
+    panel.innerHTML = '';
+    game.paused = false;
+    game.last = performance.now();
+    updateHUD();
+    saveRunCheckpoint(false, false);
+  }
+
+  function renderRunPerks() {
+    const container = document.getElementById('run-perks-content');
+    if (!container) return;
+    const owned = perkDefs.filter(perk => getPerkStacks(perk.id) > 0);
+    if (!owned.length) {
+      container.innerHTML = '<div class="perks-empty"><span>◇</span><strong>NO PERKS YET</strong><small>Reach milestone waves and choose perks to build your run.</small></div>';
+      return;
+    }
+    container.innerHTML = owned.map(perk => {
+      const stacks=run.perks[perk.id];
+      const total=getPerkStacks(perk.id);
+      const rarityLines=typeof stacks==='number' ? '<small class="perk-rarity-label rarity-common">COMMON ×'+stacks+'</small>' : Object.entries(stacks).filter(([,count])=>count>0).map(([rarity,count])=>'<small class="perk-rarity-label rarity-'+rarity+'">'+perkRarities[rarity].label+' ×'+count+'</small>').join('');
+      const effect=perk.id==='overload'
+        ? '+'+getPerkValue('overload')+'% DAMAGE · +'+Object.entries(stacks||{}).reduce((sum,[rarity,count])=>sum+(perk.speedValues[rarity]||0)*count,0)+'% FIRE RATE'
+        : '+'+getPerkValue(perk.id)+perk.unit;
+      const stars='<span class="perk-stars" aria-label="'+total+' of '+perk.maxStacks+' perk stars">'+'★'.repeat(total)+'<span class="perk-star-empty">'+'☆'.repeat(perk.maxStacks-total)+'</span></span>';
+      return '<div class="run-perk-card"><span class="run-perk-icon">' + perk.icon + '</span><div class="run-perk-info"><strong>' + perk.name + '</strong>' + stars + rarityLines + '<small>' + effect + '</small></div></div>';
+    }).join('');
+  }
+
+  function choosePerk(id, rarity='common') {
+    const selectedPerk = perkDefs.find(p=>p.id===id);
+    if(!selectedPerk || !perkRarities[rarity]) return;
+    run.perks=run.perks||{};
+    if(getPerkStacks(id) >= selectedPerk.maxStacks) return;
+    if(typeof run.perks[id] !== 'object') run.perks[id] = {};
+    run.perks[id][rarity]=(run.perks[id][rarity]||0)+1;
+    renderRunPerks();
+    const panel=document.getElementById('perk-choice');
+    panel.classList.remove('visible'); panel.innerHTML='';
+    if(id==='repair' && tower) { const baseRegen=parseFloat(getVal('regen'))+parseFloat(getVal('nanoMatrix')); tower.hp=Math.min(tower.maxHp,tower.hp+baseRegen*selectedPerk.values[rarity]*4/100); }
+    game.paused=false; game.last=performance.now(); updateHUD();
+    saveRunCheckpoint(false);
+    notify('PERK UNLOCKED',selectedPerk.name+' · '+perkRarities[rarity].label);
+  }
+
+  // Notifications are disabled globally; keep this function as a no-op
+  // so existing game events continue working without showing pop-ups.
+  function notify(title, msg) { return; }
+
+  function getTieredMultiplier(level, rates) {
+    let remaining = Math.max(0, Math.floor(Number(level) || 0));
+    let multiplier = 1;
+    const tierSizes = [30, 30, 40, 100, 100, 100, 100, 100, 100, 100, Infinity];
+    for (let i = 0; i < tierSizes.length && remaining > 0; i++) {
+      const count = Math.min(remaining, tierSizes[i]);
+      multiplier *= Math.pow(1 + rates[i], count);
+      remaining -= count;
+    }
+    return multiplier;
+  }
+
+  function getVal(k, wsO=false) {
+    const d=statDefs[k];
+    const l=(player.ws[k]||0)+(wsO?0:(run.stats[k]||0));
+    let v;
+    if(k==='regen'){
+      if (l > 0) {
+        v = 0.5;
+        let increase = 0.5;
+        const tiers = [
+          { end: 10, rate: 0.15 },
+          { end: 25, rate: 0.10 },
+          { end: 50, rate: 0.07 },
+          { end: 100, rate: 0.04 },
+          { end: 200, rate: 0.02 },
+          { end: 300, rate: 0.01 },
+          { end: 500, rate: 0.005 },
+          { end: Infinity, rate: 0.0025 }
+        ];
+        for (let level = 2; level <= l; level++) {
+          const tier = tiers.find(t => level <= t.end);
+          increase *= 1 + tier.rate;
+          v += increase;
+        }
+      } else {
+        v = 0;
+      }
+    } else if(k==='damage') {
+      v=getCumulativeTieredValue(d.b,d.i,l,[0.07,0.05,0.03,0.02,0.015,0.011,0.008,0.006,0.0045,0.003,0.002]);
+    } else if(k==='speed') {
+      v=getCumulativeTieredValue(d.b,d.i,l,[0.03,0.025,0.015,0.0125,0.009,0.007,0.005,0.0035,0.0025,0.002,0.001],20);
+    } else if(k==='hp') {
+      v=getCumulativeTieredValue(d.b,d.i,l,[0.04,0.03,0.02,0.015,0.011,0.0085,0.0065,0.0045,0.003,0.002,0.0015]);
+    } else {
+      v=d.b+(l*d.i);
+    }
+    return (d.isD||k==='damage')?v.toFixed(2):Math.floor(v);
+  }
+  function getCumulativeTieredValue(base, initialIncrease, level, rates, maxLevel = Infinity) {
+    const effectiveLevel = Math.min(Math.max(0, Math.floor(Number(level) || 0)), maxLevel);
+    let total = base;
+    let increase = initialIncrease;
+    const tierSizes = [30, 30, 40, 100, 100, 100, 100, 100, 100, 100, Infinity];
+    for (let currentLevel = 1; currentLevel <= effectiveLevel; currentLevel++) {
+      if (currentLevel > 1) {
+        let remaining = currentLevel - 1;
+        let tierIndex = 0;
+        while (tierIndex < tierSizes.length - 1 && remaining > tierSizes[tierIndex]) {
+          remaining -= tierSizes[tierIndex];
+          tierIndex++;
+        }
+        increase *= 1 + rates[tierIndex];
+      }
+      total += increase;
+    }
+    return total;
+  }
+
+  function getCost(k, isW) { const d=statDefs[k]; let l=isW?player.ws[k]:(run.stats[k]||0); return Math.floor(d.c*Math.pow(d.cm, l)); }
+  function hasSkill(id) { return player.skills.includes(id); }
+
+  function getWaveEnemyCount(wave) {
+    const w = Math.max(1, Math.floor(Number(wave) || 1));
+    if (w <= 20) return 9 + Math.floor(w * 1.25);
+    if (w <= 50) return 34 + Math.floor((w - 20) * 0.7);
+    if (w <= 100) return 55 + Math.floor((w - 50) * 0.3);
+    return 70 + Math.floor((w - 100) * 0.35);
+  }
+
+  /** MAIN LOOP & RENDERING **/
+  function startGame() {
+    clearRunCheckpoint();
+    if (!player.tutorialSeen) {
+      document.getElementById('tutorial').classList.add('visible');
+      return;
+    }
+    AudioSys.init();
+    resize(); // Recalculate the canvas after the device/layout selection and before starting the run.
+    gameSessionStartedAt = Date.now();
+    gameDurationTracked = false;
+    gameSessionSource = 'site';
+    document.getElementById('menu').classList.remove('active-layer'); document.getElementById('hud').classList.add('active-hud');
+    run = { stats: {}, cash: 0, coins: 0, wave: 1, kills: 0, bossKills: 0, elapsed: 0, perks: {} };
+    selectedGameSpeed = 1;
+    const missionOptions = [
+      {id:'waves', title:'REACH WAVE 5', description:'Clear waves until you reach wave 5.', target:5, reward:25},
+      {id:'kills', title:'ELIMINATE 30 ENEMIES', description:'Defeat 30 enemies during this run.', target:30, reward:25},
+      {id:'survive', title:'SURVIVE 2 MINUTES', description:'Stay alive for 120 seconds.', target:120, reward:25}
+    ];
+    document.getElementById('mission-ui')?.classList.remove('mission-complete', 'mission-hidden-on-resume');
+    run.mission = {...missionOptions[Math.floor(Math.random()*missionOptions.length)], progress:0, complete:false};
+    document.getElementById('mission-title').textContent = run.mission.title;
+    document.getElementById('mission-desc').textContent = run.mission.description;
+    document.getElementById('mission-reward').textContent = '+' + formatMoney(run.mission.reward) + ' COINS';
+    document.getElementById('mission-progress').textContent = '0 / ' + run.mission.target;
+    document.getElementById('mission-fill').style.width = '0%';
+    Object.keys(statDefs).forEach(k => run.stats[k]=0);
+    
+    game = { running: true, paused:false, dt: 0, last: performance.now(), shake: 0, playSaveT: 0, achievementCheckT: 0, spawnT: 0.25, toSpawn: 10, ents: { e:[], p:[], b:[], part:[], txt:[] }, cx: canvas.width/2, cy: canvas.height/2 };
+    
+    tower = new Tower(); 
+    initUpgBar();
+    updateGameSpeedButton();
+    saveRunCheckpoint(false);
+    updateHUD();
+    requestAnimationFrame(loop);
+    if (typeof window.neonTrack === 'function') {
+      window.neonTrack({ path: 'game-start', title: 'Game started', event: true, no_session: true });
+    } else if (window.goatcounter && typeof window.goatcounter.count === 'function') {
+      window.goatcounter.count({ path: 'game-start', title: 'Game started', event: true, no_session: true });
+    }
+  }
+
+  function processGameOver(reason = 'defeat') {
+    if(!game || !game.running) return;
+    game.running = false;
+    clearRunCheckpoint();
+    trackGameDuration('completed');
+    if (typeof window.neonTrack === 'function') {
+      window.neonTrack({ path: 'game-end', title: reason === 'voluntary' ? 'Game ended voluntarily' : 'Game ended normally', event: true, no_session: true });
+    } else if (window.goatcounter && typeof window.goatcounter.count === 'function') {
+      window.goatcounter.count({ path: 'game-end', title: reason === 'voluntary' ? 'Game ended voluntarily' : 'Game ended normally', event: true, no_session: true });
+    } document.getElementById('hud').classList.remove('active-hud'); document.getElementById('gameover').classList.add('active-layer');
+    document.getElementById('go-wave').innerText = run.wave;
+    document.getElementById('go-kills').innerText = run.kills;
+    document.getElementById('go-bosses').innerText = run.bossKills || 0;
+    document.getElementById('go-time').innerText = formatRunTime(run.elapsed || 0);
+    player.coins += run.coins;
+    if(run.wave > player.highestWave) player.highestWave = run.wave;
+    player.runsPlayed = (player.runsPlayed || 0) + 1;
+    player.bestKills = Math.max(player.bestKills || 0, run.kills);
+    player.bestBosses = Math.max(player.bestBosses || 0, run.bossKills || 0);
+    player.bestDuration = Math.max(player.bestDuration || 0, run.elapsed || 0);
+    document.getElementById('go-best').innerText = player.highestWave;
+    document.getElementById('go-record-kills').innerText = player.bestKills;
+    document.getElementById('go-record-time').innerText = formatRunTime(player.bestDuration);
+    document.getElementById('go-runs').innerText = player.runsPlayed;
+    document.getElementById('go-coins').innerText = '+' + formatMoney(run.coins) + ' COINS';
+    checkAchievements(); saveGame();
+    if (typeof submitLeaderboardResult === 'function') submitLeaderboardResult(run);
+  }
+  function resumeRun() {
+    let checkpoint = null;
+    try { checkpoint = JSON.parse(localStorage.getItem(RUN_CHECKPOINT_KEY) || 'null'); } catch (err) {}
+    if (!checkpoint || checkpoint.version !== 1 || !checkpoint.run || !Number.isFinite(Number(checkpoint.run.wave))) {
+      clearRunCheckpoint();
+      return;
+    }
+    if (!player.tutorialSeen) {
+      document.getElementById('tutorial').classList.add('visible');
+      return;
+    }
+    AudioSys.init();
+    resize(); // Recalculate the canvas after the device/layout selection and before restoring the run.
+    gameSessionStartedAt = Date.now();
+    gameDurationTracked = false;
+    gameSessionSource = 'resume';
+    document.getElementById('menu').classList.remove('active-layer');
+    document.getElementById('gameover').classList.remove('active-layer');
+    document.getElementById('hud').classList.add('active-hud');
+    run = checkpoint.run;
+    selectedGameSpeed = 1;
+    // Keep the saved mission and its progress, but hide the tracker for resumed runs.
+    document.getElementById('mission-ui')?.classList.add('mission-hidden-on-resume');
+    game = {
+      running:true, paused:!!checkpoint.pendingPerk, dt:0, last:performance.now(),
+      shake:0, playSaveT:0, achievementCheckT:0, spawnT:0.25,
+      toSpawn:getWaveEnemyCount(run.wave),
+      ents:{e:[],p:[],b:[],part:[],txt:[]},
+      cx:canvas.width/2, cy:canvas.height/2
+    };
+    tower = new Tower();
+    if (checkpoint.tower) {
+      tower.hp = Math.max(0, Math.min(tower.maxHp, Number(checkpoint.tower.hp) || tower.maxHp));
+      tower.shield = !!checkpoint.tower.shield && hasSkill('shield');
+    }
+    initUpgBar();
+    updateGameSpeedButton();
+    updateHUD();
+    refreshResumeUI();
+    if (checkpoint.pendingPerk) showPerkChoice();
+    else if (checkpoint.pendingDecision) showWaveDecisionChoice();
+    requestAnimationFrame(loop);
+  }
+  window.resumeRun = resumeRun;
+
+  function requestEndRun() {
+    if (!game || !game.running) return;
+    const confirmed = window.confirm('END THIS RUN? Your current score will be saved and submitted if it qualifies for the leaderboard.');
+    if (confirmed) processGameOver('voluntary');
+  }
+  window.requestEndRun = requestEndRun;
+
+  function updateMissionProgress() {
+    if (!run.mission || run.mission.complete) return;
+    const mission = run.mission;
+    mission.progress = mission.id === 'waves' ? run.wave : mission.id === 'kills' ? run.kills : Math.floor(run.elapsed);
+    const current = Math.min(mission.target, mission.progress);
+    const value = mission.id === 'survive' ? current + ' / ' + mission.target + 's' : current + ' / ' + mission.target;
+    const label = document.getElementById('mission-progress');
+    if (label) label.textContent = value;
+    const fill = document.getElementById('mission-fill');
+    if (fill) fill.style.width = (current / mission.target * 100) + '%';
+    if (mission.progress >= mission.target) {
+      mission.complete = true;
+      document.getElementById('mission-ui')?.classList.add('mission-complete');
+      run.coins += mission.reward;
+      notify('MISSION COMPLETE', '+' + formatMoney(mission.reward) + ' COINS');
+      const title = document.getElementById('mission-title');
+      if (title) title.textContent = 'MISSION COMPLETE';
+      const reward = document.getElementById('mission-reward');
+      if (reward) reward.textContent = '+' + formatMoney(mission.reward) + ' COINS';
+    }
+  }
+
+  function confirmTutorialStart() {
+    const tutorial = document.getElementById('tutorial');
+    tutorial.classList.remove('visible');
+    player.tutorialSeen = true;
+    saveGame();
+    startGame();
+  }
+
+  function formatRunTime(seconds) {
+    const total = Math.max(0, Math.floor(seconds));
+    const minutes = Math.floor(total / 60);
+    return minutes + ':' + String(total % 60).padStart(2, '0');
+  }
+  function returnToMenu() { document.getElementById('gameover').classList.remove('active-layer'); document.getElementById('menu').classList.add('active-layer'); updateMenuUI(); }
+
+  let bgOffset = 0;
+  function drawGrid(dt) {
+    bgOffset = (bgOffset + 20 * dt) % 40;
+    ctx.lineWidth = 1;
+    let camOffsetX = (canvas.width/2 - game.cx) % 40;
+
+    for(let y = 0; y < canvas.height; y+=40) {
+      let alpha = y/canvas.height; ctx.strokeStyle = `rgba(0, 255, 255, ${0.1 * alpha})`;
+      ctx.beginPath(); ctx.moveTo(0, (y + bgOffset)); ctx.lineTo(canvas.width, (y + bgOffset)); ctx.stroke();
+    }
+    for(let x = -40; x < canvas.width + 40; x+=40) {
+      ctx.strokeStyle = `rgba(0, 255, 255, 0.05)`;
+      ctx.beginPath(); ctx.moveTo(x + camOffsetX, 0); ctx.lineTo(x + camOffsetX, canvas.height); ctx.stroke();
+    }
+  }
+
+  function loop(ts) {
+    if(!game.running) return; requestAnimationFrame(loop);
+    if(game.paused) { game.last = ts; return; }
+    const realDt = Math.min(0.075, Math.max(0, (ts - game.last) / 1000));
+    game.last = ts;
+    game.dt = realDt * getEffectiveGameSpeed();
+    player.playTime = (player.playTime || 0) + realDt;
+    game.achievementCheckT += game.dt; game.playSaveT += game.dt;
+    run.elapsed = (run.elapsed || 0) + realDt;
+    updateMissionProgress();
+    if(game.achievementCheckT >= 1) { game.achievementCheckT = 0; checkAchievements(); }
+    if(game.playSaveT >= 15) { game.playSaveT = 0; saveGame(); }
+
+    // Keep the tower and the action centered. Opening a UI panel must not move gameplay sideways.
+    game.cx = canvas.width / 2;
+    game.cy = canvas.height / 2;
+    tower.x = game.cx;
+    tower.y = game.cy;
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    drawGrid(game.dt);
+    
+    if(game.shake > 0) {
+      game.shake -= game.dt;
+      canvas.style.setProperty('--shake-x', `${(Math.random()-0.5)*4}px`);
+      canvas.style.setProperty('--shake-y', `${(Math.random()-0.5)*4}px`);
+    } else {
+      canvas.style.setProperty('--shake-x', '0px');
+      canvas.style.setProperty('--shake-y', '0px');
+    }
+
+    if(game.toSpawn <= 0 && game.ents.e.length === 0) {
+      run.wave++;
+      if(tower) { const repairPct=parseFloat(getVal('waveRepair'))+parseFloat(getVal('repairBurst')); if(repairPct>0) tower.hp=Math.min(tower.maxHp,tower.hp+tower.maxHp*repairPct/100); }
+      game.toSpawn = getWaveEnemyCount(run.wave);
+      run.coins += Math.max(1, Math.floor((Math.floor(run.wave/2) + 2 + Math.floor(parseFloat(getVal('coinCache'))) ) * 0.4 * (run.activeDecision === 'power_failure' ? 1.5 : 1))); run.cash += Math.floor((parseFloat(getVal('waveBonus')) + Math.floor(run.wave*parseFloat(getVal('waveDividend'))/100)) * (run.activeDecision === 'endless_assault' ? 1.35 : 1));
+      updateHUD(); AudioSys.coin(); checkAchievements();
+      run.activeDecision = null;
+      const completedWave = run.wave - 1;
+      const perkMilestone = completedWave % 10 === 5;
+      const decisionMilestone = completedWave % 10 === 0;
+      const perksAvailable = perkDefs.some(p => getPerkStacks(p.id) < p.maxStacks);
+      const showPerk = perkMilestone && perksAvailable;
+      const showDecision = decisionMilestone || (perkMilestone && !perksAvailable);
+      if (showPerk) showPerkChoice();
+      else if (showDecision) showWaveDecisionChoice();
+      saveRunCheckpoint(showPerk, showDecision); 
+    }
+    game.spawnT -= game.dt;
+    if(game.spawnT <= 0 && game.toSpawn > 0) { game.ents.e.push(new Enemy(run.wave)); game.toSpawn--; game.spawnT = Math.max(0.48, 0.82 - (run.wave*0.006)); updateHUD(); }
+
+    tower.update(game.dt); tower.draw();run.comboTimer=Math.max(0,run.comboTimer-game.dt);if(!run.comboTimer)run.combo=0;
+
+    for(let i = game.ents.p.length - 1; i >= 0; i--) {
+      let p = game.ents.p[i]; p.update(game.dt); p.draw();
+      if(p.x<0||p.x>canvas.width||p.y<0||p.y>canvas.height || p.dead) { game.ents.p.splice(i,1); continue; }
+      
+      let hitSomething = false;
+      for(let j = game.ents.e.length - 1; j >= 0; j--) {
+        let e = game.ents.e[j];
+        if(p instanceof Missile) {
+            if(p.collide(e, game.ents.e)) { hitSomething = true; break; }
+        } 
+        else if(p.collide(e)) {
+          let dmg = p instanceof Laser ? p.d * game.dt : p.d;
+          if(e.type === 'Boss') dmg *= 1 + parseFloat(getVal('bossDamage'))/100;
+          if(e.hp <= e.maxHp*0.3) dmg *= 1 + parseFloat(getVal('executionProtocol'))/100;
+          if(!(p instanceof Laser)) {
+             game.ents.txt.push(new FText(e.x, e.y-e.r, Math.floor(dmg), p.crit ? "#ff3366" : "#fff", p.crit ? 24 : 14));
+             createParts(p.x, p.y, p.crit ? "#ff3366" : "#0ff", p.crit?10:3, 3);
+          }
+          if(e.hit(dmg)) { game.ents.e.splice(j,1); updateHUD(); }
+          
+          if(p instanceof Laser) { /* Pierce */ } 
+          else { hitSomething = true; break; }
+        }
+      }
+      if(hitSomething) game.ents.p.splice(i,1);
+    }
+
+    for(let i=game.ents.b.length-1;i>=0;i--){let b=game.ents.b[i];b.update(game.dt);b.draw();let d=MathUtils.dist(b.x,b.y,tower.x,tower.y);if(d<tower.r+b.r){if(tower.invuln<=0)tower.hit(b.damage,b.kind==='boss'?{type:'Boss'}:null);bulletPool.release(b);game.ents.b.splice(i,1);continue;}if(!b.grazed&&d<tower.r+b.r+18){b.grazed=true;run.graze++;AudioSys.play('graze',1500,900,'sine',.08,.08);}if(b.x<-30||b.x>canvas.width+30||b.y<-30||b.y>canvas.height+30){bulletPool.release(b);game.ents.b.splice(i,1);}}
+    for(let i = game.ents.e.length - 1; i >= 0; i--) {
+      let e = game.ents.e[i];
+      if(e.hp <= 0) { game.ents.e.splice(i,1); continue; } 
+      e.update(game.dt);
+      const dx = e.x - tower.x;
+      const dy = e.y - tower.y;
+      const distance = Math.hypot(dx, dy) || 1;
+      const contactDistance = tower.r + e.r + 2;
+      if(e.isAttackingTower) {
+        // Keep the enemy at its arrival position; only gently separate overlapping attackers.
+        let pushX = 0, pushY = 0;
+        for(let j = 0; j < game.ents.e.length; j++) {
+          const other = game.ents.e[j];
+          if(other === e || !other.isAttackingTower || other.hp <= 0) continue;
+          let sx = e.x - other.x, sy = e.y - other.y;
+          let spacing = Math.hypot(sx, sy);
+          const minSpacing = e.r + other.r + 5;
+          if(spacing < minSpacing) {
+            if(spacing < 0.001) {
+              const angle = (i + 1) * 2.399963229728653;
+              sx = Math.cos(angle);
+              sy = Math.sin(angle);
+              spacing = 1;
+            }
+            const force = (minSpacing - spacing) * 0.45;
+            pushX += (sx / spacing) * force;
+            pushY += (sy / spacing) * force;
+          }
+        }
+        // Only separate along the tower's circumference, never toward its center.
+        const radialX = e.x - tower.x;
+        const radialY = e.y - tower.y;
+        const radialLength = Math.hypot(radialX, radialY) || 1;
+        const radialUnitX = radialX / radialLength;
+        const radialUnitY = radialY / radialLength;
+        const inwardOutwardPush = pushX * radialUnitX + pushY * radialUnitY;
+        pushX -= inwardOutwardPush * radialUnitX;
+        pushY -= inwardOutwardPush * radialUnitY;
+        const separationStep = Math.min(1, game.dt * 6);
+        e.x += pushX * separationStep;
+        e.y += pushY * separationStep;
+        const safeDx = e.x - tower.x;
+        const safeDy = e.y - tower.y;
+        const safeDistance = Math.hypot(safeDx, safeDy) || 1;
+        const minTowerDistance = tower.r + e.r + 2;
+        if(safeDistance < minTowerDistance) {
+          e.x = tower.x + (safeDx / safeDistance) * minTowerDistance;
+          e.y = tower.y + (safeDy / safeDistance) * minTowerDistance;
+        }
+        e.contactDamageTimer -= game.dt;
+        if(e.contactDamageTimer <= 0) {
+          tower.hit(e.dmg, e);
+          e.contactDamageTimer = 1;
+        }
+      } else if(distance < contactDistance) {
+        // Lock the enemy exactly where it reached the tower; do not reposition it.
+        e.isAttackingTower = true;
+        e.contactDamageTimer = 0.35 + (Math.abs(Math.sin(e.phase)) * 0.65);
+      }
+      e.draw();
+    }
+    
+    for(let i = game.ents.part.length - 1; i >= 0; i--) { let p = game.ents.part[i]; p.update(game.dt); p.draw(); if(p.l<=0) game.ents.part.splice(i,1); }
+    for(let i = game.ents.txt.length - 1; i >= 0; i--) { let t = game.ents.txt[i]; t.update(game.dt); t.draw(); if(t.l<=0) game.ents.txt.splice(i,1); }
+    
+    updateHUD();
+    updateGameSpeedButton();
+  } + formatMoney(run.cash || 0) + '</strong></span><span>COINS <strong>' + formatMoney(run.coins || 0) + '</strong></span></div><div class="perk-options decision-options">' +
       picks.map(d => '<button class="perk-option decision-option" onclick="chooseWaveDecision(\'' + d.id + '\')"><span>' + d.icon + '</span><strong>' + d.name + '</strong><small>' + d.desc + '</small></button>').join('') +
       '</div></div>';
     panel.classList.add('visible');
