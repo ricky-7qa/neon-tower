@@ -1,0 +1,20 @@
+{
+  "id": "./",
+  "name": "Neon Tower: Apex Edition",
+  "short_name": "Neon Tower",
+  "description": "A neon tower defense game. Build, upgrade and survive.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#050711",
+  "theme_color": "#050711",
+  "icons": [
+    {
+      "src": "./neon-tower-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
