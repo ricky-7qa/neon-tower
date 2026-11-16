@@ -39,7 +39,6 @@
     }
   }
 
-  function switchTab(t) { ['workshop', 'skills', 'achievements', 'leaderboard'].forEach(x => { const tab = document.getElementById('tab-'+x); tab.style.display = (x===t?'flex':'none'); if (x===t) tab.scrollTop = 0; }); if (t==='skills') buildSkillTree(); if (t==='leaderboard') loadLeaderboard(); }
   
   function updateMenuUI() {
     document.getElementById('menu-coins').innerText = '$' + formatMoney(player.coins);
@@ -217,38 +216,78 @@
 
   const LEADERBOARD_URL = 'https://iioagfxyzfxyoifjclgw.supabase.co';
   const LEADERBOARD_KEY = 'sb_publishable_Xop-cOuasc5PmiD3e4ed5A_hWr-mclf';
-  const LEADERBOARD_ID_KEY = 'neonTowerLeaderboardId';
   const LEADERBOARD_NAME_KEY = 'neonTowerLeaderboardName';
   let leaderboardClient = null;
   let leaderboardPlayerId = '';
-
-  function getLeaderboardPlayerId() {
-    let id = localStorage.getItem(LEADERBOARD_ID_KEY);
-    if (!id) {
-      id = crypto.randomUUID();
-      localStorage.setItem(LEADERBOARD_ID_KEY, id);
-    }
-    return id;
-  }
+  let leaderboardSession = null;
+  let authMode = 'signup';
 
   function escapeLeaderboardText(value) {
     return String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   }
 
   function initializeLeaderboard() {
-    leaderboardPlayerId = getLeaderboardPlayerId();
-    const savedName = localStorage.getItem(LEADERBOARD_NAME_KEY);
-    const nameInput = document.getElementById('leaderboard-name');
-    if (nameInput) nameInput.value = savedName || ('Pilot-' + leaderboardPlayerId.slice(0,4).toUpperCase());
     if (!window.supabase || !window.supabase.createClient) {
-      setLeaderboardStatus('ONLINE SERVICE UNAVAILABLE');
+      setAuthStatus('ACCOUNT SERVICE UNAVAILABLE. PLEASE TRY AGAIN LATER.');
       return;
     }
     leaderboardClient = window.supabase.createClient(LEADERBOARD_URL, LEADERBOARD_KEY, {
-      global: { headers: { 'x-player-id': leaderboardPlayerId } },
-      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
     });
-    loadLeaderboard();
+    leaderboardClient.auth.onAuthStateChange((event, session) => {
+      setLeaderboardSession(session);
+      if (event === 'PASSWORD_RECOVERY') setAuthMode('recovery');
+    });
+    leaderboardClient.auth.getSession().then(({ data, error }) => {
+      if (error) throw error;
+      setLeaderboardSession(data.session);
+      if (window.location.hash.includes('type=recovery')) setAuthMode('recovery');
+    }).catch(error => {
+      console.error('Auth session check failed:', error);
+      setAuthStatus('COULD NOT CHECK YOUR ACCOUNT. PLEASE REFRESH.');
+    });
+  }
+
+  function setLeaderboardSession(session) {
+    leaderboardSession = session && session.user && session.user.email_confirmed_at ? session : null;
+    leaderboardPlayerId = leaderboardSession ? leaderboardSession.user.id : '';
+    const nameInput = document.getElementById('leaderboard-name');
+    if (nameInput && leaderboardSession && !nameInput.value) {
+      const savedName = localStorage.getItem(LEADERBOARD_NAME_KEY);
+      nameInput.value = savedName || ('Pilot-' + leaderboardPlayerId.slice(0,4).toUpperCase());
+    }
+    const tab = document.getElementById('tab-leaderboard');
+    if (tab && tab.style.display !== 'none') showLeaderboardView();
+  }
+
+  function showLeaderboardView() {
+    const authPanel = document.getElementById('leaderboard-auth');
+    const boardPanel = document.getElementById('leaderboard-content');
+    const signedIn = !!leaderboardSession;
+    if (authPanel) authPanel.style.display = signedIn ? 'none' : 'block';
+    if (boardPanel) boardPanel.style.display = signedIn ? 'block' : 'none';
+    if (signedIn) {
+      const account = document.getElementById('leaderboard-account-email');
+      if (account) account.textContent = leaderboardSession.user.email || 'SIGNED IN';
+      const nameInput = document.getElementById('leaderboard-name');
+      if (nameInput && !nameInput.value) {
+        const savedName = localStorage.getItem(LEADERBOARD_NAME_KEY);
+        nameInput.value = savedName || ('Pilot-' + leaderboardPlayerId.slice(0,4).toUpperCase());
+      }
+      loadLeaderboard();
+    } else {
+      renderAuthMode();
+    }
+  }
+
+  function switchTab(t) {
+    ['workshop', 'skills', 'achievements', 'leaderboard'].forEach(x => {
+      const tab = document.getElementById('tab-'+x);
+      tab.style.display = (x===t?'flex':'none');
+      if (x===t) tab.scrollTop = 0;
+    });
+    if (t==='skills') buildSkillTree();
+    if (t==='leaderboard') showLeaderboardView();
   }
 
   function setLeaderboardStatus(message) {
@@ -256,18 +295,140 @@
     if (status) status.textContent = message;
   }
 
+  function setAuthStatus(message) {
+    const status = document.getElementById('leaderboard-auth-status');
+    if (status) status.textContent = message;
+  }
+
+  function setAuthMode(mode) {
+    authMode = mode;
+    renderAuthMode();
+  }
+
+  function renderAuthMode() {
+    const confirm = document.getElementById('auth-confirm-password');
+    const password = document.getElementById('auth-password');
+    const passwordLabel = document.getElementById('auth-password-label');
+    const submit = document.getElementById('auth-submit');
+    const tabs = document.getElementById('auth-mode-tabs');
+    const forgot = document.getElementById('auth-forgot');
+    const resetNote = document.getElementById('auth-reset-note');
+    if (!submit) return;
+    const recovery = authMode === 'recovery';
+    if (confirm) confirm.style.display = authMode === 'signup' ? 'block' : 'none';
+    if (password) password.style.display = recovery ? 'none' : 'block';
+    if (passwordLabel) passwordLabel.style.display = recovery ? 'none' : 'block';
+    if (submit) submit.textContent = recovery ? 'SAVE NEW PASSWORD' : (authMode === 'signup' ? 'CREATE ACCOUNT' : 'LOG IN');
+    if (tabs) tabs.style.display = recovery ? 'none' : 'flex';
+    if (forgot) forgot.style.display = authMode === 'login' ? 'inline-flex' : 'none';
+    if (resetNote) resetNote.style.display = recovery ? 'block' : 'none';
+    const newPassword = document.getElementById('auth-new-password');
+    if (newPassword) newPassword.style.display = recovery ? 'block' : 'none';
+    const email = document.getElementById('auth-email');
+    if (email) email.style.display = recovery ? 'none' : 'block';
+    setAuthStatus(recovery ? 'CHOOSE A NEW PASSWORD FOR YOUR ACCOUNT.' : (authMode === 'signup' ? 'CREATE AN ACCOUNT TO ENTER THE GLOBAL LEADERBOARD.' : 'LOG IN TO ACCESS YOUR GLOBAL RANKING.'));
+  }
+
+  async function submitLeaderboardAuth() {
+    if (!leaderboardClient) return setAuthStatus('ACCOUNT SERVICE UNAVAILABLE.');
+    const email = (document.getElementById('auth-email')?.value || '').trim();
+    const password = document.getElementById('auth-password')?.value || '';
+    if (authMode === 'recovery') return saveRecoveredPassword();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return setAuthStatus('ENTER A VALID EMAIL ADDRESS.');
+    if (password.length < 8) return setAuthStatus('PASSWORD MUST HAVE AT LEAST 8 CHARACTERS.');
+    try {
+      if (authMode === 'signup') {
+        const confirm = document.getElementById('auth-confirm-password')?.value || '';
+        if (password !== confirm) return setAuthStatus('PASSWORDS DO NOT MATCH.');
+        const { data, error } = await leaderboardClient.auth.signUp({
+          email,
+          password,
+          options: { emailRedirectTo: window.location.origin + window.location.pathname }
+        });
+        if (error) throw error;
+        if (!data.session) {
+          setAuthStatus('ACCOUNT CREATED. CHECK YOUR EMAIL AND CLICK THE CONFIRMATION LINK, THEN RETURN HERE TO LOG IN.');
+        } else {
+          setAuthStatus('EMAIL CONFIRMED. OPENING LEADERBOARD...');
+          setLeaderboardSession(data.session);
+        }
+      } else {
+        const { data, error } = await leaderboardClient.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        if (!data.user.email_confirmed_at) {
+          setAuthStatus('PLEASE CONFIRM YOUR EMAIL BEFORE LOGGING IN.');
+          await leaderboardClient.auth.signOut();
+          return;
+        }
+        setAuthStatus('LOGGED IN. OPENING LEADERBOARD...');
+        setLeaderboardSession(data.session);
+      }
+    } catch (error) {
+      console.error('Leaderboard authentication failed:', error);
+      setAuthStatus(authErrorMessage(error));
+    }
+  }
+
+  function authErrorMessage(error) {
+    const message = String(error && error.message || '').toLowerCase();
+    if (message.includes('already registered') || message.includes('already been registered')) return 'THIS EMAIL ALREADY HAS AN ACCOUNT. TRY LOGGING IN.';
+    if (message.includes('invalid login credentials')) return 'EMAIL OR PASSWORD IS INCORRECT.';
+    if (message.includes('email not confirmed')) return 'CHECK YOUR EMAIL AND CONFIRM YOUR ACCOUNT FIRST.';
+    if (message.includes('rate limit')) return 'TOO MANY ATTEMPTS. PLEASE WAIT A LITTLE AND TRY AGAIN.';
+    return error && error.message ? error.message.toUpperCase() : 'SOMETHING WENT WRONG. PLEASE TRY AGAIN.';
+  }
+
+  async function sendPasswordReset() {
+    if (!leaderboardClient) return setAuthStatus('ACCOUNT SERVICE UNAVAILABLE.');
+    const email = (document.getElementById('auth-email')?.value || '').trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return setAuthStatus('ENTER YOUR EMAIL ADDRESS FIRST.');
+    try {
+      const { error } = await leaderboardClient.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + window.location.pathname + '?auth=recovery'
+      });
+      if (error) throw error;
+      setAuthStatus('IF AN ACCOUNT EXISTS, A PASSWORD RESET EMAIL HAS BEEN SENT.');
+    } catch (error) {
+      console.error('Password reset request failed:', error);
+      setAuthStatus(authErrorMessage(error));
+    }
+  }
+
+  async function saveRecoveredPassword() {
+    if (!leaderboardClient) return setAuthStatus('ACCOUNT SERVICE UNAVAILABLE.');
+    const password = document.getElementById('auth-new-password')?.value || '';
+    if (password.length < 8) return setAuthStatus('PASSWORD MUST HAVE AT LEAST 8 CHARACTERS.');
+    try {
+      const { error } = await leaderboardClient.auth.updateUser({ password });
+      if (error) throw error;
+      setAuthStatus('PASSWORD UPDATED. YOU CAN NOW ACCESS THE LEADERBOARD.');
+      setAuthMode('login');
+    } catch (error) {
+      console.error('Password update failed:', error);
+      setAuthStatus(authErrorMessage(error));
+    }
+  }
+
+  async function signOutLeaderboard() {
+    if (!leaderboardClient) return;
+    const { error } = await leaderboardClient.auth.signOut();
+    if (error) {
+      setAuthStatus(authErrorMessage(error));
+      return;
+    }
+    setAuthMode('login');
+    showLeaderboardView();
+  }
+
   async function saveLeaderboardName() {
     const input = document.getElementById('leaderboard-name');
     const name = (input?.value || '').trim();
+    if (!leaderboardSession) return setAuthStatus('LOG IN TO USE THE LEADERBOARD.');
     if (!/^[a-zA-Z0-9 _-]{3,16}$/.test(name)) {
       setLeaderboardStatus('USE 3–16 LETTERS, NUMBERS, SPACES, _ OR -');
       return;
     }
     localStorage.setItem(LEADERBOARD_NAME_KEY, name);
-    if (!leaderboardClient) {
-      setLeaderboardStatus('PLAYER NAME SAVED LOCALLY');
-      return;
-    }
     try {
       const { error } = await leaderboardClient
         .from('leaderboard_entries')
@@ -283,16 +444,14 @@
   }
 
   async function loadLeaderboard() {
-    if (!leaderboardClient) {
-      setLeaderboardStatus('CONNECTING TO GLOBAL RANKINGS...');
-      return;
-    }
+    if (!leaderboardClient || !leaderboardSession) return;
     setLeaderboardStatus('UPDATING GLOBAL RANKINGS...');
     const list = document.getElementById('leaderboard-list');
     try {
       const { data, error } = await leaderboardClient
         .from('leaderboard_entries')
         .select('player_id, player_name, best_wave, best_kills, best_bosses, best_duration, updated_at')
+        .eq('is_verified', true)
         .order('best_wave', { ascending: false })
         .order('best_kills', { ascending: false })
         .order('best_bosses', { ascending: false })
@@ -304,7 +463,6 @@
       } else {
         list.innerHTML = data.map((entry, index) => {
           const own = entry.player_id === leaderboardPlayerId;
-          const duration = Math.floor(entry.best_duration / 60) + ':' + String(entry.best_duration % 60).padStart(2, '0');
           return '<article class="leaderboard-row ' + (own ? 'is-you' : '') + '">' +
             '<span class="leaderboard-rank">#' + (index + 1) + '</span>' +
             '<span class="leaderboard-player"><strong>' + escapeLeaderboardText(entry.player_name) + (own ? ' <small>YOU</small>' : '') + '</strong><small>WAVE ' + entry.best_wave + ' · ' + entry.best_kills + ' KILLS</small></span>' +
@@ -322,7 +480,7 @@
   }
 
   async function submitLeaderboardResult(result) {
-    if (!leaderboardClient || !result) return;
+    if (!leaderboardClient || !leaderboardSession || !result) return;
     const name = (localStorage.getItem(LEADERBOARD_NAME_KEY) || ('Pilot-' + leaderboardPlayerId.slice(0,4).toUpperCase())).trim();
     const completedWave = Math.floor(Number(result.wave) || 0);
     if (completedWave <= 15) {
@@ -351,6 +509,7 @@
       const { error } = await leaderboardClient.from('leaderboard_entries').upsert({
         player_id: leaderboardPlayerId,
         player_name: name,
+        is_verified: true,
         ...incoming,
         updated_at: new Date().toISOString()
       }, { onConflict: 'player_id' });
