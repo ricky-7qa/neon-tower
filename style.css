@@ -1942,3 +1942,93 @@
 
 /* Hide the optional mission tracker when continuing a saved run. */
 #mission-ui.mission-hidden-on-resume { display:none !important; }
+
+
+/* EMAIL ACCOUNT GATE FOR THE GLOBAL LEADERBOARD */
+#app #menu > #tab-leaderboard .leaderboard-auth-panel {
+  max-width:620px;
+  margin:0 auto;
+  text-align:center;
+}
+#app .leaderboard-auth-card {
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  max-width:420px;
+  margin:0 auto;
+  padding:18px;
+  border:1px solid rgba(0,220,255,.2);
+  border-radius:12px;
+  background:rgba(0,10,20,.55);
+  text-align:left;
+}
+#app .auth-mode-tabs { display:flex; gap:8px; margin-bottom:6px; }
+#app .auth-mode-tabs .btn { flex:1; min-width:0; }
+#app .auth-field-label {
+  display:block;
+  margin:4px 0 -5px;
+  color:#70dff0;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:1.3px;
+}
+#app .auth-input {
+  box-sizing:border-box;
+  width:100%;
+  min-height:42px;
+  padding:11px 12px;
+  border:1px solid rgba(0,220,255,.3);
+  border-radius:7px;
+  outline:none;
+  background:#06111d;
+  color:#eafaff;
+  font:inherit;
+  font-size:13px;
+}
+#app .auth-input:focus { border-color:#0ff; box-shadow:0 0 12px rgba(0,220,255,.12); }
+#app .auth-submit { width:100%; min-height:44px; margin-top:5px; }
+#app .auth-text-button {
+  align-self:center;
+  border:0;
+  background:transparent;
+  color:#63eaff;
+  font:inherit;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:1px;
+  cursor:pointer;
+}
+#app .leaderboard-auth-status {
+  min-height:30px;
+  margin:5px 0 0;
+  color:#a6c4d3;
+  font-size:10px;
+  line-height:1.5;
+  text-align:center;
+}
+#app .leaderboard-auth-footnote {
+  max-width:420px;
+  margin:14px auto;
+  color:#7893a5;
+  font-size:10px;
+  line-height:1.5;
+}
+#app .auth-back-button { display:block; margin:0 auto; }
+#app .leaderboard-account-bar {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:12px;
+  color:#8bb1c2;
+  font-size:9px;
+  overflow-wrap:anywhere;
+}
+#app .leaderboard-account-bar strong { color:#70eaff; }
+#app .leaderboard-account-bar .btn { flex:0 0 auto; padding:7px 10px; font-size:9px; }
+#app .auth-reset-note { color:#9fc4d4; font-size:11px; text-align:center; }
+@media(max-width:600px) {
+  #app .leaderboard-auth-card { padding:14px 12px; }
+  #app .leaderboard-account-bar { align-items:flex-start; font-size:8px; }
+  #app .leaderboard-account-bar .btn { font-size:8px; }
+}
