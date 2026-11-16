@@ -211,7 +211,11 @@
     if (gameSessionStartedAt && !gameDurationTracked) trackGameDuration('exit');
   });
 
-  function saveGame() { localStorage.setItem(SAVE_KEY, btoa(JSON.stringify(player))); updateMenuUI(); }
+  function saveGame() {
+    localStorage.setItem(SAVE_KEY, btoa(JSON.stringify(player)));
+    updateMenuUI();
+    if (typeof window.scheduleNeonCloudSave === 'function') window.scheduleNeonCloudSave();
+  }
   function refreshResumeUI() {
     const panel = document.getElementById('resume-run-panel');
     const startButton = document.getElementById('start-new-run-button');
@@ -246,13 +250,38 @@
       }));
     } catch (err) { console.warn('Could not save run checkpoint', err); }
     refreshResumeUI();
+    if (typeof window.scheduleNeonCloudSave === 'function') window.scheduleNeonCloudSave();
   }
   function clearRunCheckpoint() {
     localStorage.removeItem(RUN_CHECKPOINT_KEY);
     refreshResumeUI();
+    if (typeof window.scheduleNeonCloudSave === 'function') window.scheduleNeonCloudSave();
   }
   window.refreshResumeUI = refreshResumeUI;
   window.saveRunCheckpoint = saveRunCheckpoint;
+  window.getNeonTowerCloudSave = function() {
+    let checkpoint = null;
+    try { checkpoint = JSON.parse(localStorage.getItem(RUN_CHECKPOINT_KEY) || 'null'); } catch (err) {}
+    return { player: JSON.parse(JSON.stringify(player)), checkpoint };
+  };
+  window.applyNeonTowerCloudSave = function(snapshot) {
+    if (!snapshot || !snapshot.player || typeof snapshot.player !== 'object') throw new Error('Invalid cloud save data.');
+    const incoming = snapshot.player;
+    player = { ...player, ...incoming };
+    player.ws = { ...player.ws, ...(incoming.ws || {}) };
+    player.skills = Array.isArray(incoming.skills) ? incoming.skills : ['start'];
+    player.achievements = Array.isArray(incoming.achievements) ? incoming.achievements : [];
+    Object.keys(statDefs).forEach(k => { if (player.ws[k] === undefined) player.ws[k] = 0; });
+    localStorage.setItem(SAVE_KEY, btoa(JSON.stringify(player)));
+    if (snapshot.checkpoint && snapshot.checkpoint.version === 1 && snapshot.checkpoint.run) {
+      localStorage.setItem(RUN_CHECKPOINT_KEY, JSON.stringify(snapshot.checkpoint));
+    } else {
+      localStorage.removeItem(RUN_CHECKPOINT_KEY);
+    }
+    updateMenuUI();
+    buildSkillTree();
+    refreshResumeUI();
+  };
   function loadGame() { 
     const s = localStorage.getItem(SAVE_KEY); 
     if(s) { try { let p=JSON.parse(atob(s)); player={...player,...p}; player.ws={...player.ws,...(p.ws||{})}; } catch(err) { console.warn("Invalid save data",err); localStorage.removeItem(SAVE_KEY); } }
