@@ -263,9 +263,12 @@
       if (cloudSaveTimer) { clearTimeout(cloudSaveTimer); cloudSaveTimer = null; }
     }
     const nameInput = document.getElementById('leaderboard-name');
-    if (nameInput && leaderboardSession && !nameInput.value) {
+    if (nameInput && leaderboardSession) {
+      const accountName = String(leaderboardSession.user.user_metadata?.display_name || '').trim();
       const savedName = localStorage.getItem(LEADERBOARD_NAME_KEY);
-      nameInput.value = savedName || ('Pilot-' + leaderboardPlayerId.slice(0,4).toUpperCase());
+      const currentName = accountName || savedName || ('Pilot-' + leaderboardPlayerId.slice(0,4).toUpperCase());
+      nameInput.value = currentName;
+      if (accountName) localStorage.setItem(LEADERBOARD_NAME_KEY, accountName);
     }
     const tab = document.getElementById('tab-leaderboard');
     if (tab && tab.style.display !== 'none') showLeaderboardView();
@@ -523,18 +526,23 @@
       setLeaderboardStatus('USE 3–16 LETTERS, NUMBERS, SPACES, _ OR -');
       return;
     }
-    localStorage.setItem(LEADERBOARD_NAME_KEY, name);
     try {
-      const { error } = await leaderboardClient
+      const { data: updatedUser, error: profileError } = await leaderboardClient.auth.updateUser({
+        data: { display_name: name }
+      });
+      if (profileError) throw profileError;
+      if (updatedUser?.user) leaderboardSession.user = updatedUser.user;
+      localStorage.setItem(LEADERBOARD_NAME_KEY, name);
+      const { error: rankingError } = await leaderboardClient
         .from('leaderboard_entries')
         .update({ player_name: name })
         .eq('player_id', leaderboardPlayerId);
-      if (error) throw error;
-      setLeaderboardStatus('PLAYER NAME UPDATED');
+      if (rankingError) throw rankingError;
+      setLeaderboardStatus('PLAYER NAME SAVED TO YOUR ACCOUNT');
       await loadLeaderboard();
     } catch (error) {
       console.error('Leaderboard name update failed:', error);
-      setLeaderboardStatus('NAME SAVED LOCALLY — RANKING UPDATE FAILED');
+      setLeaderboardStatus('COULD NOT SAVE PLAYER NAME. PLEASE TRY AGAIN.');
     }
   }
 
@@ -576,7 +584,7 @@
 
   async function submitLeaderboardResult(result) {
     if (!leaderboardClient || !leaderboardSession || !result) return;
-    const name = (localStorage.getItem(LEADERBOARD_NAME_KEY) || ('Pilot-' + leaderboardPlayerId.slice(0,4).toUpperCase())).trim();
+    const name = (String(leaderboardSession.user.user_metadata?.display_name || '').trim() || localStorage.getItem(LEADERBOARD_NAME_KEY) || ('Pilot-' + leaderboardPlayerId.slice(0,4).toUpperCase())).trim();
     const completedWave = Math.floor(Number(result.wave) || 0);
     if (completedWave <= 15) {
       setLeaderboardStatus('REACH WAVE 16 TO ENTER THE LEADERBOARD');
