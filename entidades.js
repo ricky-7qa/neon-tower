@@ -212,9 +212,9 @@
       const eliteBoost=getWaveDecisionValue('elite_invasion');
       if(w>=3&&this.type!=='Boss'&&Math.random()<eliteBoost){this.type='Elite';this.c='#ffd166';this.r=18;hpM*=1.8;damageM*=1.25;rewardM*=2.2;}
       this.maxHp=24*waveScale*hpM*(1+(this.type==='Boss'?getWaveDecisionValue('boss_gamble'):0));this.hp=this.maxHp;
-      this.dmg=(3.2*Math.pow(1.045,Math.max(0,w-1)))*damageM*(1+getWaveDecisionValue('blood_money'))*(1+getWaveDecisionValue('glass_cannon_damage_taken'));
+      this.dmg=(3.2*Math.pow(1.045,Math.max(0,w-1)))*damageM*(1+getWaveDecisionValue('blood_money'));
       this.spd=(68+Math.min(30,w*1.1))*speedM*(1+getWaveDecisionValue('chaos_mode'));
-      this.val=Math.floor((5*Math.pow(1.055,Math.max(0,w-1)))*rewardM*(1+(this.type!=='Minion'?getWaveDecisionValue('bounty_hunter'):0)+getWaveDecisionValue('blood_money_cash')+getWaveDecisionValue('elite_cash')));
+      this.val=Math.floor((5*Math.pow(1.055,Math.max(0,w-1)))*rewardM*(1+(this.type!=='Minion'?getWaveDecisionValue('bounty_hunter'):0)+getWaveDecisionValue('elite_cash')));
       this.fireCd = (this.type === "Boss" ? 1.25 : 0.9) + Math.random() * 1.5;
       this.isAttackingTower = false;
       this.contactAngle = 0;
@@ -357,7 +357,7 @@
           (1 + parseFloat(getVal("cashBonus"))/100) *
           (1 + parseFloat(getVal("killContract"))/100) *
           (1 + getPerkValue('fortune')/100) * (1 + getWaveDecisionValue('blood_money_cash')));
-        if(this.type!=='Minion')run.cash+=Math.floor(this.val*getWaveDecisionValue('bounty_hunter'));
+        
         if(Math.random()<getWaveDecisionValue('treasure_hunt'))run.coins=(run.coins||0)+1;
         if (hasSkill("vampire") && tower) tower.hp = Math.min(tower.maxHp, tower.hp + tower.maxHp * 0.02);
         run.cash += Math.floor(this.val * parseFloat(getVal("salvage"))/100);
