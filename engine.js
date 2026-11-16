@@ -377,7 +377,7 @@
     {id:'executioner',name:'EXECUTIONER',category:'COMBAT',icon:'☠',desc:'+30% damage against enemies below 30% health for 3 waves.',duration:3},
     {id:'piercing_shots',name:'PIERCING SHOTS',category:'COMBAT',icon:'➤',desc:'Projectiles pierce one additional enemy for 3 waves.',duration:3},
     {id:'rapid_fire',name:'RAPID FIRE',category:'COMBAT',icon:'»',desc:'+20% attack speed for 2 waves.',duration:2},
-    {id:'boss_hunter',name:'BOSS HUNTER',category:'COMBAT',icon:'♛',desc:'+30% damage against Bosses in the next wave.',duration:1},
+    {id:'boss_hunter',name:'BOSS HUNTER',category:'COMBAT',icon:'♛',desc:'+30% damage against the next Boss.',duration:5},
     {id:'emergency_repair',name:'EMERGENCY REPAIR',category:'DEFENSE',icon:'✚',desc:'Restore 15% of maximum health immediately.',duration:0},
     {id:'energy_shield',name:'ENERGY SHIELD',category:'DEFENSE',icon:'⬡',desc:'Gain a temporary shield that blocks one hit.',duration:0},
     {id:'reinforced_core',name:'REINFORCED CORE',category:'DEFENSE',icon:'▣',desc:'Reduce all incoming damage by 20% for 3 waves.',duration:3},
@@ -389,12 +389,12 @@
     {id:'bounty_hunter',name:'BOUNTY HUNTER',category:'ECONOMY',icon:'◇',desc:'Special enemies give 50% more cash for 3 waves.',duration:3},
     {id:'investment',name:'INVESTMENT',category:'ECONOMY',icon:'▤',desc:'Invest 15% of your run coins and receive 30% extra after 3 waves.',duration:0},
     {id:'treasure_hunt',name:'TREASURE HUNT',category:'ECONOMY',icon:'✧',desc:'Enemies have a 15% chance to drop an extra run coin for 3 waves.',duration:3},
-    {id:'boss_contract',name:'BOSS CONTRACT',category:'ECONOMY',icon:'♛',desc:'Defeating the next Boss grants 50% more Boss coins.',duration:1},
+    {id:'boss_contract',name:'BOSS CONTRACT',category:'ECONOMY',icon:'♛',desc:'Defeating the next Boss grants 50% more Boss coins.',duration:5},
     {id:'blood_money',name:'BLOOD MONEY',category:'RISK & REWARD',icon:'♦',desc:'Enemies deal 25% more damage, but give 50% more cash for 1 wave.',duration:1},
     {id:'chaos_mode',name:'CHAOS MODE',category:'RISK & REWARD',icon:'※',desc:'Enemies move 20% faster, but wave rewards are 50% higher.',duration:1},
     {id:'elite_invasion',name:'ELITE INVASION',category:'RISK & REWARD',icon:'◆',desc:'More special enemies appear and their rewards are 50% higher in the next wave.',duration:1},
     {id:'glass_cannon',name:'GLASS CANNON',category:'RISK & REWARD',icon:'◇',desc:'+50% damage dealt, but you also take 35% more damage for 2 waves.',duration:2},
-    {id:'boss_gamble',name:'BOSS GAMBLE',category:'RISK & REWARD',icon:'☠',desc:'The next Boss has 30% more health, but its reward is doubled.',duration:1},
+    {id:'boss_gamble',name:'BOSS GAMBLE',category:'RISK & REWARD',icon:'☠',desc:'The next Boss has 30% more health, but its reward is doubled.',duration:5},
     {id:'last_stand',name:'LAST STAND',category:'RISK & REWARD',icon:'⚔',desc:'Start the next wave at 50% health, but deal 50% more damage.',duration:1}
   ];
   function getWaveDecisionValue(id){return(run.decisionEffects||[]).filter(e=>e.id===id).reduce((s,e)=>s+(Number(e.value)||0),0);}
@@ -418,7 +418,7 @@
     switch(id){
       case'overdrive':effect(id,pct(.25),3);break;case'heavy_impact':effect(id,pct(.35),2);break;case'critical_focus':effect(id,pct(15),3);break;
       case'double_trouble':effect(id,pct(.2),3);break;case'executioner':effect(id,pct(.3),3);break;case'piercing_shots':effect(id,Math.max(1,Math.round(scale)),3);break;
-      case'rapid_fire':effect(id,pct(.2),2);break;case'boss_hunter':effect(id,pct(.3),1);break;
+      case'rapid_fire':effect(id,pct(.2),2);break;case'boss_hunter':effect(id,pct(.3),5);break;
       case'emergency_repair':if(tower)tower.hp=Math.min(tower.maxHp,tower.hp+tower.maxHp*pct(.15));break;
       case'energy_shield':if(tower)tower.tempShieldCharges=(tower.tempShieldCharges||0)+Math.max(1,Math.round(scale));break;
       case'reinforced_core':effect(id,pct(.2),3);break;case'nano_repair':effect(id,pct(.015),3);break;
@@ -426,12 +426,12 @@
       case'gold_rush':run.coins=(run.coins||0)+Math.floor(75*scale);break;case'double_reward':effect(id,1,1);break;
       case'bounty_hunter':effect(id,pct(.5),3);break;
       case'investment':{const invested=Math.floor((run.coins||0)*.15);if(invested>0){run.coins-=invested;run.decisionEffects.push({id,value:invested*1.3,remaining:3,payout:Math.floor(invested*1.3),paid:false,rarity});}break;}
-      case'treasure_hunt':effect(id,pct(.15),3);break;case'boss_contract':effect(id,pct(.5),1);break;
+      case'treasure_hunt':effect(id,pct(.15),3);break;case'boss_contract':effect(id,pct(.5),5);break;
       case'blood_money':effect(id,pct(.25),1);effect('blood_money_cash',pct(.5),1);break;
       case'chaos_mode':effect(id,pct(.2),1);effect('chaos_cash',pct(.5),1);break;
       case'elite_invasion':effect(id,pct(.25),1);effect('elite_cash',pct(.5),1);break;
       case'glass_cannon':effect(id,pct(.5),2);effect('glass_cannon_damage_taken',pct(.35),2);break;
-      case'boss_gamble':effect(id,pct(.3),1);effect('boss_gamble_reward',pct(1),1);break;
+      case'boss_gamble':effect(id,pct(.3),5);effect('boss_gamble_reward',pct(1),5);break;
       case'last_stand':if(tower)tower.hp=Math.max(1,tower.hp*.5);effect(id,pct(.5),1);break;
     }
     const panel=document.getElementById('perk-choice');panel.classList.remove('visible');panel.innerHTML='';game.paused=false;game.last=performance.now();updateHUD();saveRunCheckpoint(false,false);
