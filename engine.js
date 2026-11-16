@@ -2,6 +2,15 @@
   /** CORE ENGINE & DATA **/
   const SAVE_KEY = "NeonTowerApexSave_FinalVersion";
   const RUN_CHECKPOINT_KEY = "NeonTowerApexRunCheckpoint";
+  function formatMoney(value) {
+    const amount = Math.max(0, Number(value) || 0);
+    if (amount < 1000000) return amount.toLocaleString('en-US', { maximumFractionDigits: 0 });
+    const suffix = amount >= 1e9 ? 'B' : 'M';
+    const scaled = amount / (suffix === 'B' ? 1e9 : 1e6);
+    const digits = scaled < 10 ? 2 : scaled < 100 ? 1 : 0;
+    return scaled.toFixed(digits).replace(/\.?0+$/, '') + suffix;
+  }
+
   const canvas = document.getElementById('gameCanvas'); const ctx = canvas.getContext('2d');
   
   let tower = null; 
@@ -468,7 +477,7 @@
     run.mission = {...missionOptions[Math.floor(Math.random()*missionOptions.length)], progress:0, complete:false};
     document.getElementById('mission-title').textContent = run.mission.title;
     document.getElementById('mission-desc').textContent = run.mission.description;
-    document.getElementById('mission-reward').textContent = '+' + run.mission.reward + ' COINS';
+    document.getElementById('mission-reward').textContent = '+' + formatMoney(run.mission.reward) + ' COINS';
     document.getElementById('mission-progress').textContent = '0 / ' + run.mission.target;
     document.getElementById('mission-fill').style.width = '0%';
     Object.keys(statDefs).forEach(k => run.stats[k]=0);
@@ -511,7 +520,7 @@
     document.getElementById('go-record-kills').innerText = player.bestKills;
     document.getElementById('go-record-time').innerText = formatRunTime(player.bestDuration);
     document.getElementById('go-runs').innerText = player.runsPlayed;
-    document.getElementById('go-coins').innerText = "+"+run.coins+" COINS";
+    document.getElementById('go-coins').innerText = '+' + formatMoney(run.coins) + ' COINS';
     checkAchievements(); saveGame();
     if (typeof submitLeaderboardResult === 'function') submitLeaderboardResult(run);
   }
@@ -579,11 +588,11 @@
       mission.complete = true;
       document.getElementById('mission-ui')?.classList.add('mission-complete');
       run.coins += mission.reward;
-      notify('MISSION COMPLETE', '+' + mission.reward + ' COINS');
+      notify('MISSION COMPLETE', '+' + formatMoney(mission.reward) + ' COINS');
       const title = document.getElementById('mission-title');
       if (title) title.textContent = 'MISSION COMPLETE';
       const reward = document.getElementById('mission-reward');
-      if (reward) reward.textContent = '+' + mission.reward + ' COINS';
+      if (reward) reward.textContent = '+' + formatMoney(mission.reward) + ' COINS';
     }
   }
 
