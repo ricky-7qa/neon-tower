@@ -369,7 +369,8 @@
     game.paused = true;
     const panel = document.getElementById('perk-choice');
     const picks = [...waveDecisionDefs].sort(() => Math.random() - 0.5).slice(0, 3);
-    panel.innerHTML = '<div class="perk-dialog decision-dialog"><span class="perk-eyebrow">WAVE MILESTONE</span><h2>CHOOSE YOUR STRATEGY</h2><p>These choices change the next wave. Some offer greater rewards at a higher risk.</p><div class="decision-wallet"><span>CASH <strong>
+    panel.innerHTML = '<div class="perk-dialog decision-dialog"><span class="perk-eyebrow">WAVE MILESTONE</span><h2>CHOOSE YOUR STRATEGY</h2><p>These choices change the next wave. Some offer greater rewards at a higher risk.</p><div class="decision-wallet"><span>CASH <strong>$' + formatMoney(run.cash || 0) + '</strong></span><span>COINS <strong>' + formatMoney(run.coins || 0) + '</strong></span></div><div class="perk-options decision-options">' +
+      picks.map(d => '<button class="perk-option decision-option" onclick="chooseWaveDecision(\\'' + d.id + '\\')"><span>' + d.icon + '</span><strong>' + d.name + '</strong><small>' + d.desc + '</small></button>').join('') +
       '</div></div>';
     panel.classList.add('visible');
   }
