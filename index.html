@@ -8,7 +8,7 @@
   <!-- Game favicon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' stroke='%230ff' stroke-width='10' fill='none'/><circle cx='50' cy='50' r='15' fill='%23ff3366'/></svg>">
   
-  <link rel="stylesheet" href="style.css?v=20261116-logout-footer2">
+  <link rel="stylesheet" href="style.css?v=20261116-player-stats1">
   <script>
     window.neonAnalyticsQueue = window.neonAnalyticsQueue || [];
     window.neonTrack = function(eventData) {
@@ -136,6 +136,7 @@
         <button class="btn btn-gold" onclick="switchTab('workshop'); closeMenuDrawer()">WORKSHOP</button>
         <button class="btn btn-gold" onclick="switchTab('skills'); closeMenuDrawer()">SKILL TREE</button>
         <button class="btn btn-gold" onclick="switchTab('achievements'); closeMenuDrawer()">ACHIEVEMENTS</button>
+        <button class="btn btn-gold" onclick="switchTab('player-stats'); closeMenuDrawer()">PLAYER STATS</button>
         <button class="btn btn-gold" onclick="switchTab('leaderboard'); closeMenuDrawer()">LEADERBOARD</button>
       </div>
       <div class="menu-footer-actions">
@@ -153,6 +154,13 @@
     <div id="tab-workshop" class="scroll-area"><div class="grid" id="ws-grid"></div></div>
     <div id="tab-skills" class="scroll-area" style="display:none;"><div class="skill-tree" id="skill-tree-container"></div></div>
     <div id="tab-achievements" class="scroll-area" style="display:none;"><div class="grid" id="achv-grid"></div></div>
+    <div id="tab-player-stats" class="scroll-area player-stats-area" style="display:none;">
+      <section class="player-stats-panel">
+        <div class="player-stats-heading"><span class="eyebrow">NEON TOWER // PROFILE</span><h2>PLAYER STATS</h2><p>Your lifetime records and progress across all runs.</p></div>
+        <div id="player-stats-grid" class="player-stats-grid"></div>
+        <p class="player-stats-footnote">Your statistics are saved with your game progress.</p>
+      </section>
+    </div>
     <div id="tab-leaderboard" class="scroll-area leaderboard-area" style="display:none;">
       <section id="leaderboard-auth" class="leaderboard-panel leaderboard-auth-panel">
         <div class="leaderboard-heading"><span class="eyebrow">NEON TOWER // ACCOUNT</span><h2>JOIN THE GLOBAL LEADERBOARD</h2><p>Create a free account to compete with players around the world.</p></div>
@@ -260,6 +268,6 @@
 </script>
 <script src="entidades.js?v=20261115-boss-health-3x"></script>
 <script src="engine.js?v=20261116-cloud-save1"></script>
-<script src="ui.js?v=20261116-display-name-sync1"></script>
+<script src="ui.js?v=20261116-player-stats1"></script>
 </body>
 </html>
