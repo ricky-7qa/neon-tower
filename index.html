@@ -177,10 +177,10 @@
       </section>
       <section id="leaderboard-content" class="leaderboard-panel" style="display:none;">
         <div class="leaderboard-heading"><span class="eyebrow">NEON TOWER // GLOBAL</span><h2>WORLD LEADERBOARD</h2><p>Compete with players around the world.</p></div>
-        <div class="leaderboard-account-bar"><span>SIGNED IN: <strong id="leaderboard-account-email"></strong></span><button type="button" class="btn" onclick="signOutLeaderboard()">LOG OUT</button></div>
         <div class="leaderboard-profile"><label for="leaderboard-name">PLAYER NAME</label><div class="leaderboard-name-row"><input id="leaderboard-name" maxlength="16" minlength="3" placeholder="Enter a player name" autocomplete="nickname"><button class="btn btn-gold" onclick="saveLeaderboardName()">SAVE</button></div><small>3–16 characters. Do not use your real name or personal information.</small></div>
         <div class="leaderboard-toolbar"><span id="leaderboard-status" role="status">CONNECTING...</span><button class="btn" onclick="loadLeaderboard()">REFRESH</button></div>
         <div id="leaderboard-list" class="leaderboard-list"><div class="leaderboard-empty">LOADING GLOBAL RANKINGS...</div></div>
+        <div class="leaderboard-footer-actions"><button type="button" class="btn" onclick="signOutLeaderboard()">LOG OUT</button></div>
       </section>
     </div>
     
