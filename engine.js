@@ -288,7 +288,7 @@
       localStorage.setItem(RUN_CHECKPOINT_KEY, JSON.stringify({
         version: 1,
         run: savedRun,
-        tower: { hp: tower.hp, shield: tower.shield },
+        tower: { hp: tower.hp, shield: tower.shield, tempShieldCharges: tower.tempShieldCharges || 0 },
         pendingPerk: !!pendingPerk,
         pendingDecision: !!pendingDecision
       }));
@@ -670,6 +670,7 @@
     if (checkpoint.tower) {
       tower.hp = Math.max(0, Math.min(tower.maxHp, Number(checkpoint.tower.hp) || tower.maxHp));
       tower.shield = !!checkpoint.tower.shield && hasSkill('shield');
+      tower.tempShieldCharges = Math.max(0, Number(checkpoint.tower.tempShieldCharges) || 0);
     }
     initUpgBar();
     updateGameSpeedButton();
