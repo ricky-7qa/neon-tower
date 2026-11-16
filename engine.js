@@ -406,9 +406,16 @@
     while(pool.length&&picks.length<3){const weights=pool.map(d=>low&&d.category==='DEFENSE'?3.2:1),total=weights.reduce((a,b)=>a+b,0);let roll=Math.random()*total,i=0;for(;i<weights.length-1;i++){roll-=weights[i];if(roll<0)break;}picks.push(pool.splice(i,1)[0]);}
     return picks.map(d=>{const keys=Object.keys(waveDecisionRarities),total=keys.reduce((s,k)=>s+waveDecisionRarities[k].weight,0);let roll=Math.random()*total,rarity='common';for(const k of keys){roll-=waveDecisionRarities[k].weight;if(roll<0){rarity=k;break;}}return{...d,rarity,multiplier:waveDecisionRarities[rarity].multiplier};});
   }
+  function getWaveDecisionDescription(d){
+    if(d.id==='gold_rush')return 'Receive '+Math.floor(75*d.multiplier)+' bonus run coins immediately.';
+    if(d.id==='energy_shield')return 'Gain a temporary shield that blocks '+Math.max(1,Math.round(d.multiplier))+' hit'+(d.multiplier>=1.5?'s':'')+'.';
+    if(d.id==='piercing_shots')return 'Projectiles pierce '+Math.max(1,Math.round(d.multiplier))+' additional enemies for 3 waves.';
+    if(d.id==='investment')return 'Invest 15% of your run coins and receive '+Math.round(30*d.multiplier)+'% extra after 3 waves.';
+    return d.desc.replace(/\d+(?:\.\d+)?%/g,v=>Math.round(parseFloat(v)*d.multiplier*10)/10+'%');
+  }
   function showWaveDecisionChoice(){
     if(!game||!game.running)return;game.paused=true;const panel=document.getElementById('perk-choice'),picks=rollWaveDecisionOptions();run.lastDecisionOptions=picks.map(d=>d.id);
-    panel.innerHTML='<div class="perk-dialog decision-dialog"><span class="perk-eyebrow">WAVE '+(run.wave-1)+' COMPLETED</span><h2>SELECT YOUR ADVANTAGE</h2><p>Choose one upgrade for your next wave. Higher rarities have stronger effects.</p><div class="decision-wallet"><span>CASH <strong>$'+formatMoney(run.cash||0)+'</strong></span><span>COINS <strong>'+formatMoney(run.coins||0)+'</strong></span></div><div class="perk-options decision-options">'+picks.map(d=>'<button class="perk-option decision-option rarity-'+d.rarity+'" onclick="chooseWaveDecision(\''+d.id+'\',\''+d.rarity+'\')"><span>'+d.icon+'</span><strong>'+d.name+'</strong><small class="decision-category">'+d.category+'</small><small class="perk-rarity-label">'+waveDecisionRarities[d.rarity].label+'</small><small>'+d.desc.replace(/\\d+(?:\\.\\d+)?%/g,v=>Math.round(parseFloat(v)*d.multiplier*10)/10+'%')+'</small></button>').join('')+'</div></div>';
+    panel.innerHTML='<div class="perk-dialog decision-dialog"><span class="perk-eyebrow">WAVE '+(run.wave-1)+' COMPLETED</span><h2>SELECT YOUR ADVANTAGE</h2><p>Choose one upgrade for your next wave. Higher rarities have stronger effects.</p><div class="decision-wallet"><span>CASH <strong>$'+formatMoney(run.cash||0)+'</strong></span><span>COINS <strong>'+formatMoney(run.coins||0)+'</strong></span></div><div class="perk-options decision-options">'+picks.map(d=>'<button class="perk-option decision-option rarity-'+d.rarity+'" onclick="chooseWaveDecision(\''+d.id+'\',\''+d.rarity+'\')"><span>'+d.icon+'</span><strong>'+d.name+'</strong><small class="decision-category">'+d.category+'</small><small class="perk-rarity-label">'+waveDecisionRarities[d.rarity].label+'</small><small>'+getWaveDecisionDescription(d)+'</small></button>').join('')+'</div></div>';
     panel.classList.add('visible');
   }
   function chooseWaveDecision(id,rarity='common'){
@@ -425,7 +432,7 @@
       case'second_chance':run.secondChanceCharges=(run.secondChanceCharges||0)+1;break;case'defensive_matrix':effect(id,pct(.25),3);break;
       case'gold_rush':run.coins=(run.coins||0)+Math.floor(75*scale);break;case'double_reward':effect(id,1,1);break;
       case'bounty_hunter':effect(id,pct(.5),3);break;
-      case'investment':{const invested=Math.floor((run.coins||0)*.15);if(invested>0){run.coins-=invested;run.decisionEffects.push({id,value:invested*1.3,remaining:3,payout:Math.floor(invested*1.3),paid:false,rarity});}break;}
+      case'investment':{const invested=Math.floor((run.coins||0)*.15);if(invested>0){run.coins-=invested;run.decisionEffects.push({id,value:invested*(1+.3*scale),remaining:3,payout:Math.floor(invested*(1+.3*scale)),paid:false,rarity});}break;}
       case'treasure_hunt':effect(id,pct(.15),3);break;case'boss_contract':effect(id,pct(.5),5);break;
       case'blood_money':effect(id,pct(.25),1);effect('blood_money_cash',pct(.5),1);break;
       case'chaos_mode':effect(id,pct(.2),1);effect('chaos_cash',pct(.5),1);break;
