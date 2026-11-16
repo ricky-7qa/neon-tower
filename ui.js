@@ -252,8 +252,15 @@
   }
 
   function setLeaderboardSession(session) {
-    leaderboardSession = session && session.user && session.user.email_confirmed_at ? session : null;
+    leaderboardSession = session && session.user ? session : null;
     leaderboardPlayerId = leaderboardSession ? leaderboardSession.user.id : '';
+    if (leaderboardSession) {
+      initializeNeonCloudSave(leaderboardSession);
+    } else {
+      cloudSaveReady = false;
+      cloudSaveUserId = '';
+      if (cloudSaveTimer) { clearTimeout(cloudSaveTimer); cloudSaveTimer = null; }
+    }
     const nameInput = document.getElementById('leaderboard-name');
     if (nameInput && leaderboardSession && !nameInput.value) {
       const savedName = localStorage.getItem(LEADERBOARD_NAME_KEY);
@@ -261,6 +268,78 @@
     }
     const tab = document.getElementById('tab-leaderboard');
     if (tab && tab.style.display !== 'none') showLeaderboardView();
+  }
+
+  let cloudSaveUserId = '';
+  let cloudSaveReady = false;
+  let cloudSaveTimer = null;
+  let cloudSaveWriteQueue = Promise.resolve();
+
+  function scheduleNeonCloudSave() {
+    if (!cloudSaveReady || !leaderboardSession || !leaderboardPlayerId) return;
+    if (cloudSaveTimer) clearTimeout(cloudSaveTimer);
+    cloudSaveTimer = setTimeout(() => {
+      cloudSaveTimer = null;
+      persistNeonCloudSave();
+    }, 900);
+  }
+  window.scheduleNeonCloudSave = scheduleNeonCloudSave;
+
+  function persistNeonCloudSave() {
+    if (!cloudSaveReady || !leaderboardSession || !leaderboardPlayerId || !window.getNeonTowerCloudSave) return;
+    const userId = leaderboardPlayerId;
+    const snapshot = window.getNeonTowerCloudSave();
+    cloudSaveWriteQueue = cloudSaveWriteQueue.then(async () => {
+      if (!leaderboardSession || leaderboardPlayerId !== userId) return;
+      const { error } = await leaderboardClient.from('player_cloud_saves').upsert({
+        user_id: userId,
+        player_data: snapshot.player,
+        run_checkpoint: snapshot.checkpoint,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'user_id' });
+      if (error) throw error;
+    }).catch(error => {
+      console.error('Cloud save failed:', error);
+      if (leaderboardPlayerId === userId) setAuthStatus('CLOUD SAVE COULD NOT SYNC. CHECK YOUR CONNECTION.');
+    });
+  }
+
+  async function initializeNeonCloudSave(session) {
+    const userId = session && session.user ? session.user.id : '';
+    if (!userId || !leaderboardClient || !window.getNeonTowerCloudSave) return;
+    if (cloudSaveUserId === userId && cloudSaveReady) return;
+    cloudSaveUserId = userId;
+    cloudSaveReady = false;
+    if (cloudSaveTimer) { clearTimeout(cloudSaveTimer); cloudSaveTimer = null; }
+    setAuthStatus('SYNCING YOUR CLOUD SAVE...');
+    try {
+      const { data, error } = await leaderboardClient
+        .from('player_cloud_saves')
+        .select('user_id, player_data, run_checkpoint')
+        .eq('user_id', userId)
+        .maybeSingle();
+      if (error) throw error;
+      if (!leaderboardSession || leaderboardPlayerId !== userId) return;
+      if (data) {
+        window.applyNeonTowerCloudSave({ player: data.player_data, checkpoint: data.run_checkpoint });
+      } else {
+        const localSnapshot = window.getNeonTowerCloudSave();
+        const { error: insertError } = await leaderboardClient.from('player_cloud_saves').insert({
+          user_id: userId,
+          player_data: localSnapshot.player,
+          run_checkpoint: localSnapshot.checkpoint,
+          updated_at: new Date().toISOString()
+        });
+        if (insertError) throw insertError;
+      }
+      cloudSaveReady = true;
+      setAuthStatus('CLOUD SAVE SYNCED. YOUR PROGRESS IS LINKED TO THIS ACCOUNT.');
+      if (document.getElementById('tab-leaderboard')?.style.display !== 'none') showLeaderboardView();
+    } catch (error) {
+      console.error('Cloud save initialization failed:', error);
+      cloudSaveReady = false;
+      if (leaderboardPlayerId === userId) setAuthStatus('CLOUD SAVE UNAVAILABLE. PLEASE REFRESH AND TRY AGAIN.');
+    }
   }
 
   function showLeaderboardView() {
@@ -350,20 +429,15 @@
         });
         if (error) throw error;
         if (!data.session) {
-          setAuthStatus('ACCOUNT CREATED. CHECK YOUR EMAIL AND CLICK THE CONFIRMATION LINK, THEN RETURN HERE TO LOG IN.');
+          setAuthStatus('ACCOUNT CREATED, BUT EMAIL CONFIRMATION IS STILL ENABLED. DISABLE IT IN SUPABASE TO LOG IN WITHOUT EMAIL.');
         } else {
-          setAuthStatus('EMAIL CONFIRMED. OPENING LEADERBOARD...');
+          setAuthStatus('ACCOUNT CREATED. OPENING YOUR ACCOUNT...');
           setLeaderboardSession(data.session);
         }
       } else {
         const { data, error } = await leaderboardClient.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        if (!data.user.email_confirmed_at) {
-          setAuthStatus('PLEASE CONFIRM YOUR EMAIL BEFORE LOGGING IN.');
-          await leaderboardClient.auth.signOut();
-          return;
-        }
-        setAuthStatus('LOGGED IN. OPENING LEADERBOARD...');
+        setAuthStatus('LOGGED IN. OPENING YOUR ACCOUNT...');
         setLeaderboardSession(data.session);
       }
     } catch (error) {
