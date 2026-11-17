@@ -569,7 +569,10 @@
   function getCost(k, isW) { const d=statDefs[k]; let l=isW?player.ws[k]:(run.stats[k]||0); return Math.floor(d.c*Math.pow(d.cm, l)); }
   const FREE_UPGRADE_CATEGORIES = ['ATTACK','DEFENSE','UTILITY'];
   function migrateFreeUpgradeChanceProgress() {
-    if (player.freeUpgradeChanceRefundV2) return false;
+    if (player.freeUpgradeChanceRefundV2) {
+      player.freeUpgradeChances = {ATTACK:0,DEFENSE:0,UTILITY:0};
+      return false;
+    }
     const previousLevels = player.freeUpgradeChances || {};
     let refund = 0;
     FREE_UPGRADE_CATEGORIES.forEach(category => {
