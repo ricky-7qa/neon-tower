@@ -2818,3 +2818,41 @@
   color:#e8faff;
   text-shadow:0 0 8px rgba(110,220,255,.35);
 }
+
+
+/* Skill tree: connected progression map */
+#tab-skills { padding:8px 24px 28px; align-items:stretch; }
+#tab-skills .skill-intro { max-width:980px; width:100%; margin:0 auto 18px; }
+.skill-tree-viewport { width:100%; max-width:980px; margin:0 auto; overflow-x:auto; overflow-y:hidden; padding:8px 0 18px; scrollbar-color:rgba(0,220,255,.45) rgba(0,10,24,.7); }
+.skill-tree-map { position:relative; width:920px; height:630px; margin:0 auto; border:1px solid rgba(0,210,255,.2); border-radius:18px; background:radial-gradient(ellipse at 50% 0%,rgba(0,190,255,.13),transparent 55%),linear-gradient(180deg,rgba(4,18,34,.96),rgba(2,7,18,.98)); box-shadow:inset 0 0 65px rgba(0,180,255,.055),0 12px 32px rgba(0,0,0,.35); }
+.skill-branches { position:absolute; inset:0; width:100%; height:100%; overflow:visible; pointer-events:none; }
+.skill-branch { fill:none; stroke:rgba(70,100,125,.55); stroke-width:5; stroke-linecap:round; stroke-linejoin:round; filter:drop-shadow(0 0 3px rgba(0,0,0,.7)); }
+.skill-branch.is-lit { stroke:#00eaff; filter:drop-shadow(0 0 6px rgba(0,235,255,.75)); }
+.skill-node-card { position:absolute; left:var(--node-x); top:var(--node-y); transform:translate(-50%,0); width:178px; min-height:145px; box-sizing:border-box; padding:10px; display:flex; flex-direction:column; gap:7px; border:1px solid rgba(100,130,155,.42); border-radius:13px; background:linear-gradient(145deg,rgba(15,31,49,.98),rgba(3,9,20,.99)); box-shadow:0 8px 20px rgba(0,0,0,.45); z-index:2; transition:border-color .2s,box-shadow .2s,transform .2s; }
+.skill-node-card.is-unlocked { border-color:rgba(0,255,140,.7); box-shadow:0 0 18px rgba(0,255,140,.12),0 8px 20px rgba(0,0,0,.4); }
+.skill-node-card.is-available { border-color:rgba(255,210,70,.75); box-shadow:0 0 17px rgba(255,200,50,.1),0 8px 20px rgba(0,0,0,.4); }
+.skill-node-card.is-locked { opacity:.72; }
+.skill-node-icon { width:30px; height:30px; display:grid; place-items:center; border-radius:9px; color:#70edff; background:rgba(0,210,255,.1); border:1px solid rgba(0,210,255,.3); font-size:18px; }
+.skill-node-card.is-unlocked .skill-node-icon { color:#75ffbd; border-color:rgba(0,255,140,.45); background:rgba(0,255,140,.1); }
+.skill-node-card h3 { margin:0; color:#f2fbff; font-size:12px; letter-spacing:.35px; }
+.skill-node-copy { min-height:60px; }
+.skill-node-copy p { margin:4px 0; color:#a9bdcf; font:10px/1.35 Arial,sans-serif; }
+.skill-node-copy small { color:#6f879c; font:9px Arial,sans-serif; }
+.skill-node-status { color:#8296a8; font-size:8px; font-weight:900; letter-spacing:1.2px; }
+.skill-node-card.is-available .skill-node-status { color:#ffd76a; }
+.skill-node-card.is-unlocked .skill-node-status { color:#65ffb0; }
+.skill-node-footer { display:flex; align-items:center; justify-content:space-between; gap:5px; margin-top:auto; }
+.skill-node-footer strong { color:#c6d7e6; font-size:9px; white-space:nowrap; }
+.skill-node-footer .skill-buy { width:auto; min-width:0; padding:7px 8px; font-size:8px; white-space:nowrap; }
+.skill-node-footer .skill-status { font-size:9px; white-space:nowrap; }
+.skill-tree-legend { display:flex; justify-content:center; gap:22px; max-width:980px; margin:0 auto; padding:8px; color:#91a8bb; font-size:10px; }
+.skill-tree-legend span { display:flex; align-items:center; gap:7px; }
+.legend-dot { width:8px; height:8px; border-radius:50%; background:#657386; }
+.legend-dot.unlocked { background:#37ff9b; box-shadow:0 0 8px #37ff9b; }
+.legend-dot.available { background:#ffd45b; box-shadow:0 0 8px #ffd45b; }
+@media(max-width:600px) {
+ #tab-skills { padding:8px 10px 20px; }
+ .skill-tree-viewport { margin-left:-2px; width:calc(100% + 4px); }
+ .skill-tree-map { margin-left:0; }
+ .skill-tree-legend { gap:12px; font-size:9px; flex-wrap:wrap; }
+}
