@@ -3001,3 +3001,21 @@
     letter-spacing:0;
   }
 }
+
+
+/* Center every label and value inside its fixed HUD indicator. */
+#app .game-topbar .stat-box {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+}
+#app .game-topbar .stat-box .top-label,
+#app .game-topbar .stat-box .stat-val {
+  display:block;
+  width:100%;
+  text-align:center;
+  margin-left:auto;
+  margin-right:auto;
+}
