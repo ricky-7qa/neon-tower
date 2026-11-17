@@ -127,15 +127,15 @@
 
   const skillDefs = {
     start:{id:'start',req:null,cost:0,n:'Core Systems',d:'Unlocks the tower progression network.'},
-    multishot:{id:'multishot',req:'start',cost:100,n:'Multi-Shot Core',d:'Adds a bonus shot to each firing burst.'},
-    missiles:{id:'missiles',req:'multishot',cost:500,n:'Missile System',d:'Launches a homing blast every 2 seconds.'},
-    lasers:{id:'lasers',req:'multishot',cost:650,n:'Laser Array',d:'Fires a piercing beam every 4 seconds.'},
-    shield:{id:'shield',req:'start',cost:200,n:'Energy Shield',d:'Blocks one hit, then recharges.'},
-    thorn:{id:'thorn',req:'shield',cost:400,n:'Reactive Plating',d:'Reflects 50% of collision damage.'},
-    drone:{id:'drone',req:'missiles',cost:900,n:'Support Drone',d:'Fires an extra homing projectile every 3 seconds.'},
-    overdrive:{id:'overdrive',req:'lasers',cost:900,n:'Overdrive',d:'Permanently increases attack speed by 25%.'},
-    vampire:{id:'vampire',req:'shield',cost:750,n:'Nano-Repair',d:'Restores 2% of maximum health after each kill.'},
-    fortify:{id:'fortify',req:'thorn',cost:1000,n:'Fortified Core',d:'Reduces all incoming damage by 10%.'}
+    multishot:{id:'multishot',req:'start',cost:70,n:'Multi-Shot Core',d:'Adds a bonus shot to each firing burst.'},
+    missiles:{id:'missiles',req:'multishot',cost:325,n:'Missile System',d:'Launches a homing blast every 2 seconds.'},
+    lasers:{id:'lasers',req:'multishot',cost:400,n:'Laser Array',d:'Fires a piercing beam every 4 seconds.'},
+    shield:{id:'shield',req:'start',cost:140,n:'Energy Shield',d:'Blocks one hit, then recharges.'},
+    thorn:{id:'thorn',req:'shield',cost:260,n:'Reactive Plating',d:'Reflects 50% of collision damage.'},
+    drone:{id:'drone',req:'missiles',cost:575,n:'Support Drone',d:'Fires an extra homing projectile every 3 seconds.'},
+    overdrive:{id:'overdrive',req:'lasers',cost:575,n:'Overdrive',d:'Permanently increases attack speed by 25%.'},
+    vampire:{id:'vampire',req:'shield',cost:475,n:'Nano-Repair',d:'Restores 2% of maximum health after each kill.'},
+    fortify:{id:'fortify',req:'thorn',cost:650,n:'Fortified Core',d:'Reduces all incoming damage by 10%.'}
   };
 
   const perkRarities = {
