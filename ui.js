@@ -131,16 +131,16 @@
     const container = document.getElementById('skill-tree-container');
     const skills = Object.values(skillDefs);
     const positions = {
-      start:[460,38],
-      multishot:[260,178], shield:[660,178],
-      missiles:[120,345], lasers:[360,345], thorn:[560,345], vampire:[800,345],
-      drone:[120,535], overdrive:[360,535], fortify:[560,535]
+      start:[460,20],
+      multishot:[240,220], shield:[680,220],
+      missiles:[120,420], lasers:[350,420], thorn:[570,420], vampire:[800,420],
+      drone:[120,620], overdrive:[350,620], fortify:[570,620]
     };
     const links = skills.filter(s=>s.req).map(s=>{
       const [x1,y1]=positions[s.req], [x2,y2]=positions[s.id];
       const active=hasSkill(s.req)&&hasSkill(s.id);
-      const midY=(y1+y2)/2;
-      return '<path class="skill-branch '+(active?'is-lit':'')+'" d="M '+x1+' '+(y1+37)+' V '+midY+' H '+x2+' V '+(y2-37)+'"/>';
+      const midY=(y1+160+y2)/2;
+      return '<path class="skill-branch '+(active?'is-lit':'')+'" d="M '+x1+' '+(y1+160)+' V '+midY+' H '+x2+' V '+y2+'"/>';
     }).join('');
     const effects = {
       start:'Unlocks the tower core systems.',
@@ -157,7 +157,7 @@
     const icons={start:'◆',multishot:'⟡',missiles:'➤',lasers:'ϟ',shield:'⬡',thorn:'✧',drone:'◉',overdrive:'⚡',vampire:'✚',fortify:'⬢'};
     container.innerHTML =
       '<div class="skill-intro"><span class="eyebrow">PERMANENT UPGRADES</span><h2>Skill Tree</h2><p>Build your tower by unlocking connected systems. Choose your path and power up each branch.</p><div class="skill-wallet">YOUR COINS: <strong>'+formatMoney(player.coins)+'</strong></div></div>'+
-      '<div class="skill-tree-viewport"><div class="skill-tree-map"><svg class="skill-branches" viewBox="0 0 920 630" aria-hidden="true">'+links+'</svg>'+
+      '<div class="skill-tree-viewport"><div class="skill-tree-map"><svg class="skill-branches" viewBox="0 0 920 800" aria-hidden="true">'+links+'</svg>'+
       skills.map(s=>{
         const unlocked=hasSkill(s.id);
         const available=!unlocked&&(s.req===null||hasSkill(s.req));
