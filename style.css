@@ -2953,3 +2953,29 @@
   #app .game-topbar .topbar-right {gap:4px;}
   #app .game-topbar .topbar-right .game-settings-btn {min-height:31px;padding:5px 6px;}
 }
+
+
+/* Keep each HUD indicator at a stable width as its value changes. */
+#app .game-topbar .topbar-left .stat-box,
+#app .game-topbar .topbar-right .stat-box {
+  box-sizing:border-box;
+  flex-shrink:0;
+}
+#app .game-topbar .topbar-left .stat-box:first-child { width:76px; }
+#app .game-topbar .topbar-left .stat-box:nth-child(2) { width:104px; }
+#app .game-topbar .topbar-right .stat-box:first-child { width:96px; }
+#app .game-topbar .topbar-right .stat-box:nth-child(2) { width:104px; }
+#app .game-topbar .stat-box .stat-val {
+  display:block;
+  width:100%;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:clip;
+  font-variant-numeric:tabular-nums;
+}
+@media (orientation:portrait) and (pointer:coarse) and (max-width:430px) {
+  #app.device-mobile .game-topbar .topbar-left .stat-box:first-child { flex:0 0 43px; width:43px; }
+  #app.device-mobile .game-topbar .topbar-left .stat-box:nth-child(2) { flex:0 0 76px; width:76px; min-width:76px; }
+  #app.device-mobile .game-topbar .topbar-right .stat-box:first-child { flex:0 0 48px; width:48px; }
+  #app.device-mobile .game-topbar .topbar-right .stat-box:nth-child(2) { flex:0 0 62px; width:62px; }
+}
