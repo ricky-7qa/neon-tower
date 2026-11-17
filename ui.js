@@ -129,38 +129,50 @@
 
   function buildSkillTree() {
     const container = document.getElementById('skill-tree-container');
-    container.innerHTML = '<div class="skill-intro"><span class="eyebrow">PERMANENT UPGRADES</span><h2>Skill Tree</h2><p>Choose upgrades for your tower. Check each effect, cost and requirement before buying. Purchases are permanent.</p><div class="skill-wallet">YOUR COINS: <strong>' + formatMoney(player.coins) + '</strong></div></div><div class="skill-grid" id="skill-grid"></div>';
-    const grid = document.getElementById('skill-grid');
-    Object.values(skillDefs).forEach(s => {
-      const unlocked = hasSkill(s.id);
-      const available = !unlocked && (s.req === null || hasSkill(s.req));
-      const locked = !unlocked && !available;
-      const requirement = s.req ? 'Requires: ' + skillDefs[s.req].n : (s.id === 'start' ? 'Starting skill' : 'No requirement');
-      const effect = {
-        start: 'Unlocks the tower core systems.',
-        multishot: 'Improves Multi-Shot projectile guidance and homing speed.',
-        missiles: 'Launches a homing missile about every 2 seconds. It deals area damage.',
-        lasers: 'Fires a piercing laser for 0.5 seconds every 4 seconds.',
-        shield: 'Blocks one hit and recharges after a cooldown.',
-        thorn: 'Reflects 50% of collision damage back to the attacker.',
-        drone: 'Fires an extra homing projectile every 3 seconds.',
-        overdrive: 'Increases attack speed by 25%.',
-        vampire: 'Restores 2% of maximum health after every kill.',
-        fortify: 'Reduces incoming damage by 10%.',
-      }[s.id] || s.d;
-      const status = unlocked ? 'UNLOCKED' : locked ? 'LOCKED' : 'AVAILABLE';
-      const action = unlocked ? '<span class="skill-status done">✓ ' + status + '</span>' :
-        locked ? '<button class="btn skill-buy" disabled>' + status + '</button>' :
-        '<button class="btn btn-gold skill-buy" ' + (player.coins < s.cost ? 'disabled' : '') + ' onclick="buySkill(\'' + s.id + '\')">' + (s.cost === 0 ? 'FREE' : (player.coins < s.cost ? 'NEED ' + formatMoney(s.cost-player.coins) + ' COINS' : 'BUY · ' + formatMoney(s.cost) + ' COINS')) + '</button>';
-      grid.insertAdjacentHTML('beforeend', `<article class="skill-card ${unlocked?'is-unlocked':''} ${locked?'is-locked':''}">
-        <div class="skill-card-top"><span class="skill-icon">${s.id==='start'?'◆':s.id==='multishot'?'⟡':s.id==='missiles'?'➤':s.id==='lasers'?'ϟ':s.id==='shield'?'⬡':s.id==='drone'?'◉':s.id==='overdrive'?'⚡':s.id==='vampire'?'✚':'✧'}</span><span class="skill-status ${unlocked?'done':locked?'locked':'ready'}">${status}</span></div>
-        <h3>${s.n}</h3><p class="skill-description">${effect}</p>
-        <div class="skill-meta"><span>${requirement}</span><strong>${s.cost === 0 ? 'FREE' : s.cost.toLocaleString('en-US') + ' COINS'}</strong></div>
-        ${action}
-      </article>`);
-    });
+    const skills = Object.values(skillDefs);
+    const positions = {
+      start:[460,38],
+      multishot:[260,178], shield:[660,178],
+      missiles:[120,345], lasers:[360,345], thorn:[560,345], vampire:[800,345],
+      drone:[120,535], overdrive:[360,535], fortify:[560,535]
+    };
+    const links = skills.filter(s=>s.req).map(s=>{
+      const [x1,y1]=positions[s.req], [x2,y2]=positions[s.id];
+      const active=hasSkill(s.req)&&hasSkill(s.id);
+      const midY=(y1+y2)/2;
+      return '<path class="skill-branch '+(active?'is-lit':'')+'" d="M '+x1+' '+(y1+37)+' V '+midY+' H '+x2+' V '+(y2-37)+'"/>';
+    }).join('');
+    const effects = {
+      start:'Unlocks the tower core systems.',
+      multishot:'Improves Multi-Shot projectile guidance and homing speed.',
+      missiles:'Launches a homing missile about every 2 seconds. It deals area damage.',
+      lasers:'Fires a piercing laser for 0.5 seconds every 4 seconds.',
+      shield:'Blocks one hit and recharges after a cooldown.',
+      thorn:'Reflects 50% of collision damage back to the attacker.',
+      drone:'Fires an extra homing projectile every 3 seconds.',
+      overdrive:'Increases attack speed by 25%.',
+      vampire:'Restores 2% of maximum health after every kill.',
+      fortify:'Reduces incoming damage by 10%.'
+    };
+    const icons={start:'◆',multishot:'⟡',missiles:'➤',lasers:'ϟ',shield:'⬡',thorn:'✧',drone:'◉',overdrive:'⚡',vampire:'✚',fortify:'⬢'};
+    container.innerHTML =
+      '<div class="skill-intro"><span class="eyebrow">PERMANENT UPGRADES</span><h2>Skill Tree</h2><p>Build your tower by unlocking connected systems. Choose your path and power up each branch.</p><div class="skill-wallet">YOUR COINS: <strong>'+formatMoney(player.coins)+'</strong></div></div>'+
+      '<div class="skill-tree-viewport"><div class="skill-tree-map"><svg class="skill-branches" viewBox="0 0 920 630" aria-hidden="true">'+links+'</svg>'+
+      skills.map(s=>{
+        const unlocked=hasSkill(s.id);
+        const available=!unlocked&&(s.req===null||hasSkill(s.req));
+        const locked=!unlocked&&!available;
+        const [x,y]=positions[s.id];
+        const status=unlocked?'UNLOCKED':locked?'LOCKED':'AVAILABLE';
+        const requirement=s.req?'Requires '+skillDefs[s.req].n:(s.id==='start'?'Starting node':'No requirement');
+        const action=unlocked?'<span class="skill-status done">✓ UNLOCKED</span>':
+          locked?'<button class="btn skill-buy" disabled>LOCKED</button>':
+          '<button class="btn btn-gold skill-buy" '+(player.coins<s.cost?'disabled':'')+' onclick="buySkill(\''+s.id+'\')">'+(s.cost===0?'UNLOCK FREE':player.coins<s.cost?'NEED '+formatMoney(s.cost-player.coins):'UNLOCK · '+formatMoney(s.cost))+'</button>';
+        return '<article class="skill-node-card '+(unlocked?'is-unlocked':'')+' '+(available?'is-available':'')+' '+(locked?'is-locked':'')+'" style="--node-x:'+x+'px;--node-y:'+y+'px">'+
+          '<div class="skill-node-icon">'+icons[s.id]+'</div><div class="skill-node-copy"><span class="skill-node-status">'+status+'</span><h3>'+s.n+'</h3><p>'+effects[s.id]+'</p><small>'+requirement+'</small></div><div class="skill-node-footer"><strong>'+(s.cost===0?'FREE':formatMoney(s.cost)+' COINS')+'</strong>'+action+'</div></article>';
+      }).join('')+'</div></div>'+
+      '<div class="skill-tree-legend"><span><i class="legend-dot unlocked"></i> Unlocked</span><span><i class="legend-dot available"></i> Available</span><span><i class="legend-dot locked"></i> Locked</span></div>';
   }
-
   function buyWs(k) { if (!isVisibleUpgrade(k)) return; let c=getCost(k,true); if(player.coins>=c && (!statDefs[k].max || (player.ws[k]||0)<statDefs[k].max)){player.coins-=c;player.ws[k]=(player.ws[k]||0)+1;saveGame();} }
   function buySpeedControl(level) {
     const currentLevel = Math.max(0, Math.min(3, Number(player.speedControlLevel) || 0));
