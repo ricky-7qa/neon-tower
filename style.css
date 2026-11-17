@@ -3019,3 +3019,48 @@
   margin-left:auto;
   margin-right:auto;
 }
+
+
+/* Mobile mode is playable only in portrait orientation. */
+#mobile-portrait-guard { display:none; }
+@media (orientation:landscape) and (pointer:coarse) {
+  #app.device-mobile #mobile-portrait-guard {
+    position:absolute;
+    inset:0;
+    z-index:10000;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    background:radial-gradient(circle at 50% 35%,rgba(0,65,85,.98),rgba(1,5,14,.99) 72%);
+    text-align:center;
+    pointer-events:auto;
+  }
+  #app.device-mobile #mobile-portrait-guard .portrait-guard-card {
+    width:min(360px,100%);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:14px;
+    padding:28px 22px;
+    border:1px solid rgba(0,230,255,.55);
+    border-radius:18px;
+    background:rgba(2,13,27,.82);
+    box-shadow:0 0 35px rgba(0,210,255,.16);
+  }
+  #app.device-mobile #mobile-portrait-guard .portrait-guard-icon {
+    color:#0ff;
+    font:900 52px/1 Arial,sans-serif;
+    text-shadow:0 0 18px rgba(0,255,255,.6);
+    transform:rotate(-90deg);
+  }
+  #app.device-mobile #mobile-portrait-guard h2 {
+    color:#0ff;
+    font:900 17px/1.3 Orbitron,sans-serif;
+    letter-spacing:1.5px;
+  }
+  #app.device-mobile #mobile-portrait-guard p {
+    color:#c3d5e5;
+    font:14px/1.6 Arial,sans-serif;
+  }
+}
