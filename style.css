@@ -2979,3 +2979,25 @@
   #app.device-mobile .game-topbar .topbar-right .stat-box:first-child { flex:0 0 48px; width:48px; }
   #app.device-mobile .game-topbar .topbar-right .stat-box:nth-child(2) { flex:0 0 62px; width:62px; }
 }
+
+
+/* Give the CASH indicator enough room for six-digit balances. */
+#app .game-topbar .topbar-right .stat-box:nth-child(2) {
+  width:132px;
+  flex:0 0 132px;
+}
+#app .game-topbar .topbar-right .stat-box:nth-child(2) .stat-val {
+  font-size:clamp(12px,1.2vw,17px);
+  letter-spacing:0;
+}
+@media (orientation:portrait) and (pointer:coarse) and (max-width:430px) {
+  #app.device-mobile .game-topbar .topbar-right .stat-box:nth-child(2) {
+    width:92px;
+    min-width:92px;
+    flex:0 0 92px;
+  }
+  #app.device-mobile .game-topbar .topbar-right .stat-box:nth-child(2) .stat-val {
+    font-size:clamp(10px,3.1vw,13px);
+    letter-spacing:0;
+  }
+}
