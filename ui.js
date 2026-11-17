@@ -83,6 +83,26 @@
         </div>`);
       });
       if (category === 'UTILITY') {
+        const chanceDefs = [
+          {category:'ATTACK',name:'ATTACK DROP',description:'Chance to gain one free random Attack upgrade after each wave.',color:'#31dfff'},
+          {category:'DEFENSE',name:'DEFENSE DROP',description:'Chance to gain one free random Defense upgrade after each wave.',color:'#66ff9a'},
+          {category:'UTILITY',name:'UTILITY DROP',description:'Chance to gain one free random Utility upgrade after each wave.',color:'#ffd45c'}
+        ];
+        const chanceGrid = document.createElement('div');
+        chanceGrid.className = 'free-upgrade-chance-grid';
+        chanceGrid.innerHTML = chanceDefs.map(item => {
+          const level = Math.max(0, Math.min(50, Number(player.freeUpgradeChances?.[item.category]) || 0));
+          const maxed = level >= 50;
+          const cost = maxed ? 0 : getFreeUpgradeChanceCost(item.category);
+          return '<article class="free-upgrade-chance-card" style="--chance-accent:'+item.color+'">'+
+            '<div class="free-upgrade-chance-head"><span class="free-upgrade-orb">✦</span><span class="free-upgrade-level">LVL '+level+'/50</span></div>'+
+            '<h3>'+item.name+'</h3><p>'+item.description+'</p>'+
+            '<div class="free-upgrade-chance-value">'+level+'% <small>CHANCE / WAVE</small></div>'+
+            '<div class="free-upgrade-progress"><span style="width:'+(level/50*100)+'%"></span></div>'+
+            '<button class="btn btn-gold free-upgrade-buy" '+(maxed||player.coins<cost?'disabled':'')+' onclick="buyFreeUpgradeChance(\''+item.category+'\')">'+(maxed?'MAX LEVEL':'UPGRADE · $'+formatMoney(cost))+'</button>'+
+          '</article>';
+        }).join('');
+        grid.appendChild(chanceGrid);
         const speedLevel = Math.max(0, Math.min(3, Number(player.speedControlLevel) || 0));
         const craftStartedAt = Number(player.speed3CraftStartedAt) || 0;
         const craftRemaining = craftStartedAt ? Math.max(0, 86400000 - (Date.now() - craftStartedAt)) : 0;
