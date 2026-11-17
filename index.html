@@ -13,7 +13,7 @@
   <!-- Game favicon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' stroke='%230ff' stroke-width='10' fill='none'/><circle cx='50' cy='50' r='15' fill='%23ff3366'/></svg>">
   
-  <link rel="stylesheet" href="style.css?v=20261116-game-settings2">
+  <link rel="stylesheet" href="style.css?v=20261117-settings-position1">
   <script>
     window.neonAnalyticsQueue = window.neonAnalyticsQueue || [];
     window.neonTrack = function(eventData) {
@@ -45,12 +45,12 @@
       <div class="topbar-left">
         <div class="stat-box"><span class="top-label">WAVE</span><span class="stat-val c-cyan" id="hud-wave">1</span></div>
         <div class="stat-box"><span class="top-label">COINS</span><span class="stat-val c-gold" id="hud-coins">$0</span></div>
-        <button id="game-settings-btn" class="game-settings-btn" type="button" onclick="openGameSettings()" aria-label="Open settings">⚙ SETTINGS</button>
         <button id="game-speed-btn" class="game-speed-btn" type="button" onclick="cycleGameSpeed()" style="display:none;">SPEED · 1X</button>
       </div>
       <div class="topbar-right">
         <div class="stat-box"><span class="top-label">ENEMIES</span><span class="stat-val" id="hud-timer">0</span></div>
         <div class="stat-box"><span class="top-label">CASH</span><span class="stat-val c-green" id="hud-cash">$0</span></div>
+        <button id="game-settings-btn" class="game-settings-btn" type="button" onclick="openGameSettings()" aria-label="Open settings">⚙ SETTINGS</button>
       </div>
     </div>
     <div id="game-settings-panel" class="game-settings-panel" role="dialog" aria-modal="true" aria-labelledby="game-settings-title" aria-hidden="true">
