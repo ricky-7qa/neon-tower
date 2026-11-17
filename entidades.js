@@ -29,7 +29,8 @@
       this.shield = hasSkill('shield'); this.shieldCd = 0;
     }
     update(dt) {
-      let baseReg=parseFloat(getVal('regen'))+parseFloat(getVal('nanoMatrix'))+this.maxHp*getWaveDecisionValue('nano_repair'); let reg=baseReg*(1+getPerkValue('repair')/100); if(reg>0 && this.hp<this.maxHp) this.hp = Math.min(this.maxHp, this.hp + reg*dt);
+      if (!game || !game.running || this.hp <= 0) return;
+      let baseReg=parseFloat(getVal('regen'))+parseFloat(getVal('nanoMatrix'))+this.maxHp*getWaveDecisionValue('nano_repair'); let reg=baseReg*(1+getPerkValue('repair')/100); if(reg>0 && this.hp<this.maxHp) this.hp = Math.max(0, Math.min(this.maxHp, this.hp + reg*dt));
       if(this.shieldCd > 0) this.shieldCd -= dt; else if(hasSkill('shield')) this.shield = true;
       
       let range = parseFloat(getVal('range')) * (1+getPerkValue('radar')/100);
@@ -149,10 +150,10 @@
       }
       
       const bw = 80; ctx.fillStyle = "rgba(0,0,0,0.8)"; ctx.fillRect(this.x-bw/2, this.y-this.r-25, bw, 8);
-      ctx.fillStyle = "#0f0"; ctx.fillRect(this.x-bw/2, this.y-this.r-25, bw*(this.hp/this.maxHp), 8);
+      ctx.fillStyle = "#0f0"; ctx.fillRect(this.x-bw/2, this.y-this.r-25, bw*Math.max(0,Math.min(1,this.hp/this.maxHp)), 8);
     }
     hit(dmg, attacker) {
-      if(this.invuln>0)return;
+      if(!game || !game.running || this.hp<=0 || this.invuln>0)return;
       run.combo=0;run.comboTimer=0;
       if(this.tempShieldCharges>0){this.tempShieldCharges--;game.shake=.10;createParts(this.x,this.y,'#55f5dc',18,5);return;}
       if(this.shield) { this.shield = false; this.shieldCd = Math.max(2,10-parseFloat(getVal('shieldRecharge'))); game.shake = 0.10; createParts(this.x, this.y, "#0096ff", 20, 5); return; }
@@ -162,13 +163,14 @@
       reduced*=1-Math.min(60,parseFloat(getVal('bulletGuard'))+parseFloat(getVal('adaptiveArmor')))/100;
       if(attacker && attacker.type==='Boss') reduced*=1-Math.min(50,parseFloat(getVal('bossWard')))/100;
       reduced=Math.max(1,reduced-parseFloat(getVal('armor')));
-      this.hp-=reduced;
+      this.hp=Math.max(0,this.hp-reduced);
       if(this.hp<=0&&(run.secondChanceCharges||0)>0){run.secondChanceCharges--;this.hp=Math.max(1,this.maxHp*(Number(run.secondChanceHeal)||.01));createParts(this.x,this.y,'#ffd166',28,6);return;}
       game.shake=0.14;AudioSys.hit();
       game.ents.txt.push(new FText(this.x, this.y-40, `-${Math.floor(reduced)}`, "#f00", 24));
       
+      // End the run immediately at zero HP, before any secondary effects run.
+      if(this.hp <= 0) { processGameOver(); return; }
       if(hasSkill('thorn') && attacker) { attacker.hit(reduced * 0.5); createParts(this.x, this.y, "#fff", 10, 3); }
-      if(this.hp <= 0) processGameOver();
     }
   }
 
