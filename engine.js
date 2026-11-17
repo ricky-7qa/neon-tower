@@ -621,6 +621,43 @@
     updateHUD();
     return key;
   }
+  function showFreeUpgradeNotice(upgrades) {
+    if (!Array.isArray(upgrades) || !upgrades.length) return;
+    const app = document.getElementById('app');
+    if (!app) return;
+    let notice = document.getElementById('free-upgrade-notice');
+    if (!notice) {
+      notice = document.createElement('div');
+      notice.id = 'free-upgrade-notice';
+      notice.className = 'free-upgrade-notice';
+      notice.setAttribute('aria-live', 'polite');
+      app.appendChild(notice);
+    }
+    const categoryNames = {ATTACK:'ATTACK',DEFENSE:'DEFENSE',UTILITY:'UTILITY'};
+    notice.innerHTML = '';
+    const title = document.createElement('div');
+    title.className = 'free-upgrade-notice-title';
+    title.textContent = 'FREE UPGRADES';
+    notice.appendChild(title);
+    upgrades.forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'free-upgrade-notice-row';
+      const category = document.createElement('span');
+      category.className = 'free-upgrade-notice-category';
+      category.textContent = categoryNames[item.category] || item.category;
+      const divider = document.createElement('span');
+      divider.className = 'free-upgrade-notice-divider';
+      const name = document.createElement('strong');
+      name.textContent = (statDefs[item.key]?.n || item.key) + ' +1';
+      row.append(category, divider, name);
+      notice.appendChild(row);
+    });
+    notice.classList.remove('show');
+    void notice.offsetWidth;
+    notice.classList.add('show');
+    clearTimeout(notice.hideTimer);
+    notice.hideTimer = setTimeout(() => notice.classList.remove('show'), 3200);
+  }
   window.buyFreeUpgradeChance = buyFreeUpgradeChance;
   function hasSkill(id) { return player.skills.includes(id); }
 
@@ -850,7 +887,8 @@
       run.cash+=Math.floor(waveCashReward*(1+getWaveDecisionValue('double_reward'))*(1+getWaveDecisionValue('chaos_cash')));
       updateHUD(); AudioSys.coin(); checkAchievements();
       const completedWave = run.wave - 1;
-      FREE_UPGRADE_CATEGORIES.forEach(category => applyFreeUpgradeChance(category));
+      const freeUpgrades = FREE_UPGRADE_CATEGORIES.map(category => ({category,key:applyFreeUpgradeChance(category)})).filter(item => item.key);
+      if (freeUpgrades.length) showFreeUpgradeNotice(freeUpgrades);
       tickWaveDecisionEffects();
       const perkMilestone = completedWave % 10 === 5;
       const decisionMilestone = completedWave % 10 === 0;
