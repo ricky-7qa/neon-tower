@@ -2785,3 +2785,36 @@
     line-height:1;
   }
 }
+
+
+/* HUD separator: place the divider between the stat row and the settings button. */
+#app .game-topbar {
+  position:relative;
+  border-bottom:0;
+}
+#app .game-topbar::after {
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  top:98px;
+  height:1px;
+  background:rgba(0,220,255,.2);
+  pointer-events:none;
+}
+#app .game-topbar .game-settings-btn {
+  border:1px solid rgba(0,190,255,.62);
+  border-radius:9px;
+  background:linear-gradient(145deg,rgba(3,16,30,.98),rgba(1,7,17,.99));
+  color:#e8faff;
+  box-shadow:0 0 12px rgba(0,170,255,.12),inset 0 0 12px rgba(0,130,210,.08);
+}
+#app .game-topbar .game-settings-btn:active {
+  border-color:#42caff;
+  background:rgba(0,35,60,.98);
+  color:#fff;
+}
+#app.device-mobile .game-topbar .game-settings-btn::after {
+  color:#e8faff;
+  text-shadow:0 0 8px rgba(110,220,255,.35);
+}
