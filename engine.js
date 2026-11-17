@@ -321,6 +321,8 @@
     player = { ...player, ...incoming };
     player.ws = { ...player.ws, ...(incoming.ws || {}) };
     player.freeUpgradeChances = {ATTACK:0,DEFENSE:0,UTILITY:0,...(incoming.freeUpgradeChances || {})};
+    player.freeUpgradeChanceRefundV2 = !!(player.freeUpgradeChanceRefundV2 || incoming.freeUpgradeChanceRefundV2);
+    migrateFreeUpgradeChanceProgress();
     player.skills = Array.isArray(incoming.skills) ? incoming.skills : ['start'];
     player.achievements = Array.isArray(incoming.achievements) ? incoming.achievements : [];
     Object.keys(statDefs).forEach(k => { if (player.ws[k] === undefined) player.ws[k] = 0; });
@@ -338,7 +340,9 @@
     const s = localStorage.getItem(SAVE_KEY); 
     if(s) { try { let p=JSON.parse(atob(s)); player={...player,...p}; player.ws={...player.ws,...(p.ws||{})}; player.freeUpgradeChances={ATTACK:0,DEFENSE:0,UTILITY:0,...(p.freeUpgradeChances||{})}; } catch(err) { console.warn("Invalid save data",err); localStorage.removeItem(SAVE_KEY); } }
     player.freeUpgradeChances = {ATTACK:0,DEFENSE:0,UTILITY:0,...(player.freeUpgradeChances||{})};
+    migrateFreeUpgradeChanceProgress();
     Object.keys(statDefs).forEach(k => { if(player.ws[k]===undefined) player.ws[k]=0; });
+    saveGame();
     updateMenuUI(); buildSkillTree();
   }
   function resetSave() { if(confirm("Delete all progress?")) { localStorage.removeItem(SAVE_KEY); location.reload(); } }
@@ -564,6 +568,21 @@
 
   function getCost(k, isW) { const d=statDefs[k]; let l=isW?player.ws[k]:(run.stats[k]||0); return Math.floor(d.c*Math.pow(d.cm, l)); }
   const FREE_UPGRADE_CATEGORIES = ['ATTACK','DEFENSE','UTILITY'];
+  function migrateFreeUpgradeChanceProgress() {
+    if (player.freeUpgradeChanceRefundV2) return false;
+    const previousLevels = player.freeUpgradeChances || {};
+    let refund = 0;
+    FREE_UPGRADE_CATEGORIES.forEach(category => {
+      const level = Math.max(0, Math.min(50, Number(previousLevels[category]) || 0));
+      for (let boughtLevel = 0; boughtLevel < level; boughtLevel++) {
+        refund += Math.round(100 * Math.pow(20000, boughtLevel / 49));
+      }
+    });
+    player.coins = Math.max(0, Number(player.coins) || 0) + refund;
+    player.freeUpgradeChances = {ATTACK:0,DEFENSE:0,UTILITY:0};
+    player.freeUpgradeChanceRefundV2 = true;
+    return refund > 0;
+  }
   function getFreeUpgradeChanceCost(category) {
     const level = Math.max(0, Math.min(50, Number(player.freeUpgradeChances?.[category]) || 0));
     return Math.round(100 * Math.pow(500, level / 49));
