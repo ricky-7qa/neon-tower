@@ -203,13 +203,23 @@
   }
   function goBackToMenu() {
     if (!game || !game.running) return;
-    const confirmed = window.confirm('RETURN TO THE MAIN MENU? Your current run will be saved and submitted if it qualifies for the leaderboard.');
+    const confirmed = window.confirm('RETURN TO THE MAIN MENU? Your current run will be saved so you can continue it later.');
     if (!confirmed) return;
+    const choicePanel = document.getElementById('perk-choice');
+    const choiceOpen = !!(choicePanel && choicePanel.classList.contains('visible'));
+    const pendingDecision = choiceOpen && !!choicePanel.querySelector('.decision-dialog');
+    const pendingPerk = choiceOpen && !pendingDecision;
+    if (typeof window.saveRunCheckpoint === 'function') {
+      window.saveRunCheckpoint(pendingPerk, pendingDecision);
+    }
+    game.running = false;
     closeGameSettings();
-    processGameOver('voluntary');
+    if (choicePanel) choicePanel.classList.remove('visible');
     document.getElementById('gameover').classList.remove('active-layer');
     document.getElementById('hud').classList.remove('active-hud');
     document.getElementById('menu').classList.add('active-layer');
+    saveGame();
+    if (typeof window.refreshResumeUI === 'function') window.refreshResumeUI();
     updateMenuUI();
   }
   window.openGameSettings = openGameSettings;
