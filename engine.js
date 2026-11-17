@@ -566,7 +566,7 @@
   const FREE_UPGRADE_CATEGORIES = ['ATTACK','DEFENSE','UTILITY'];
   function getFreeUpgradeChanceCost(category) {
     const level = Math.max(0, Math.min(50, Number(player.freeUpgradeChances?.[category]) || 0));
-    return Math.round(100 * Math.pow(20000, level / 49));
+    return Math.round(100 * Math.pow(500, level / 49));
   }
   function buyFreeUpgradeChance(category) {
     if (!FREE_UPGRADE_CATEGORIES.includes(category)) return;
