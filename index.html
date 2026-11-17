@@ -13,7 +13,7 @@
   <!-- Game favicon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' stroke='%230ff' stroke-width='10' fill='none'/><circle cx='50' cy='50' r='15' fill='%23ff3366'/></svg>">
   
-  <link rel="stylesheet" href="style.css?v=20261117-centered-hud-indicators">
+  <link rel="stylesheet" href="style.css?v=20261117-mobile-portrait-only">
   <script>
     window.neonAnalyticsQueue = window.neonAnalyticsQueue || [];
     window.neonTrack = function(eventData) {
@@ -228,6 +228,13 @@
       <p class="mission-profit">PROFIT: <span class="c-gold" id="go-coins">+0 COINS</span></p>
     </div>
     <button class="btn" style="font-size: 20px; padding: 15px 50px;" onclick="returnToMenu()">RETURN TO BASE</button>
+  </div>
+  <div id="mobile-portrait-guard" role="status" aria-live="polite">
+    <div class="portrait-guard-card">
+      <div class="portrait-guard-icon" aria-hidden="true">↻</div>
+      <h2>PORTRAIT MODE ONLY</h2>
+      <p>Please rotate your device vertically to play Neon Tower.</p>
+    </div>
   </div>
   <div id="tutorial" role="dialog" aria-modal="true" aria-labelledby="tutorial-title">
     <div class="tutorial-card">
