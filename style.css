@@ -2856,3 +2856,21 @@
  .skill-tree-map { margin-left:0; }
  .skill-tree-legend { gap:12px; font-size:9px; flex-wrap:wrap; }
 }
+
+
+/* Skill tree layout polish */
+#tab-skills { min-height:0; overflow-y:auto; overflow-x:hidden; padding:18px 24px 26px; gap:0; }
+#tab-skills .skill-intro { max-width:920px; padding:18px 22px; margin:0 auto 16px; border:1px solid rgba(0,220,255,.22); border-radius:14px; background:linear-gradient(120deg,rgba(5,25,43,.96),rgba(3,10,24,.94)); box-shadow:inset 0 0 24px rgba(0,190,255,.045); }
+#tab-skills .skill-intro h2 { font-size:clamp(21px,2.5vw,28px); letter-spacing:1px; }
+#tab-skills .skill-intro p { max-width:620px; }
+.skill-tree-viewport { max-width:920px; padding:4px 0 14px; }
+.skill-tree-map { width:920px; height:800px; margin:0 auto; border-color:rgba(0,210,255,.25); background-image:radial-gradient(circle at 50% 8%,rgba(0,190,255,.14),transparent 34%),linear-gradient(rgba(0,160,220,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(0,160,220,.035) 1px,transparent 1px),linear-gradient(180deg,rgba(4,18,34,.98),rgba(2,7,18,.99)); background-size:auto,32px 32px,32px 32px,auto; }
+.skill-node-card { width:190px; min-height:160px; padding:12px; gap:8px; }
+.skill-node-copy { min-height:66px; }
+.skill-node-copy p { font-size:10.5px; line-height:1.4; }
+.skill-node-card h3 { font-size:12px; line-height:1.3; }
+.skill-node-footer { flex-wrap:wrap; }
+.skill-node-footer .skill-buy { padding:8px 9px; }
+.skill-branch { stroke-width:4; }
+.skill-tree-legend { padding:12px 8px 4px; }
+@media(max-width:600px) { #tab-skills { padding:12px 10px 18px; } #tab-skills .skill-intro { padding:14px; margin-bottom:12px; } .skill-tree-viewport { width:100%; max-width:100%; overflow-x:auto; overflow-y:hidden; padding-bottom:12px; } .skill-tree-map { margin:0; } .skill-tree-legend { justify-content:center; } }
