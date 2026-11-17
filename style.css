@@ -2920,3 +2920,36 @@
 #app .free-upgrade-notice-row strong {min-width:115px;text-align:right;color:#fff;letter-spacing:.45px;}
 @keyframes freeUpgradeNoticeIn {from{opacity:0;transform:translate(-50%,-9px) scale(.98);}to{opacity:1;transform:translate(-50%,0) scale(1);}}
 @media(max-width:700px){#app .free-upgrade-notice{top:clamp(100px,16vh,145px);width:min(330px,calc(100% - 28px));padding:11px 13px 12px;}#app .free-upgrade-notice-row{gap:7px;font-size:10px;}#app .free-upgrade-notice-category{min-width:58px;font-size:8px;}#app .free-upgrade-notice-row strong{min-width:105px;font-size:9px;}}
+
+
+/* Compact wave reward toast in the upper-right; keep settings inline with HUD stats. */
+#app .free-upgrade-notice {
+  position:absolute; z-index:75; top:68px; right:14px; left:auto;
+  width:min(245px,calc(100vw - 28px)); box-sizing:border-box;
+  padding:9px 12px 10px; border:1px solid rgba(70,220,255,.62); border-radius:9px;
+  background:linear-gradient(110deg,rgba(3,16,30,.97),rgba(5,31,48,.96));
+  box-shadow:0 7px 22px rgba(0,0,0,.4),0 0 15px rgba(0,190,255,.14);
+  color:#effcff; opacity:0; visibility:hidden; transform:translateY(-7px);
+  pointer-events:none;
+}
+#app .free-upgrade-notice.show {visibility:visible;animation:freeUpgradeNoticeIn .2s ease-out forwards;}
+#app .free-upgrade-notice-title {text-align:left;color:#65eaff;font:900 9px/1.2 Arial,sans-serif;letter-spacing:1.8px;margin-bottom:6px;}
+#app .free-upgrade-notice-row {display:flex;align-items:center;gap:7px;min-height:18px;font:700 10px/1.25 Arial,sans-serif;}
+#app .free-upgrade-notice-row + .free-upgrade-notice-row {margin-top:3px;}
+#app .free-upgrade-notice-category {min-width:55px;color:#a8dbe8;font-size:8px;letter-spacing:.7px;}
+#app .free-upgrade-notice-divider {flex:1;height:1px;background:linear-gradient(90deg,rgba(75,220,255,.55),rgba(75,220,255,.06));}
+#app .free-upgrade-notice-row strong {min-width:90px;text-align:right;color:#fff;font-size:9px;letter-spacing:.2px;}
+@keyframes freeUpgradeNoticeIn {from{opacity:0;transform:translateY(-7px);}to{opacity:1;transform:translateY(0);}}
+/* Settings shares the same top row as ENEMIES and CASH. */
+#app .game-topbar .topbar-right {display:flex;align-items:center;justify-items:initial;column-gap:8px;row-gap:0;}
+#app .game-topbar .topbar-right .game-settings-btn {grid-column:auto;justify-self:auto;align-self:center;min-height:34px;padding:7px 9px;}
+#app .game-topbar::after {display:none;}
+@media(max-width:700px){
+  #app .free-upgrade-notice {top:calc(57px + env(safe-area-inset-top));right:8px;width:min(205px,calc(100vw - 16px));padding:7px 9px 8px;}
+  #app .free-upgrade-notice-title {font-size:8px;margin-bottom:4px;}
+  #app .free-upgrade-notice-row {gap:5px;min-height:16px;font-size:9px;}
+  #app .free-upgrade-notice-category {min-width:48px;font-size:7px;}
+  #app .free-upgrade-notice-row strong {min-width:80px;font-size:8px;}
+  #app .game-topbar .topbar-right {gap:4px;}
+  #app .game-topbar .topbar-right .game-settings-btn {min-height:31px;padding:5px 6px;}
+}
