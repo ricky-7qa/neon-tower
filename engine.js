@@ -186,7 +186,7 @@
   ];
 
   /** SAVE SYSTEM **/
-  let player = { coins: 0, highestWave: 1, totalKills: 0, bossKills: 0, playTime: 0, runsPlayed: 0, bestKills: 0, bestBosses: 0, bestDuration: 0, ws: {}, speedControlLevel: 0, skills: ['start'], achievements: [], tutorialSeen: false };
+  let player = { coins: 0, highestWave: 1, totalKills: 0, bossKills: 0, playTime: 0, runsPlayed: 0, bestKills: 0, bestBosses: 0, bestDuration: 0, ws: {}, freeUpgradeChances: {ATTACK:0,DEFENSE:0,UTILITY:0}, speedControlLevel: 0, skills: ['start'], achievements: [], tutorialSeen: false };
   let run = {stats:{},cash:0,coins:0,wave:1,kills:0,combo:0,comboTimer:0,graze:0};
   let targetEnemy = null;
   let gameSessionStartedAt = 0;
@@ -320,6 +320,7 @@
     const incoming = snapshot.player;
     player = { ...player, ...incoming };
     player.ws = { ...player.ws, ...(incoming.ws || {}) };
+    player.freeUpgradeChances = {ATTACK:0,DEFENSE:0,UTILITY:0,...(incoming.freeUpgradeChances || {})};
     player.skills = Array.isArray(incoming.skills) ? incoming.skills : ['start'];
     player.achievements = Array.isArray(incoming.achievements) ? incoming.achievements : [];
     Object.keys(statDefs).forEach(k => { if (player.ws[k] === undefined) player.ws[k] = 0; });
@@ -335,7 +336,8 @@
   };
   function loadGame() { 
     const s = localStorage.getItem(SAVE_KEY); 
-    if(s) { try { let p=JSON.parse(atob(s)); player={...player,...p}; player.ws={...player.ws,...(p.ws||{})}; } catch(err) { console.warn("Invalid save data",err); localStorage.removeItem(SAVE_KEY); } }
+    if(s) { try { let p=JSON.parse(atob(s)); player={...player,...p}; player.ws={...player.ws,...(p.ws||{})}; player.freeUpgradeChances={ATTACK:0,DEFENSE:0,UTILITY:0,...(p.freeUpgradeChances||{})}; } catch(err) { console.warn("Invalid save data",err); localStorage.removeItem(SAVE_KEY); } }
+    player.freeUpgradeChances = {ATTACK:0,DEFENSE:0,UTILITY:0,...(player.freeUpgradeChances||{})};
     Object.keys(statDefs).forEach(k => { if(player.ws[k]===undefined) player.ws[k]=0; });
     updateMenuUI(); buildSkillTree();
   }
@@ -561,6 +563,43 @@
   }
 
   function getCost(k, isW) { const d=statDefs[k]; let l=isW?player.ws[k]:(run.stats[k]||0); return Math.floor(d.c*Math.pow(d.cm, l)); }
+  const FREE_UPGRADE_CATEGORIES = ['ATTACK','DEFENSE','UTILITY'];
+  function getFreeUpgradeChanceCost(category) {
+    const level = Math.max(0, Math.min(50, Number(player.freeUpgradeChances?.[category]) || 0));
+    return Math.round(100 * Math.pow(20000, level / 49));
+  }
+  function buyFreeUpgradeChance(category) {
+    if (!FREE_UPGRADE_CATEGORIES.includes(category)) return;
+    player.freeUpgradeChances = {ATTACK:0,DEFENSE:0,UTILITY:0,...(player.freeUpgradeChances||{})};
+    const level = Math.max(0, Math.min(50, Number(player.freeUpgradeChances[category]) || 0));
+    if (level >= 50) return;
+    const cost = getFreeUpgradeChanceCost(category);
+    if (player.coins < cost) return;
+    player.coins -= cost;
+    player.freeUpgradeChances[category] = level + 1;
+    saveGame();
+    AudioSys.coin();
+  }
+  function applyFreeUpgradeChance(category) {
+    const chance = Math.max(0, Math.min(50, Number(player.freeUpgradeChances?.[category]) || 0));
+    if (!chance || Math.random() * 100 >= chance) return null;
+    const eligible = Object.keys(statDefs).filter(key => {
+      const def = statDefs[key];
+      const totalLevel = (player.ws[key] || 0) + (run.stats[key] || 0);
+      return def.category === category && run.wave >= (def.unlockWave || 1) && (!def.max || totalLevel < def.max) && isVisibleUpgrade(key);
+    });
+    if (!eligible.length) return null;
+    const key = eligible[Math.floor(Math.random() * eligible.length)];
+    run.stats[key] = (run.stats[key] || 0) + 1;
+    if (key === 'hp' && tower) {
+      const oldMax = tower.maxHp;
+      tower.maxHp = parseFloat(getVal('hp'));
+      tower.hp += tower.maxHp - oldMax;
+    }
+    updateHUD();
+    return key;
+  }
+  window.buyFreeUpgradeChance = buyFreeUpgradeChance;
   function hasSkill(id) { return player.skills.includes(id); }
 
   function getWaveEnemyCount(wave) {
@@ -789,6 +828,7 @@
       run.cash+=Math.floor(waveCashReward*(1+getWaveDecisionValue('double_reward'))*(1+getWaveDecisionValue('chaos_cash')));
       updateHUD(); AudioSys.coin(); checkAchievements();
       const completedWave = run.wave - 1;
+      FREE_UPGRADE_CATEGORIES.forEach(category => applyFreeUpgradeChance(category));
       tickWaveDecisionEffects();
       const perkMilestone = completedWave % 10 === 5;
       const decisionMilestone = completedWave % 10 === 0;
