@@ -187,7 +187,7 @@
   ];
 
   /** SAVE SYSTEM **/
-  let player = { coins: 0, highestWave: 1, totalKills: 0, bossKills: 0, playTime: 0, runsPlayed: 0, bestKills: 0, bestBosses: 0, bestDuration: 0, ws: {}, freeUpgradeChances: {ATTACK:0,DEFENSE:0,UTILITY:0}, speedControlLevel: 0, skills: ['start'], achievements: [], tutorialSeen: false };
+  let player = { coins: 0, highestWave: 1, totalKills: 0, bossKills: 0, playTime: 0, runsPlayed: 0, bestKills: 0, bestBosses: 0, bestDuration: 0, ws: {}, freeUpgradeChances: {ATTACK:0,DEFENSE:0,UTILITY:0}, speedControlLevel: 0, skills: ['start'], achievements: [], tutorialSeen: false, levelMode: { highestUnlocked: 1, completed: [], claimedRewards: [] } };
   let run = {stats:{},cash:0,coins:0,wave:1,kills:0,combo:0,comboTimer:0,graze:0};
   let targetEnemy = null;
   let gameSessionStartedAt = 0;
@@ -512,7 +512,7 @@
 
   function getVal(k, wsO=false) {
     const d=statDefs[k];
-    const l=(player.ws[k]||0)+(wsO?0:(run.stats[k]||0));
+    const l=(run.mode === 'level' ? 0 : (player.ws[k]||0))+(wsO?0:(run.stats[k]||0));
     let v;
     if(k==='regen'){
       if (l > 0) {
@@ -664,10 +664,16 @@
     hideFreeUpgradeNotice();
   }
   window.buyFreeUpgradeChance = buyFreeUpgradeChance;
-  function hasSkill(id) { return player.skills.includes(id); }
+  function hasSkill(id) { return run.mode === 'level' ? false : player.skills.includes(id); }
 
   function getWaveEnemyCount(wave) {
     const w = Math.max(1, Math.floor(Number(wave) || 1));
+    if (run.mode === 'level') {
+      const cfg = window.NEON_LEVEL_MODE_CONFIG?.difficulty?.enemyCount || {};
+      if (w <= 20) return Math.max(6, Math.round((cfg.earlyBase || 8) + w * (cfg.earlyPerWave || 0.9)));
+      if (w <= 50) return Math.max(8, Math.round((cfg.middleBase || 26) + (w - 20) * (cfg.middlePerWave || 0.5)));
+      return Math.max(10, Math.round((cfg.lateBase || 41) + (w - 50) * (cfg.latePerWave || 0.25)));
+    }
     let count;
     if (w <= 20) count = 9 + Math.floor(w * 1.25);
     else if (w <= 50) count = 34 + Math.floor((w - 20) * 0.7);
@@ -677,19 +683,25 @@
   }
 
   /** MAIN LOOP & RENDERING **/
-  function startGame() {
+  let pendingLevelModeId = null;
+  function startGame(levelId = null) {
+    if (Number.isInteger(Number(levelId)) && Number(levelId) > 0) pendingLevelModeId = Number(levelId);
+    const selectedLevelId = pendingLevelModeId;
     clearRunCheckpoint();
     if (!player.tutorialSeen) {
       document.getElementById('tutorial').classList.add('visible');
       return;
     }
+    pendingLevelModeId = null;
     AudioSys.init();
     resize(); // Recalculate the canvas after the device/layout selection and before starting the run.
     gameSessionStartedAt = Date.now();
     gameDurationTracked = false;
     gameSessionSource = 'site';
     document.getElementById('menu').classList.remove('active-layer'); document.getElementById('hud').classList.add('active-hud');
-    run = { stats: {}, cash: 0, coins: 0, wave: 1, kills: 0, bossKills: 0, elapsed: 0, perks: {} };
+    const levelConfig = selectedLevelId && window.NEON_LEVEL_MODE_CONFIG?.levels?.find(level => level.id === selectedLevelId);
+    run = { stats: {}, cash: 0, coins: 0, wave: 1, kills: 0, bossKills: 0, elapsed: 0, perks: {}, mode: levelConfig ? 'level' : 'infinite', levelId: levelConfig ? levelConfig.id : null };
+    if (levelConfig) run.levelObjectives = levelConfig.objectives.map(objective => ({ ...objective, progress: 0, complete: false }));
     selectedGameSpeed = 1;
     const missionOptions = [
       {id:'waves', title:'REACH WAVE 5', description:'Clear waves until you reach wave 5.', target:5, reward:25},
@@ -697,12 +709,21 @@
       {id:'survive', title:'SURVIVE 2 MINUTES', description:'Stay alive for 120 seconds.', target:120, reward:25}
     ];
     document.getElementById('mission-ui')?.classList.remove('mission-complete', 'mission-hidden-on-resume');
-    run.mission = {...missionOptions[Math.floor(Math.random()*missionOptions.length)], progress:0, complete:false};
-    document.getElementById('mission-title').textContent = run.mission.title;
-    document.getElementById('mission-desc').textContent = run.mission.description;
-    document.getElementById('mission-reward').textContent = '+' + formatMoney(run.mission.reward) + ' COINS';
-    document.getElementById('mission-progress').textContent = '0 / ' + run.mission.target;
-    document.getElementById('mission-fill').style.width = '0%';
+    if (levelConfig) {
+      run.mission = null;
+      document.getElementById('mission-title').textContent = 'LEVEL ' + levelConfig.id + ' OBJECTIVES';
+      document.getElementById('mission-desc').textContent = 'Complete every objective to finish this level.';
+      document.getElementById('mission-reward').textContent = '+' + formatMoney(levelConfig.reward) + ' COINS';
+      document.getElementById('mission-progress').textContent = '0 / ' + run.levelObjectives.length + ' OBJECTIVES';
+      document.getElementById('mission-fill').style.width = '0%';
+    } else {
+      run.mission = {...missionOptions[Math.floor(Math.random()*missionOptions.length)], progress:0, complete:false};
+      document.getElementById('mission-title').textContent = run.mission.title;
+      document.getElementById('mission-desc').textContent = run.mission.description;
+      document.getElementById('mission-reward').textContent = '+' + formatMoney(run.mission.reward) + ' COINS';
+      document.getElementById('mission-progress').textContent = '0 / ' + run.mission.target;
+      document.getElementById('mission-fill').style.width = '0%';
+    }
     Object.keys(statDefs).forEach(k => run.stats[k]=0);
     
     game = { running: true, paused:false, dt: 0, last: performance.now(), shake: 0, playSaveT: 0, achievementCheckT: 0, spawnT: 0.25, toSpawn: 10, ents: { e:[], p:[], b:[], part:[], txt:[] }, cx: canvas.width/2, cy: canvas.height/2 };
@@ -722,6 +743,7 @@
 
   function processGameOver(reason = 'defeat') {
     if(!game || !game.running) return;
+    if (run.mode === 'level') { finishLevelMode(false); return; }
     game.running = false;
     clearRunCheckpoint();
     trackGameDuration('completed');
@@ -735,7 +757,7 @@
     document.getElementById('go-bosses').innerText = run.bossKills || 0;
     document.getElementById('go-time').innerText = formatRunTime(run.elapsed || 0);
     player.coins += run.coins;
-    if(run.wave > player.highestWave) player.highestWave = run.wave;
+    if(run.mode !== 'level' && run.wave > player.highestWave) player.highestWave = run.wave;
     player.runsPlayed = (player.runsPlayed || 0) + 1;
     player.bestKills = Math.max(player.bestKills || 0, run.kills);
     player.bestBosses = Math.max(player.bestBosses || 0, run.bossKills || 0);
@@ -746,7 +768,7 @@
     document.getElementById('go-runs').innerText = player.runsPlayed;
     document.getElementById('go-coins').innerText = '+' + formatMoney(run.coins) + ' COINS';
     checkAchievements(); saveGame();
-    if (typeof submitLeaderboardResult === 'function') submitLeaderboardResult(run);
+    if (run.mode !== 'level' && typeof submitLeaderboardResult === 'function') submitLeaderboardResult(run);
   }
   function resumeRun() {
     let checkpoint = null;
@@ -794,6 +816,77 @@
   }
   window.resumeRun = resumeRun;
 
+  function finishLevelMode(completed) {
+    if (!game || !game.running || run.mode !== 'level') return;
+    game.running = false;
+    clearRunCheckpoint();
+    trackGameDuration('completed');
+    const level = window.NEON_LEVEL_MODE_CONFIG?.levels?.find(item => item.id === run.levelId);
+    const progress = player.levelMode || (player.levelMode = { highestUnlocked: 1, completed: [], claimedRewards: [] });
+    progress.completed = Array.isArray(progress.completed) ? progress.completed : [];
+    progress.claimedRewards = Array.isArray(progress.claimedRewards) ? progress.claimedRewards : [];
+    let reward = 0;
+    if (completed && level) {
+      if (!progress.completed.includes(level.id)) progress.completed.push(level.id);
+      progress.highestUnlocked = Math.max(Number(progress.highestUnlocked) || 1, Math.min(30, level.id + 1));
+      if (!progress.claimedRewards.includes(level.id)) { reward = Math.max(0, Number(level.reward) || 0); progress.claimedRewards.push(level.id); }
+      player.coins += Math.max(0, Number(run.coins) || 0) + reward;
+    }
+    player.runsPlayed = (player.runsPlayed || 0) + 1;
+    player.bestKills = Math.max(player.bestKills || 0, run.kills || 0);
+    player.bestBosses = Math.max(player.bestBosses || 0, run.bossKills || 0);
+    player.bestDuration = Math.max(player.bestDuration || 0, run.elapsed || 0);
+    document.getElementById('hud').classList.remove('active-hud');
+    document.getElementById('gameover').classList.add('active-layer');
+    const title = document.getElementById('gameover-title');
+    if (title) title.textContent = completed ? 'LEVEL COMPLETED!' : 'LEVEL FAILED';
+    const reportTitle = document.getElementById('gameover-report-title');
+    if (reportTitle) reportTitle.textContent = 'LEVEL ' + run.levelId + ' REPORT';
+    document.getElementById('go-wave').innerText = run.wave;
+    document.getElementById('go-kills').innerText = run.kills;
+    document.getElementById('go-bosses').innerText = run.bossKills || 0;
+    document.getElementById('go-time').innerText = formatRunTime(run.elapsed || 0);
+    document.getElementById('go-best').innerText = player.highestWave;
+    document.getElementById('go-record-kills').innerText = player.bestKills;
+    document.getElementById('go-record-time').innerText = formatRunTime(player.bestDuration);
+    document.getElementById('go-runs').innerText = player.runsPlayed;
+    document.getElementById('go-coins').innerText = completed ? '+' + formatMoney(reward + (Number(run.coins) || 0)) + ' COINS' : '+0 COINS';
+    saveGame();
+    const returnButton = document.getElementById('gameover-return-button');
+    if (returnButton) returnButton.setAttribute('onclick', "returnToMenu('levels')");
+  }
+
+  function updateLevelModeProgress() {
+    if (run.mode !== 'level' || !Array.isArray(run.levelObjectives)) return;
+    const objectives = run.levelObjectives;
+    objectives.forEach(objective => {
+      const value = objective.type === 'wave' ? run.wave : objective.type === 'kills' ? run.kills : objective.type === 'bosses' ? (run.bossKills || 0) : Math.floor(run.elapsed || 0);
+      objective.progress = Math.min(objective.target, Math.max(0, value));
+      objective.complete = objective.progress >= objective.target;
+    });
+    const completed = objectives.filter(objective => objective.complete).length;
+    const total = objectives.length;
+    const label = document.getElementById('mission-progress');
+    if (label) label.textContent = completed + ' / ' + total + ' OBJECTIVES';
+    const fill = document.getElementById('mission-fill');
+    if (fill) fill.style.width = (total ? completed / total * 100 : 0) + '%';
+    const description = document.getElementById('mission-desc');
+    if (description) description.textContent = objectives.map(objective => {
+      const prefix = objective.type === 'wave' ? 'REACH WAVE ' : objective.type === 'kills' ? 'ELIMINATE ' : objective.type === 'bosses' ? 'DEFEAT ' : 'SURVIVE ';
+      const suffix = objective.type === 'survive' ? 's' : objective.type === 'kills' ? ' ENEMIES' : objective.type === 'bosses' ? ' BOSSES' : '';
+      return (objective.complete ? '✓ ' : '○ ') + prefix + objective.target + suffix + ' (' + Math.floor(objective.progress) + '/' + objective.target + ')';
+    }).join(' · ');
+    if (completed === total && total > 0) finishLevelMode(true);
+  }
+
+  window.startLevelMode = function(levelId) {
+    const level = window.NEON_LEVEL_MODE_CONFIG?.levels?.find(item => item.id === Number(levelId));
+    const progress = player.levelMode || { highestUnlocked: 1 };
+    if (!level || level.id > (Number(progress.highestUnlocked) || 1)) return;
+    if (!player.tutorialSeen) { pendingLevelModeId = level.id; document.getElementById('tutorial').classList.add('visible'); return; }
+    startGame(level.id);
+  };
+
   function requestEndRun() {
     if (!game || !game.running) return;
     const confirmed = window.confirm('END THIS RUN? Your current score will be saved and submitted if it qualifies for the leaderboard.');
@@ -828,7 +921,7 @@
     tutorial.classList.remove('visible');
     player.tutorialSeen = true;
     saveGame();
-    startGame();
+    startGame(pendingLevelModeId);
   }
 
   function formatRunTime(seconds) {
@@ -836,7 +929,7 @@
     const minutes = Math.floor(total / 60);
     return minutes + ':' + String(total % 60).padStart(2, '0');
   }
-  function returnToMenu() { document.getElementById('gameover').classList.remove('active-layer'); document.getElementById('menu').classList.add('active-layer'); updateMenuUI(); }
+  function returnToMenu(tab = 'workshop') { document.getElementById('gameover').classList.remove('active-layer'); document.getElementById('menu').classList.add('active-layer'); if (typeof switchTab === 'function') switchTab(tab); updateMenuUI(); }
 
   let bgOffset = 0;
   function drawGrid(dt) {
@@ -863,7 +956,8 @@
     player.playTime = (player.playTime || 0) + realDt;
     game.achievementCheckT += game.dt; game.playSaveT += game.dt;
     run.elapsed = (run.elapsed || 0) + realDt;
-    updateMissionProgress();
+    if (run.mode === 'level') updateLevelModeProgress(); else updateMissionProgress();
+    if (!game.running) return;
     if(game.achievementCheckT >= 1) { game.achievementCheckT = 0; checkAchievements(); }
     if(game.playSaveT >= 15) { game.playSaveT = 0; saveGame(); }
 
