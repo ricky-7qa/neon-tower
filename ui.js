@@ -576,6 +576,7 @@
         }, { includeWeekly: false });
       }
       await syncPublicPlayerProfile();
+      if (document.getElementById('tab-profile')?.style.display !== 'none') await loadOwnPublicProfile();
       if (document.getElementById('tab-leaderboard')?.style.display !== 'none') {
         await loadLeaderboard();
       }
@@ -631,8 +632,9 @@
     {id:'neon_legend',name:'NEON LEGEND',unlock:30}
   ];
   function getPlayerCampaignLevel() {
-    return Math.max(1, Math.min(30, Number(player.levelMode?.highestUnlocked) || 1));
+    return Math.max(1, Math.min(30, (Number(player.levelMode?.highestUnlocked) || 1) - 1));
   }
+  let lastPublicProfileSignature = '';
   function getPlayerName() {
     return String(leaderboardSession?.user?.user_metadata?.display_name || localStorage.getItem(LEADERBOARD_NAME_KEY) || ('Pilot-' + String(leaderboardPlayerId || '0000').slice(0,4).toUpperCase())).trim();
   }
@@ -709,8 +711,11 @@
       total_runs:Math.min(10000000,Math.max(0,Math.floor(Number(player.runsPlayed)||0))),
       updated_at:new Date().toISOString()
     };
+    const signature=JSON.stringify({...payload,updated_at:undefined});
+    if(signature===lastPublicProfileSignature) return;
     const {error}=await leaderboardClient.from('player_profiles').upsert(payload,{onConflict:'user_id'});
     if(error) console.error('Public profile sync failed:',error);
+    else lastPublicProfileSignature=signature;
   }
   function renderCustomization() {
     const host=document.getElementById('customization-content');
@@ -924,6 +929,8 @@
         .eq('week_start', getCurrentWeeklyStart());
       if (weeklyNameError) throw weeklyNameError;
       setLeaderboardStatus('PLAYER NAME SAVED TO YOUR ACCOUNT');
+      lastPublicProfileSignature='';
+      await syncPublicPlayerProfile();
       await loadLeaderboard();
     } catch (error) {
       console.error('Leaderboard name update failed:', error);
