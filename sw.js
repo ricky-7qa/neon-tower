@@ -1,9 +1,10 @@
-const CACHE_NAME = "neon-tower-pwa-v1";
+const CACHE_NAME = "neon-tower-pwa-v2";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./style.css",
   "./engine.js",
+  "./level-mode-config.js",
   "./entidades.js",
   "./ui.js",
   "./manifest.webmanifest",
