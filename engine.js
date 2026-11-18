@@ -855,10 +855,10 @@
     document.getElementById('go-record-time').innerText = formatRunTime(player.bestDuration);
     document.getElementById('go-runs').innerText = player.runsPlayed;
     document.getElementById('go-coins').innerText = completed ? '+' + formatMoney(reward + (Number(run.coins) || 0)) + ' COINS' : '+0 COINS';
+    run.mode = 'infinite';
     saveGame();
     const returnButton = document.getElementById('gameover-return-button');
     if (returnButton) returnButton.setAttribute('onclick', "returnToMenu('levels')");
-    run.mode = 'infinite';
   }
 
   function updateLevelModeProgress() {
