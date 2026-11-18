@@ -3284,3 +3284,59 @@
   #gameover.level-mode-success .gameover-level-actions { gap:9px; }
   #gameover.level-mode-success .gameover-level-actions .btn { min-height:52px; font-size:12px !important; padding:12px 10px !important; }
 }
+
+
+/* Public player profiles and cosmetic customization */
+#app .public-profile-area,#app .customization-area{overflow-y:auto;padding:18px}
+#app .public-profile-panel,#app .customization-panel{width:min(900px,100%);margin:0 auto;padding:22px;border:1px solid rgba(0,220,255,.2);border-radius:14px;background:linear-gradient(145deg,rgba(7,20,34,.96),rgba(3,8,17,.98))}
+#app .public-profile-heading{text-align:center;margin:0 auto 20px}
+#app .public-profile-heading .eyebrow{color:#59eaff;font-size:9px;font-weight:900;letter-spacing:2.5px}
+#app .public-profile-heading h2{margin:7px 0;color:#effcff;font-size:clamp(22px,4vw,32px);letter-spacing:2px}
+#app .public-profile-heading p{color:#8ca6b8;font-size:12px}
+#app .profile-search-row{display:flex;gap:8px;margin:0 auto 12px;max-width:620px}
+#app .profile-search-row input{flex:1;min-width:0;padding:12px;border:1px solid rgba(0,220,255,.25);border-radius:8px;background:#06111d;color:#eafaff}
+#app .profile-search-results{display:grid;gap:6px;max-width:620px;margin:0 auto 16px}
+#app .profile-search-result{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px;border:1px solid rgba(0,220,255,.18);border-radius:8px;background:#071523;color:#eafaff;text-align:left}
+#app .profile-search-result span{color:#79a6b9;font-size:9px;white-space:nowrap}
+#app .public-player-profile{max-width:620px;margin:0 auto}
+#app .public-profile-card{overflow:hidden;border:1px solid rgba(0,220,255,.28);border-radius:13px;background:rgba(0,8,17,.85)}
+#app .public-profile-banner{display:flex;align-items:flex-end;min-height:90px;padding:14px 18px;color:#fff;font:900 10px Orbitron,sans-serif;letter-spacing:2px;text-shadow:0 2px 8px #000}
+#app .public-profile-identity{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:16px 18px 8px}
+#app .public-profile-identity strong{font-size:22px;color:#f2fcff;overflow-wrap:anywhere}
+#app .public-profile-identity span{color:#5deaff;font-size:10px;font-weight:900;letter-spacing:1px;text-align:right}
+#app .public-profile-level{padding:8px 18px 16px;color:#8ca6b8;font-size:10px;letter-spacing:1px}
+#app .public-profile-level b{margin-left:7px;color:#ffe16a;font-size:19px}
+#app .public-profile-level small{display:block;margin-top:5px;color:#63d9e8}
+#app .public-profile-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:0 14px 14px}
+#app .public-profile-stats div{display:flex;flex-direction:column;gap:6px;padding:12px;border:1px solid rgba(0,220,255,.13);border-radius:8px;background:#03111c}
+#app .public-profile-stats small{color:#7d9bac;font-size:8px;letter-spacing:1px}
+#app .public-profile-stats b{color:#f2fcff;font-size:19px}
+#app .profile-customize-button{display:block;margin:0 auto 16px}
+#app .leaderboard-profile-link{padding:0;border:0;background:none;color:#eafaff;font:inherit;font-weight:900;text-align:left;cursor:pointer}
+#app .leaderboard-profile-link:hover{color:#5deaff;text-decoration:underline}
+#app .customization-level{text-align:center;color:#5deaff;font-size:10px;font-weight:900;letter-spacing:1.5px;margin-bottom:18px}
+#app .cosmetic-section-title{margin:20px 0 10px;color:#bcefff;font-size:13px;letter-spacing:2px}
+#app .cosmetic-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+#app .cosmetic-card{display:flex;flex-direction:column;gap:8px;min-width:0;padding:11px;border:1px solid rgba(0,220,255,.15);border-radius:9px;background:rgba(1,12,22,.85)}
+#app .cosmetic-card.is-equipped{border-color:#50edff;box-shadow:0 0 15px rgba(0,220,255,.1)}
+#app .cosmetic-preview{height:46px;border-radius:6px;border:1px solid rgba(255,255,255,.15)}
+#app .cosmetic-title-preview{display:flex;align-items:center;justify-content:center;min-height:46px;color:#64eaff;font:900 10px Orbitron,sans-serif;letter-spacing:1px;text-align:center}
+#app .cosmetic-card strong{color:#eafaff;font-size:10px;letter-spacing:1px}
+#app .cosmetic-card small{color:#839eaf;font-size:8px}
+#app .cosmetic-card button{margin-top:auto;padding:8px 6px;font-size:9px}
+@media(max-width:700px){
+ #app .public-profile-area,#app .customization-area{padding:10px}
+ #app .public-profile-panel,#app .customization-panel{padding:14px 10px}
+ #app .public-profile-heading{margin-bottom:14px}
+ #app .profile-search-row input{padding:10px 8px;font-size:11px}
+ #app .profile-search-row .btn{padding:9px 11px;font-size:9px}
+ #app .public-profile-banner{min-height:72px}
+ #app .public-profile-identity{padding:13px 12px 7px}
+ #app .public-profile-identity strong{font-size:18px}
+ #app .public-profile-stats{padding:0 9px 10px;gap:6px}
+ #app .public-profile-stats div{padding:9px}
+ #app .public-profile-stats small{font-size:7px}
+ #app .public-profile-stats b{font-size:16px}
+ #app .cosmetic-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+ #app .cosmetic-card{padding:8px}
+}
