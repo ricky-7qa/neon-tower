@@ -3095,8 +3095,20 @@
 }
 
 
-/* Level Mode campaign */
-#app .level-mode-open-button{margin-top:9px;min-height:42px;width:min(360px,90vw);border:1px solid rgba(0,225,255,.55);background:linear-gradient(110deg,rgba(7,30,48,.96),rgba(4,12,25,.98));color:#aaf7ff;font-weight:900;letter-spacing:1.4px;box-shadow:0 0 18px rgba(0,220,255,.10)}
+/* Level Mode campaign entry and responsive campaign cards */
+#app #menu .level-mode-entry{box-sizing:border-box;width:min(620px,calc(100% - 32px));margin:-3px auto 14px}
+#app #menu .level-mode-open-button{box-sizing:border-box;display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto;align-items:center;gap:3px 12px;width:100%;min-height:66px;padding:11px 16px;border:1px solid rgba(0,225,255,.36);border-radius:11px;background:linear-gradient(110deg,rgba(4,30,45,.96),rgba(3,12,25,.98));color:#b8f8ff;text-align:left;box-shadow:inset 0 0 18px rgba(0,220,255,.035)}
+#app #menu .level-mode-entry-kicker{grid-column:1/-1;color:#55cbd8;font:800 8px/1 Orbitron,sans-serif;letter-spacing:2px}
+#app #menu .level-mode-entry-title{color:#e9fcff;font:900 16px/1.2 Orbitron,sans-serif;letter-spacing:2px}
+#app #menu .level-mode-entry-meta{grid-column:2;grid-row:2;color:#69dce8;font:800 8px/1 Orbitron,sans-serif;letter-spacing:1px;white-space:nowrap}
+#app #menu .level-mode-open-button:hover{border-color:rgba(0,235,255,.7);background:linear-gradient(110deg,rgba(5,43,59,.98),rgba(4,17,34,.99));box-shadow:0 0 20px rgba(0,220,255,.12)}
+@media(max-width:700px){
+  #app #menu .level-mode-entry{width:calc(100% - 28px);margin:-1px auto 9px}
+  #app #menu .level-mode-open-button{min-height:54px;padding:9px 13px;border-radius:9px}
+  #app #menu .level-mode-entry-title{font-size:13px;letter-spacing:1.5px}
+  #app #menu .level-mode-entry-kicker{font-size:7px}
+  #app #menu .level-mode-entry-meta{font-size:7px}
+}
 #app .level-mode-area{width:min(1120px,94vw);max-height:calc(100% - 230px);overflow-y:auto;margin:0 auto 20px}
 #app .level-mode-panel{padding:16px 10px 24px}
 #app .level-mode-heading{text-align:center;margin:0 auto 18px;max-width:680px}
