@@ -601,6 +601,7 @@
     AudioSys.coin();
   }
   function applyFreeUpgradeChance(category) {
+    if (run.mode === 'level') return null;
     const chance = Math.max(0, Math.min(50, Number(player.freeUpgradeChances?.[category]) || 0));
     if (!chance || Math.random() * 100 >= chance) return null;
     const eligible = Object.keys(statDefs).filter(key => {
