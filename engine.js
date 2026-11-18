@@ -278,18 +278,22 @@
     if (typeof window.scheduleNeonCloudSave === 'function') window.scheduleNeonCloudSave();
   }
   function refreshResumeUI() {
+    const infiniteCheckpoint = readRunCheckpoint('infinite');
+    const levelCheckpoint = readRunCheckpoint('level');
+    const infiniteExists = !!(infiniteCheckpoint && infiniteCheckpoint.version === 1 && infiniteCheckpoint.run);
+    const levelExists = !!(levelCheckpoint && levelCheckpoint.version === 1 && levelCheckpoint.run);
     const panel = document.getElementById('resume-run-panel');
+    const levelPanel = document.getElementById('resume-level-panel');
     const startButton = document.getElementById('start-new-run-button');
-    const checkpoint = getLatestRunCheckpoint();
-    const exists = !!(checkpoint && checkpoint.version === 1 && checkpoint.run);
     const primaryAction = document.querySelector('#menu .menu-primary-action');
     if (panel) {
-      panel.style.display = exists ? 'flex' : 'none';
+      panel.style.display = infiniteExists ? 'flex' : 'none';
       const waveLabel = document.getElementById('resume-run-wave');
-      if (waveLabel) waveLabel.textContent = exists ? (checkpoint.run.mode === 'level' ? 'LEVEL ' + checkpoint.run.levelId + ' · ' : '') + 'WAVE ' + checkpoint.run.wave : '';
+      if (waveLabel) waveLabel.textContent = infiniteExists ? 'WAVE ' + infiniteCheckpoint.run.wave : '';
     }
-    if (primaryAction) primaryAction.classList.toggle('has-resume', exists);
-    if (startButton) startButton.textContent = exists ? 'NEW RUN' : 'START INFINITE MODE';
+    if (levelPanel) levelPanel.style.display = levelExists ? 'flex' : 'none';
+    if (primaryAction) primaryAction.classList.toggle('has-resume', infiniteExists);
+    if (startButton) startButton.textContent = infiniteExists ? 'NEW RUN' : 'START INFINITE MODE';
   }
   function saveRunCheckpoint(pendingPerk = false, pendingDecision = false) {
     if (!game || !game.running || !tower) return;
@@ -793,8 +797,8 @@
     if (returnButton) returnButton.setAttribute('onclick', 'returnToMenu()');
     if (run.mode !== 'level' && typeof submitLeaderboardResult === 'function') submitLeaderboardResult(run);
   }
-  function resumeRun() {
-    const checkpoint = getLatestRunCheckpoint();
+  function resumeRun(mode = null) {
+    const checkpoint = readRunCheckpoint(mode || (getLatestRunCheckpoint()?.run?.mode || 'infinite'));
     if (!checkpoint || checkpoint.version !== 1 || !checkpoint.run || !Number.isFinite(Number(checkpoint.run.wave))) {
       clearRunCheckpoint(checkpoint?.run?.mode || 'infinite');
       return;
