@@ -1136,7 +1136,8 @@
   }
   #app.device-mobile #target-ui {
     left:9px;
-    bottom:158px;
+    top:auto !important;
+    bottom:calc(125px + env(safe-area-inset-bottom));
     width:min(46vw,194px);
     padding:9px 10px;
     border:1px solid rgba(255,75,112,.48);
