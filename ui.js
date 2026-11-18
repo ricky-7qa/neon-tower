@@ -507,6 +507,7 @@
       if (leaderboardPlayerId === userId) {
         cloudSavePendingOffline = false;
         setCloudSyncStatus('saved', 'CLOUD SYNCED — ALL PROGRESS SAVED');
+        await syncPublicPlayerProfile();
       }
     }).catch(error => {
       console.error('Cloud save failed:', error);
@@ -574,6 +575,7 @@
           elapsed: player.bestDuration || 0
         }, { includeWeekly: false });
       }
+      await syncPublicPlayerProfile();
       if (document.getElementById('tab-leaderboard')?.style.display !== 'none') {
         await loadLeaderboard();
       }
@@ -609,6 +611,134 @@
     }
   }
 
+
+
+  const PROFILE_BANNERS = [
+    {id:'default',name:'DEFAULT',unlock:0,style:'linear-gradient(110deg,#102b3c,#07121e)'},
+    {id:'blue',name:'BLUE',unlock:5,style:'linear-gradient(110deg,#063b83,#071b45,#1d9bff)'},
+    {id:'bronze',name:'BRONZE',unlock:10,style:'linear-gradient(110deg,#59351c,#b87537,#3a2115)'},
+    {id:'purple',name:'PURPLE',unlock:15,style:'linear-gradient(110deg,#32105e,#8d45d4,#210d43)'},
+    {id:'silver',name:'SILVER',unlock:20,style:'linear-gradient(110deg,#465466,#d7e1eb,#657487)'},
+    {id:'red',name:'RED',unlock:25,style:'linear-gradient(110deg,#641a25,#e83d50,#3c101b)'},
+    {id:'legendary_gold',name:'LEGENDARY GOLD',unlock:30,style:'linear-gradient(110deg,#68460a,#ffd75b,#8c5d08)'}
+  ];
+  const PROFILE_TITLES = [
+    {id:'none',name:'NO TITLE',unlock:0},
+    {id:'survivor',name:'SURVIVOR',unlock:10},
+    {id:'veteran',name:'VETERAN',unlock:15},
+    {id:'elite',name:'ELITE',unlock:20},
+    {id:'master',name:'MASTER',unlock:25},
+    {id:'neon_legend',name:'NEON LEGEND',unlock:30}
+  ];
+  function getPlayerCampaignLevel() {
+    return Math.max(1, Math.min(30, Number(player.levelMode?.highestUnlocked) || 1));
+  }
+  function getPlayerName() {
+    return String(leaderboardSession?.user?.user_metadata?.display_name || localStorage.getItem(LEADERBOARD_NAME_KEY) || ('Pilot-' + String(leaderboardPlayerId || '0000').slice(0,4).toUpperCase())).trim();
+  }
+  function renderProfileCard(profile, isOwn = false) {
+    const host = document.getElementById('public-player-profile');
+    if (!host) return;
+    if (!profile) { host.innerHTML = '<div class="leaderboard-empty">PLAYER PROFILE NOT FOUND. THIS PLAYER MAY NOT HAVE CREATED A PROFILE YET.</div>'; return; }
+    const banner = PROFILE_BANNERS.find(item => item.id === profile.banner_id) || PROFILE_BANNERS[0];
+    const title = PROFILE_TITLES.find(item => item.id === profile.title_id) || PROFILE_TITLES[0];
+    const esc = escapeLeaderboardText;
+    const started = profile.started_at ? new Date(profile.started_at).toLocaleDateString('en-GB') : '—';
+    host.innerHTML = '<article class="public-profile-card">' +
+      '<div class="public-profile-banner" style="background:'+banner.style+'"><span>'+esc(banner.name)+' BANNER</span></div>' +
+      '<div class="public-profile-identity"><strong>'+esc(profile.player_name)+'</strong><span>'+esc(title.name)+'</span></div>' +
+      '<div class="public-profile-level">PLAYER LEVEL <b>'+Number(profile.player_level || 1)+'</b><small>'+Number(profile.levels_completed || 0)+'/30 LEVELS COMPLETED</small></div>' +
+      '<div class="public-profile-stats">' +
+      '<div><small>BEST INFINITE WAVE</small><b>'+Number(profile.best_infinite_wave || 1).toLocaleString('en-US')+'</b></div>' +
+      '<div><small>TOTAL ENEMIES KILLED</small><b>'+Number(profile.total_kills || 0).toLocaleString('en-US')+'</b></div>' +
+      '<div><small>TOTAL RUNS</small><b>'+Number(profile.total_runs || 0).toLocaleString('en-US')+'</b></div>' +
+      '<div><small>PLAYER SINCE</small><b>'+esc(started)+'</b></div></div>' +
+      (isOwn ? '<button class="btn btn-gold profile-customize-button" onclick="switchTab(\'customization\')">CUSTOMIZE PROFILE</button>' : '') +
+      '</article>';
+  }
+  async function loadOwnPublicProfile() {
+    const host = document.getElementById('public-player-profile');
+    if (!host) return;
+    if (!leaderboardClient || !leaderboardSession) {
+      host.innerHTML = '<div class="leaderboard-empty">LOG IN THROUGH THE LEADERBOARD TO CREATE AND VIEW YOUR PUBLIC PROFILE.</div>';
+      return;
+    }
+    host.innerHTML = '<div class="leaderboard-empty">LOADING YOUR PROFILE...</div>';
+    await syncPublicPlayerProfile();
+    const {data,error} = await leaderboardClient.from('player_profiles').select('*').eq('user_id',leaderboardPlayerId).maybeSingle();
+    if (error) { console.error('Own profile load failed:',error); host.innerHTML='<div class="leaderboard-empty">PROFILE COULD NOT BE LOADED. TRY AGAIN.</div>'; return; }
+    renderProfileCard(data,true);
+  }
+  async function searchPlayerProfiles() {
+    const input = document.getElementById('player-profile-search');
+    const results = document.getElementById('player-profile-search-results');
+    const term = String(input?.value || '').trim();
+    if (!results) return;
+    if (term.length < 3) { results.innerHTML='<div class="leaderboard-empty">ENTER AT LEAST 3 CHARACTERS.</div>'; return; }
+    if (!leaderboardClient) { results.innerHTML='<div class="leaderboard-empty">PLAYER SEARCH IS UNAVAILABLE.</div>'; return; }
+    results.innerHTML='<div class="leaderboard-empty">SEARCHING...</div>';
+    const {data,error}=await leaderboardClient.from('player_profiles').select('user_id,player_name,player_level,title_id,banner_id,best_infinite_wave,total_kills').ilike('player_name','%'+term.replace(/[%,_]/g,'')+'%').order('player_level',{ascending:false}).limit(15);
+    if(error){console.error('Profile search failed:',error);results.innerHTML='<div class="leaderboard-empty">SEARCH FAILED. PLEASE TRY AGAIN.</div>';return;}
+    if(!data?.length){results.innerHTML='<div class="leaderboard-empty">NO PLAYERS FOUND.</div>';return;}
+    results.innerHTML=data.map(p=>'<button class="profile-search-result" onclick="openPlayerProfile(\''+p.user_id+'\')"><strong>'+escapeLeaderboardText(p.player_name)+'</strong><span>LEVEL '+Number(p.player_level||1)+' · WAVE '+Number(p.best_infinite_wave||1)+'</span></button>').join('');
+  }
+  async function openPlayerProfile(userId) {
+    if(!/^[0-9a-f-]{36}$/i.test(String(userId))) return;
+    switchTab('profile');
+    const host=document.getElementById('public-player-profile');
+    const results=document.getElementById('player-profile-search-results');
+    if(results) results.innerHTML='';
+    if(host) host.innerHTML='<div class="leaderboard-empty">LOADING PLAYER PROFILE...</div>';
+    const {data,error}=await leaderboardClient.from('player_profiles').select('*').eq('user_id',userId).maybeSingle();
+    if(error){console.error('Player profile load failed:',error);if(host)host.innerHTML='<div class="leaderboard-empty">PROFILE COULD NOT BE LOADED.</div>';return;}
+    renderProfileCard(data,userId===leaderboardPlayerId);
+  }
+  async function syncPublicPlayerProfile() {
+    if(!leaderboardClient || !leaderboardSession || !leaderboardPlayerId || !cloudSaveReady) return;
+    const progress=player.levelMode || {};
+    const completed=Array.isArray(progress.completed)?progress.completed:[];
+    const payload={
+      user_id:leaderboardPlayerId,
+      player_name:getPlayerName(),
+      banner_id:PROFILE_BANNERS.some(x=>x.id===player.bannerId)?player.bannerId:'default',
+      title_id:PROFILE_TITLES.some(x=>x.id===player.titleId)?player.titleId:'none',
+      player_level:getPlayerCampaignLevel(),
+      levels_completed:Math.min(30,new Set(completed).size),
+      best_infinite_wave:Math.max(1,Number(player.highestWave)||1),
+      total_kills:Math.min(1000000000,Math.max(0,Math.floor(Number(player.totalKills)||0))),
+      total_runs:Math.min(10000000,Math.max(0,Math.floor(Number(player.runsPlayed)||0))),
+      updated_at:new Date().toISOString()
+    };
+    const {error}=await leaderboardClient.from('player_profiles').upsert(payload,{onConflict:'user_id'});
+    if(error) console.error('Public profile sync failed:',error);
+  }
+  function renderCustomization() {
+    const host=document.getElementById('customization-content');
+    if(!host)return;
+    const level=getPlayerCampaignLevel();
+    const bannerCards=PROFILE_BANNERS.map(item=>{
+      const unlocked=level>=item.unlock, equipped=(player.bannerId||'default')===item.id;
+      return '<article class="cosmetic-card '+(equipped?'is-equipped':'')+'"><div class="cosmetic-preview" style="background:'+item.style+'"></div><strong>'+item.name+'</strong><small>'+(item.unlock?'UNLOCK AT LEVEL '+item.unlock:'AVAILABLE')+'</small><button class="btn" '+(!unlocked||equipped?'disabled':'')+' onclick="equipProfileCosmetic(\'banner\',\''+item.id+'\')">'+(equipped?'EQUIPPED':unlocked?'EQUIP':'LOCKED')+'</button></article>';
+    }).join('');
+    const titleCards=PROFILE_TITLES.map(item=>{
+      const unlocked=level>=item.unlock, equipped=(player.titleId||'none')===item.id;
+      return '<article class="cosmetic-card '+(equipped?'is-equipped':'')+'"><div class="cosmetic-title-preview">'+item.name+'</div><strong>'+item.name+'</strong><small>'+(item.unlock?'UNLOCK AT LEVEL '+item.unlock:'AVAILABLE')+'</small><button class="btn" '+(!unlocked||equipped?'disabled':'')+' onclick="equipProfileCosmetic(\'title\',\''+item.id+'\')">'+(equipped?'EQUIPPED':unlocked?'EQUIP':'LOCKED')+'</button></article>';
+    }).join('');
+    host.innerHTML='<div class="customization-level">CAMPAIGN LEVEL '+level+' · '+(player.levelMode?.completed||[]).length+'/30 COMPLETED</div><h3 class="cosmetic-section-title">BANNERS</h3><div class="cosmetic-grid">'+bannerCards+'</div><h3 class="cosmetic-section-title">TITLES</h3><div class="cosmetic-grid">'+titleCards+'</div>';
+  }
+  async function equipProfileCosmetic(type,id) {
+    const item=(type==='banner'?PROFILE_BANNERS:PROFILE_TITLES).find(x=>x.id===id);
+    if(!item || getPlayerCampaignLevel()<item.unlock) return;
+    if(type==='banner') player.bannerId=id; else player.titleId=id;
+    saveGame();
+    renderCustomization();
+    await syncPublicPlayerProfile();
+    if(document.getElementById('tab-profile')?.style.display!=='none') loadOwnPublicProfile();
+  }
+  window.searchPlayerProfiles=searchPlayerProfiles;
+  window.openPlayerProfile=openPlayerProfile;
+  window.equipProfileCosmetic=equipProfileCosmetic;
+
   function renderLevelMode() {
     const grid = document.getElementById('level-mode-grid');
     if (!grid || !window.NEON_LEVEL_MODE_CONFIG) return;
@@ -628,13 +758,15 @@
   }
 
   function switchTab(t) {
-    ['workshop', 'skills', 'achievements', 'player-stats', 'leaderboard', 'levels'].forEach(x => {
+    ['workshop', 'skills', 'achievements', 'player-stats', 'profile', 'customization', 'leaderboard', 'levels'].forEach(x => {
       const tab = document.getElementById('tab-'+x);
       tab.style.display = (x===t?'flex':'none');
       if (x===t) tab.scrollTop = 0;
     });
     if (t==='skills') buildSkillTree();
     if (t==='leaderboard') showLeaderboardView();
+    if (t==='profile') loadOwnPublicProfile();
+    if (t==='customization') renderCustomization();
     if (t==='levels') renderLevelMode();
   }
 
@@ -838,7 +970,7 @@
       const own = entry.player_id === leaderboardPlayerId;
       return '<article class="leaderboard-row ' + (own ? 'is-you' : '') + '">' +
         '<span class="leaderboard-rank">' + (isWeekly && index === 0 ? '🥇' : isWeekly && index === 1 ? '🥈' : isWeekly && index === 2 ? '🥉' : '#' + (index + 1)) + '</span>' +
-        '<span class="leaderboard-player"><strong>' + escapeLeaderboardText(entry.player_name) + (own ? ' <small>YOU</small>' : '') + '</strong><small>WAVE ' + entry.best_wave + ' · ' + Number(entry.best_kills || 0).toLocaleString('en-US') + ' KILLS</small></span>' +
+        '<span class="leaderboard-player"><button class="leaderboard-profile-link" onclick="openPlayerProfile(\'' + entry.player_id + '\')">' + escapeLeaderboardText(entry.player_name) + (own ? ' <small>YOU</small>' : '') + '</button><small>WAVE ' + entry.best_wave + ' · ' + Number(entry.best_kills || 0).toLocaleString('en-US') + ' KILLS</small></span>' +
         '<span class="leaderboard-result"><strong>' + entry.best_wave + '</strong><small>WAVE</small></span>' +
         '<span class="leaderboard-result"><strong>' + Number(entry.best_kills || 0).toLocaleString('en-US') + '</strong><small>KILLS</small></span>' +
         '</article>';
