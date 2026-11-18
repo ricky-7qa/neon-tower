@@ -3237,3 +3237,50 @@
   #app #menu > .level-mode-entry > #open-level-mode-button { min-height:72px !important; padding-left:13px !important; }
   #app #menu .level-mode-entry-title { font-size:14px !important; }
 }
+
+
+/* Minimal Level Mode completion screen */
+#gameover.level-mode-success { gap:18px !important; padding:24px 18px !important; }
+#gameover.level-mode-success #gameover-title {
+  max-width:100%;
+  margin:0 0 2px !important;
+  text-align:center;
+  font-size:clamp(30px,7vw,58px) !important;
+  line-height:1.15;
+  letter-spacing:1px;
+}
+#gameover.level-mode-success > div {
+  width:min(520px,calc(100% - 12px));
+  box-sizing:border-box;
+  margin:0 auto !important;
+  padding:22px 18px !important;
+  border:1px solid rgba(0,255,220,.42) !important;
+  border-radius:15px !important;
+  background:linear-gradient(145deg,rgba(2,25,32,.96),rgba(0,8,17,.98)) !important;
+  box-shadow:0 0 28px rgba(0,235,210,.09),inset 0 0 24px rgba(0,235,210,.035) !important;
+}
+#gameover.level-mode-success #gameover-report-title { margin:0 0 12px !important; color:#8ca9b8 !important; font-size:12px; letter-spacing:3px; }
+#gameover.level-mode-success .mission-stats { display:none !important; }
+#gameover.level-mode-success .mission-profit { margin:0 !important; font-size:clamp(18px,4vw,25px) !important; }
+#gameover .gameover-level-actions { display:none; gap:12px; justify-content:center; flex-wrap:wrap; }
+#gameover.level-mode-success .gameover-level-actions { display:flex; width:min(520px,calc(100% - 12px)); margin:0 auto; }
+#gameover.level-mode-success .gameover-level-actions .btn {
+  flex:1 1 145px;
+  min-height:54px;
+  padding:13px 18px !important;
+  border:1px solid #08eaff;
+  border-radius:10px;
+  background:linear-gradient(120deg,rgba(0,57,68,.95),rgba(0,17,30,.98));
+  color:#43f5ff;
+  font-size:14px !important;
+  font-weight:900;
+  letter-spacing:1.5px;
+  box-shadow:0 0 16px rgba(0,225,255,.1);
+}
+#gameover.level-mode-success #gameover-next-level-button { border-color:#55ffb0; color:#55ffb0; }
+@media(max-width:700px) {
+  #gameover.level-mode-success { gap:16px !important; padding:20px 8px !important; }
+  #gameover.level-mode-success > div { padding:20px 14px !important; }
+  #gameover.level-mode-success .gameover-level-actions { gap:9px; }
+  #gameover.level-mode-success .gameover-level-actions .btn { min-height:52px; font-size:12px !important; padding:12px 10px !important; }
+}
