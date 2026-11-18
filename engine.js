@@ -208,6 +208,7 @@
     return false;
   }
   function getUnlockedGameSpeeds() {
+    if (run.mode === 'level') return [1];
     completeSpeed3Fabrication();
     const level = Math.max(0, Math.min(3, Number(player.speedControlLevel) || 0));
     return [1, ...(level >= 1 ? [1.5] : []), ...(level >= 2 ? [2] : []), ...(level >= 3 ? [3] : [])];
@@ -216,7 +217,7 @@
     return !!(game && game.ents && game.ents.e && game.ents.e.some(enemy => enemy.type === 'Boss' && enemy.hp > 0));
   }
   function getEffectiveGameSpeed() {
-    return isBossSpeedLockActive() ? 1 : selectedGameSpeed;
+    return run.mode === 'level' || isBossSpeedLockActive() ? 1 : selectedGameSpeed;
   }
   function updateGameSpeedButton() {
     const button = document.getElementById('game-speed-btn');
@@ -769,7 +770,9 @@
     document.getElementById('go-runs').innerText = player.runsPlayed;
     document.getElementById('go-coins').innerText = '+' + formatMoney(run.coins) + ' COINS';
     checkAchievements(); saveGame();
-    if (run.mode !== 'level' && typeof submitLeaderboardResult === 'function') submitLeaderboardResult(run);
+    const returnButton = document.getElementById('gameover-return-button');
+    if (returnButton) returnButton.setAttribute('onclick', 'returnToMenu()');
+    if (typeof submitLeaderboardResult === 'function') submitLeaderboardResult(run);
   }
   function resumeRun() {
     let checkpoint = null;
@@ -840,7 +843,7 @@
     document.getElementById('hud').classList.remove('active-hud');
     document.getElementById('gameover').classList.add('active-layer');
     const title = document.getElementById('gameover-title');
-    if (title) title.textContent = completed ? 'LEVEL COMPLETED!' : 'LEVEL FAILED';
+    if (title) { title.textContent = completed ? 'LEVEL COMPLETED!' : 'LEVEL FAILED'; title.style.color = completed ? '#55ffb0' : '#ff3366'; title.style.textShadow = completed ? '0 0 40px rgba(85,255,176,.75)' : '0 0 40px #ff3366'; }
     const reportTitle = document.getElementById('gameover-report-title');
     if (reportTitle) reportTitle.textContent = 'LEVEL ' + run.levelId + ' REPORT';
     document.getElementById('go-wave').innerText = run.wave;
