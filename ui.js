@@ -66,6 +66,7 @@
 
   function updateMenuUI() {
     if (typeof completeSpeed3Fabrication === 'function') completeSpeed3Fabrication();
+    renderLevelMode();
     document.getElementById('menu-coins').innerText = '$' + formatMoney(player.coins);
     document.getElementById('menu-wave').innerText = player.highestWave;
     renderPlayerStats();
@@ -603,14 +604,33 @@
     }
   }
 
+  function renderLevelMode() {
+    const grid = document.getElementById('level-mode-grid');
+    if (!grid || !window.NEON_LEVEL_MODE_CONFIG) return;
+    const progress = player.levelMode || { highestUnlocked: 1, completed: [] };
+    const unlocked = Math.max(1, Number(progress.highestUnlocked) || 1);
+    const completed = new Set(Array.isArray(progress.completed) ? progress.completed : []);
+    grid.innerHTML = window.NEON_LEVEL_MODE_CONFIG.levels.map(level => {
+      const locked = level.id > unlocked, done = completed.has(level.id);
+      const objectives = level.objectives.map(objective => {
+        const label = objective.type === 'wave' ? 'REACH WAVE ' + objective.target : objective.type === 'kills' ? 'ELIMINATE ' + objective.target + ' ENEMIES' : objective.type === 'bosses' ? 'DEFEAT ' + objective.target + ' BOSSES' : 'SURVIVE ' + Math.floor(objective.target / 60) + ' MIN';
+        return '<span>' + label + '</span>';
+      }).join('');
+      return '<article class="level-card ' + (locked ? 'is-locked' : done ? 'is-completed' : 'is-unlocked') + '"><div class="level-card-head"><strong>LEVEL ' + level.id + '</strong><span>' + (locked ? 'LOCKED' : done ? 'COMPLETED' : 'UNLOCKED') + '</span></div><div class="level-card-objectives">' + objectives + '</div><div class="level-card-reward">REWARD · ' + formatMoney(level.reward) + ' COINS</div><button class="btn ' + (locked ? '' : 'btn-gold') + '" ' + (locked ? 'disabled' : '') + ' onclick="startLevelMode(' + level.id + ')">' + (locked ? 'LOCKED' : done ? 'REPLAY LEVEL' : 'PLAY LEVEL') + '</button></article>';
+    }).join('');
+    const summary = document.getElementById('level-mode-progress');
+    if (summary) summary.textContent = completed.size + ' / 30 LEVELS COMPLETED';
+  }
+
   function switchTab(t) {
-    ['workshop', 'skills', 'achievements', 'player-stats', 'leaderboard'].forEach(x => {
+    ['workshop', 'skills', 'achievements', 'player-stats', 'leaderboard', 'levels'].forEach(x => {
       const tab = document.getElementById('tab-'+x);
       tab.style.display = (x===t?'flex':'none');
       if (x===t) tab.scrollTop = 0;
     });
     if (t==='skills') buildSkillTree();
     if (t==='leaderboard') showLeaderboardView();
+    if (t==='levels') renderLevelMode();
   }
 
   function setLeaderboardStatus(message) {
