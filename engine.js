@@ -195,7 +195,7 @@
   ];
 
   /** SAVE SYSTEM **/
-  let player = { coins: 0, highestWave: 1, totalKills: 0, bossKills: 0, playTime: 0, runsPlayed: 0, bestKills: 0, bestBosses: 0, bestDuration: 0, ws: {}, freeUpgradeChances: {ATTACK:0,DEFENSE:0,UTILITY:0}, speedControlLevel: 0, skills: ['start'], achievements: [], tutorialSeen: false, levelMode: { highestUnlocked: 1, completed: [], claimedRewards: [] } };
+  let player = { coins: 0, highestWave: 1, totalKills: 0, bossKills: 0, playTime: 0, runsPlayed: 0, bestKills: 0, bestBosses: 0, bestDuration: 0, ws: {}, freeUpgradeChances: {ATTACK:0,DEFENSE:0,UTILITY:0}, speedControlLevel: 0, skills: ['start'], achievements: [], tutorialSeen: false, bannerId: 'default', titleId: 'none', startedAt: Date.now(), levelMode: { highestUnlocked: 1, completed: [], claimedRewards: [] } };
   let run = {stats:{},cash:0,coins:0,wave:1,kills:0,combo:0,comboTimer:0,graze:0};
   let targetEnemy = null;
   let gameSessionStartedAt = 0;
