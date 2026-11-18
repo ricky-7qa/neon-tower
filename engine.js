@@ -93,7 +93,7 @@
   /** DATABASE EN **/
   const statDefs = {
     damage: { n: "DAMAGE", d: "Each level adds damage using a growing increment: the added amount compounds by +7% (levels 2–30), +5% (31–60), +3% (61–100), +2% (101–200), then progressively smaller rates.", category:"ATTACK", b:15, i:5, c:10, cm:1.15, isD:false, col:"#0ff", unlockWave:1 },
-    speed: { n:"ATTACK SPEED", d:"Each level adds shots per second using a growing increment. Maximum level: 20.", category:"ATTACK", b:1.5, i:.2, c:15, cm:1.25, isD:true, col:"#0ff", unlockWave:1, max:20 },
+    speed: { n:"ATTACK SPEED", d:"Each level adds shots per second using a growing increment. Maximum level: 20 until Wave 100, then 35.", category:"ATTACK", b:1.5, i:.2, c:15, cm:1.25, isD:true, col:"#0ff", unlockWave:1, max:20 },
     critC: { n:"CRITICAL CHANCE", d:"Chance for a critical hit.", category:"ATTACK", b:0, i:5, c:50, cm:1.4, isD:false, col:"#ff3366", unlockWave:3, max:15 },
     critD: { n:"CRITICAL DAMAGE", d:"Multiplier applied to critical hits.", category:"ATTACK", b:1.5, i:.2, c:50, cm:1.4, isD:true, col:"#ff3366", unlockWave:5 },
     multishot: { n:"MULTI-SHOT", d:"Fire up to four homing projectiles at one target.", category:"ATTACK", b:0, i:1, c:100, cm:1.42, isD:false, col:"#ff9b42", max:3, unlockWave:5 },
@@ -539,7 +539,7 @@
     } else if(k==='damage') {
       v=getCumulativeTieredValue(d.b,d.i,l,[0.07,0.05,0.03,0.02,0.015,0.011,0.008,0.006,0.0045,0.003,0.002]);
     } else if(k==='speed') {
-      v=getCumulativeTieredValue(d.b,d.i,l,[0.03,0.025,0.015,0.0125,0.009,0.007,0.005,0.0035,0.0025,0.002,0.001],20);
+      v=getCumulativeTieredValue(d.b,d.i,l,[0.03,0.025,0.015,0.0125,0.009,0.007,0.005,0.0035,0.0025,0.002,0.001],run.wave>100?35:20);
     } else if(k==='hp') {
       v=getCumulativeTieredValue(d.b,d.i,l,[0.04,0.03,0.02,0.015,0.011,0.0085,0.0065,0.0045,0.003,0.002,0.0015]);
     } else {
