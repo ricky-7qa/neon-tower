@@ -75,7 +75,7 @@
       const section=document.createElement('section'); section.className='workshop-section';
       section.innerHTML='<h2 class="workshop-heading">'+category+'</h2><div class="grid workshop-grid"></div>';
       const grid=section.querySelector('.grid');
-      Object.keys(statDefs).filter(k=>isVisibleUpgrade(k) && statDefs[k].category===category && k!=='defensePercent').forEach(k=>{
+      Object.keys(statDefs).filter(k=>isVisibleUpgrade(k) && statDefs[k].category===category).forEach(k=>{
         let d=statDefs[k],lvl=player.ws[k]||0,cost=getCost(k,true),val=getVal(k,true),isMax=d.max&&lvl>=d.max;
         grid.insertAdjacentHTML('beforeend',`<div class="card">
           <div><h3><span style="color:${d.col}">${d.n}</span><span>LVL ${lvl}${d.max?' / '+d.max:''}</span></h3><p>${d.d}<br><br><span style="color:#fff;">Current: ${val}</span></p></div>
