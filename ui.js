@@ -685,7 +685,7 @@
       const {data:entry,error:entryError}=await leaderboardClient.from('leaderboard_entries').select('player_id,player_name,best_wave,best_kills,updated_at').eq('player_id',userId).eq('is_verified',true).maybeSingle();
       if(entryError) throw entryError;
       if(!entry) { renderProfileCard(null,false); return; }
-      renderProfileCard({player_name:entry.player_name,banner_id:'default',title_id:'none',player_level:1,levels_completed:0,best_infinite_wave:entry.best_wave,total_kills:entry.best_kills,total_runs:null,started_at:entry.updated_at},false);
+      renderProfileCard({player_name:entry.player_name,banner_id:'default',title_id:'none',player_level:1,levels_completed:0,best_infinite_wave:entry.best_wave,total_kills:entry.best_kills,total_runs:null,started_at:null},false);
       const note=document.createElement('p');
       note.className='profile-data-note';
       note.textContent='This player has not created a full public profile yet. Showing leaderboard statistics.';
@@ -709,6 +709,7 @@
       best_infinite_wave:Math.max(1,Number(player.highestWave)||1),
       total_kills:Math.min(1000000000,Math.max(0,Math.floor(Number(player.totalKills)||0))),
       total_runs:Math.min(10000000,Math.max(0,Math.floor(Number(player.runsPlayed)||0))),
+      started_at:new Date(Number(player.startedAt)||Date.now()).toISOString(),
       updated_at:new Date().toISOString()
     };
     const signature=JSON.stringify({...payload,updated_at:undefined});
