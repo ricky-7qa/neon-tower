@@ -787,6 +787,7 @@
     document.getElementById('go-runs').innerText = player.runsPlayed;
     document.getElementById('go-coins').innerText = '+' + formatMoney(run.coins) + ' COINS';
     checkAchievements(); saveGame();
+    if (typeof window.syncPublicPlayerProfile === 'function') window.syncPublicPlayerProfile();
     const returnButton = document.getElementById('gameover-return-button');
     if (returnButton) returnButton.setAttribute('onclick', 'returnToMenu()');
     if (run.mode !== 'level' && typeof submitLeaderboardResult === 'function') submitLeaderboardResult(run);
@@ -885,6 +886,7 @@
     }
     run.mode = 'infinite';
     saveGame();
+    if (typeof window.syncPublicPlayerProfile === 'function') window.syncPublicPlayerProfile();
   }
 
   function updateLevelModeProgress() {
