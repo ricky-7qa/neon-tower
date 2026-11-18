@@ -664,7 +664,7 @@
       '<div><small>BEST RUN KILLS</small><b>'+number(profile.best_run_kills)+'</b></div>' +
       '<div><small>LONGEST RUN</small><b>'+formatPlayerStatTime(profile.longest_run_seconds)+'</b></div>' +
       '<div><small>PLAYER SINCE</small><b>'+esc(started)+'</b></div></div>' +
-      (isOwn ? '<button class="btn btn-gold profile-customize-button" onclick="switchTab(\\'customization\\')">CUSTOMIZE PROFILE</button>' : '') +
+      (isOwn ? '<button class="btn btn-gold profile-customize-button" onclick="switchTab(\'customization\')">CUSTOMIZE PROFILE</button>' : '') +
       '</article>';
   }
   async function loadOwnPublicProfile() {
