@@ -933,6 +933,14 @@
       if(hitSomething) game.ents.p.splice(i,1);
     }
 
+    // Remove any Boss volleys left on screen as soon as the Boss is defeated.
+    // These bullets belong to the Boss and must not keep damaging the tower after its defeat.
+    if(!game.ents.e.some(enemy => enemy.type === 'Boss' && enemy.hp > 0)) {
+      for(let i=game.ents.b.length-1;i>=0;i--) {
+        const bullet=game.ents.b[i];
+        if(bullet.kind==='boss') { bulletPool.release(bullet); game.ents.b.splice(i,1); }
+      }
+    }
     for(let i=game.ents.b.length-1;i>=0;i--){let b=game.ents.b[i];b.update(game.dt);b.draw();let d=MathUtils.dist(b.x,b.y,tower.x,tower.y);if(d<tower.r+b.r){if(tower.invuln<=0)tower.hit(b.damage,{type:b.kind==='boss'?'Boss':'Projectile',isProjectile:true});if(!game.running)return;bulletPool.release(b);game.ents.b.splice(i,1);continue;}if(!b.grazed&&d<tower.r+b.r+18){b.grazed=true;run.graze++;AudioSys.play('graze',1500,900,'sine',.08,.08);}if(b.x<-30||b.x>canvas.width+30||b.y<-30||b.y>canvas.height+30){bulletPool.release(b);game.ents.b.splice(i,1);}}
     for(let i = game.ents.e.length - 1; i >= 0; i--) {
       let e = game.ents.e[i];
