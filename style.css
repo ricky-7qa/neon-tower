@@ -317,8 +317,8 @@
   .game-topbar .stat-val { font-size:14px; line-height:1.2; }
   #stats-ui { left:9px; bottom:calc(12px + env(safe-area-inset-bottom)); width:min(44vw,190px); padding:8px 9px; gap:5px; font-size:9px; background:rgba(0,12,27,.88); }
   #stats-ui .stat-row { font-size:8px; letter-spacing:.2px; padding-bottom:3px; }
-  #target-ui { left:9px; bottom:155px; width:min(44vw,190px); padding:8px; }
-  #t-name { font-size:10px; }
+  #target-ui { display:block; left:50%; top:calc(72px + env(safe-area-inset-top)); bottom:auto !important; transform:translateX(-50%); width:min(78vw,360px); padding:9px 11px; z-index:14; }
+  #t-name { font-size:11px; }
   #t-hp-bar { height:7px; }
   #t-hp-text { font-size:9px; }
   #touch-controls { right:12px; bottom:calc(14px + env(safe-area-inset-bottom)); flex-direction:column; gap:10px; }
