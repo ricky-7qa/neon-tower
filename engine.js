@@ -657,7 +657,14 @@
     void notice.offsetWidth;
     notice.classList.add('show');
     clearTimeout(notice.hideTimer);
-    notice.hideTimer = setTimeout(() => notice.classList.remove('show'), 1500);
+    const hideFreeUpgradeNotice = () => {
+      if (game && game.paused) {
+        notice.hideTimer = setTimeout(hideFreeUpgradeNotice, 500);
+        return;
+      }
+      notice.hideTimer = setTimeout(() => notice.classList.remove('show'), 5000);
+    };
+    hideFreeUpgradeNotice();
   }
   window.buyFreeUpgradeChance = buyFreeUpgradeChance;
   function hasSkill(id) { return player.skills.includes(id); }
