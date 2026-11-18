@@ -3095,6 +3095,28 @@
 }
 
 
+/* Level Mode campaign */
+#app .level-mode-open-button{margin-top:9px;min-height:42px;width:min(360px,90vw);border:1px solid rgba(0,225,255,.55);background:linear-gradient(110deg,rgba(7,30,48,.96),rgba(4,12,25,.98));color:#aaf7ff;font-weight:900;letter-spacing:1.4px;box-shadow:0 0 18px rgba(0,220,255,.10)}
+#app .level-mode-area{width:min(1120px,94vw);max-height:calc(100% - 230px);overflow-y:auto;margin:0 auto 20px}
+#app .level-mode-panel{padding:16px 10px 24px}
+#app .level-mode-heading{text-align:center;margin:0 auto 18px;max-width:680px}
+#app .level-mode-heading h2{margin:7px 0;color:#f2fcff;font-size:clamp(24px,4vw,38px);letter-spacing:3px}
+#app .level-mode-heading p{color:#9db2c7;font:13px/1.55 Arial,sans-serif}
+#app .level-mode-heading strong{display:inline-block;margin-top:8px;color:#63eaff;font-size:11px;letter-spacing:1.6px}
+#app .level-mode-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+#app .level-card{display:flex;flex-direction:column;gap:10px;min-width:0;padding:14px;border:1px solid rgba(80,190,220,.2);border-radius:12px;background:linear-gradient(150deg,rgba(7,23,39,.96),rgba(2,8,17,.98));box-shadow:0 8px 22px rgba(0,0,0,.18)}
+#app .level-card.is-completed{border-color:rgba(70,255,170,.55);box-shadow:inset 0 0 18px rgba(70,255,170,.06)}
+#app .level-card.is-locked{opacity:.48}
+#app .level-card-head{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#eafaff;font-size:12px;letter-spacing:1px}
+#app .level-card-head span{color:#66e8ff;font-size:8px;font-weight:900}
+#app .level-card.is-completed .level-card-head span{color:#68ffb0}
+#app .level-card-objectives{display:flex;flex-direction:column;gap:6px;min-height:42px;color:#aebfd0;font:10px/1.4 Arial,sans-serif}
+#app .level-card-reward{margin-top:auto;color:#ffd66b;font-size:10px;font-weight:900;letter-spacing:1px}
+#app .level-card button{width:100%;min-height:36px;font-size:10px}
+#app .level-mode-back{display:block;margin:18px auto 0;min-width:180px}
+@media(max-width:760px){#app .level-mode-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}#app .level-card{padding:10px;gap:8px}#app .level-card-head{font-size:10px}#app .level-card-objectives{font-size:9px}}
+@media(max-width:380px){#app .level-mode-grid{grid-template-columns:1fr}}
+
 /* Run upgrades at their maximum level */
 #upg-content .upg-btn.is-max-level,
 #upg-content .upg-btn.is-max-level:disabled {
