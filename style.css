@@ -3304,13 +3304,17 @@
 #app .public-profile-identity{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:16px 18px 8px}
 #app .public-profile-identity strong{font-size:22px;color:#f2fcff;overflow-wrap:anywhere}
 #app .public-profile-identity span{color:#5deaff;font-size:10px;font-weight:900;letter-spacing:1px;text-align:right}
-#app .public-profile-level{padding:8px 18px 16px;color:#8ca6b8;font-size:10px;letter-spacing:1px}
+#app .public-profile-level{padding:10px 18px 15px;color:#8ca6b8;font-size:10px;letter-spacing:1px}
+#app .public-profile-level-copy{display:flex;align-items:center;justify-content:space-between;gap:8px}
 #app .public-profile-level b{margin-left:7px;color:#ffe16a;font-size:19px}
-#app .public-profile-level small{display:block;margin-top:5px;color:#63d9e8}
+#app .public-profile-level small{color:#63d9e8;font-size:9px}
+#app .public-profile-level-progress{height:5px;margin-top:9px;overflow:hidden;border-radius:10px;background:rgba(90,170,195,.14)}
+#app .public-profile-level-progress span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#18c9ef,#a76bff);box-shadow:0 0 10px rgba(24,201,239,.45);transition:width .45s ease}
+#app .public-profile-section-label{padding:0 14px 9px;color:#5deaff;font-size:8px;font-weight:900;letter-spacing:2px}
 #app .public-profile-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:0 14px 14px}
 #app .public-profile-stats div{display:flex;flex-direction:column;gap:6px;padding:12px;border:1px solid rgba(0,220,255,.13);border-radius:8px;background:#03111c}
 #app .public-profile-stats small{color:#7d9bac;font-size:8px;letter-spacing:1px}
-#app .public-profile-stats b{color:#f2fcff;font-size:19px}
+#app .public-profile-stats b{color:#f2fcff;font-size:19px;font-variant-numeric:tabular-nums}
 #app .profile-customize-button{display:block;margin:0 auto 16px}
 #app .leaderboard-profile-link{padding:0;border:0;background:none;color:#eafaff;font:inherit;font-weight:900;text-align:left;cursor:pointer}
 #app .leaderboard-profile-link:hover{color:#5deaff;text-decoration:underline}
@@ -3334,6 +3338,10 @@
  #app .public-profile-identity{padding:13px 12px 7px}
  #app .public-profile-identity strong{font-size:18px}
  #app .public-profile-stats{padding:0 9px 10px;gap:6px}
+ #app .public-profile-level{padding:9px 12px 13px}
+ #app .public-profile-section-label{padding:0 9px 7px}
+ #app .public-profile-level-copy{align-items:flex-start;flex-direction:column;gap:4px}
+ #app .public-profile-level small{font-size:8px}
  #app .public-profile-stats div{padding:9px}
  #app .public-profile-stats small{font-size:7px}
  #app .public-profile-stats b{font-size:16px}
