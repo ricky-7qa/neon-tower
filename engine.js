@@ -2,6 +2,14 @@
   /** CORE ENGINE & DATA **/
   const SAVE_KEY = "NeonTowerApexSave_FinalVersion";
   const RUN_CHECKPOINT_KEY = "NeonTowerApexRunCheckpoint";
+  const LEVEL_RUN_CHECKPOINT_KEY = "NeonTowerApexLevelRunCheckpoint";
+  function getRunCheckpointKey(mode = null) { return (mode || run.mode || (pendingLevelModeId ? "level" : "infinite")) === "level" ? LEVEL_RUN_CHECKPOINT_KEY : RUN_CHECKPOINT_KEY; }
+  function readRunCheckpoint(mode) { try { return JSON.parse(localStorage.getItem(getRunCheckpointKey(mode)) || "null"); } catch (err) { return null; } }
+  function getLatestRunCheckpoint() {
+    const infinite = readRunCheckpoint("infinite"), level = readRunCheckpoint("level");
+    if (infinite && infinite.version === 1 && infinite.run && level && level.version === 1 && level.run) return (Number(level.savedAt) || 0) > (Number(infinite.savedAt) || 0) ? level : infinite;
+    return level && level.version === 1 && level.run ? level : infinite;
+  }
   function formatMoney(value) {
     const amount = Math.max(0, Number(value) || 0);
     if (amount < 1000000) return amount.toLocaleString('en-US', { maximumFractionDigits: 0 });
@@ -272,14 +280,13 @@
   function refreshResumeUI() {
     const panel = document.getElementById('resume-run-panel');
     const startButton = document.getElementById('start-new-run-button');
-    let checkpoint = null;
-    try { checkpoint = JSON.parse(localStorage.getItem(RUN_CHECKPOINT_KEY) || 'null'); } catch (err) {}
+    const checkpoint = getLatestRunCheckpoint();
     const exists = !!(checkpoint && checkpoint.version === 1 && checkpoint.run);
     const primaryAction = document.querySelector('#menu .menu-primary-action');
     if (panel) {
       panel.style.display = exists ? 'flex' : 'none';
       const waveLabel = document.getElementById('resume-run-wave');
-      if (waveLabel) waveLabel.textContent = exists ? 'WAVE ' + checkpoint.run.wave : '';
+      if (waveLabel) waveLabel.textContent = exists ? (checkpoint.run.mode === 'level' ? 'LEVEL ' + checkpoint.run.levelId + ' · ' : '') + 'WAVE ' + checkpoint.run.wave : '';
     }
     if (primaryAction) primaryAction.classList.toggle('has-resume', exists);
     if (startButton) startButton.textContent = exists ? 'NEW RUN' : 'START INFINITE MODE';
@@ -287,15 +294,17 @@
   function saveRunCheckpoint(pendingPerk = false, pendingDecision = false) {
     if (!game || !game.running || !tower) return;
     try {
-      const previous = JSON.parse(localStorage.getItem(RUN_CHECKPOINT_KEY) || 'null');
+      const checkpointKey = getRunCheckpointKey();
+      const previous = readRunCheckpoint(run.mode);
       const savedRun = JSON.parse(JSON.stringify(run));
       if (previous && previous.run && Number(previous.run.wave) === Number(run.wave)) {
         ['kills','bossKills','elapsed','mission','graze','combo','comboTimer'].forEach(key => {
           if (previous.run[key] !== undefined) savedRun[key] = previous.run[key];
         });
       }
-      localStorage.setItem(RUN_CHECKPOINT_KEY, JSON.stringify({
+      localStorage.setItem(checkpointKey, JSON.stringify({
         version: 1,
+        savedAt: Date.now(),
         run: savedRun,
         tower: { hp: tower.hp, shield: tower.shield, tempShieldCharges: tower.tempShieldCharges || 0 },
         pendingPerk: !!pendingPerk,
@@ -305,17 +314,17 @@
     refreshResumeUI();
     if (typeof window.scheduleNeonCloudSave === 'function') window.scheduleNeonCloudSave();
   }
-  function clearRunCheckpoint() {
-    localStorage.removeItem(RUN_CHECKPOINT_KEY);
+  function clearRunCheckpoint(mode = null) {
+    localStorage.removeItem(getRunCheckpointKey(mode));
     refreshResumeUI();
     if (typeof window.scheduleNeonCloudSave === 'function') window.scheduleNeonCloudSave();
   }
   window.refreshResumeUI = refreshResumeUI;
   window.saveRunCheckpoint = saveRunCheckpoint;
   window.getNeonTowerCloudSave = function() {
-    let checkpoint = null;
-    try { checkpoint = JSON.parse(localStorage.getItem(RUN_CHECKPOINT_KEY) || 'null'); } catch (err) {}
-    return { player: JSON.parse(JSON.stringify(player)), checkpoint };
+    const checkpoints = { infinite: readRunCheckpoint('infinite'), level: readRunCheckpoint('level') };
+    const checkpoint = getLatestRunCheckpoint();
+    return { player: JSON.parse(JSON.stringify(player)), checkpoint, checkpoints };
   };
   window.applyNeonTowerCloudSave = function(snapshot) {
     if (!snapshot || !snapshot.player || typeof snapshot.player !== 'object') throw new Error('Invalid cloud save data.');
@@ -329,10 +338,17 @@
     player.achievements = Array.isArray(incoming.achievements) ? incoming.achievements : [];
     Object.keys(statDefs).forEach(k => { if (player.ws[k] === undefined) player.ws[k] = 0; });
     localStorage.setItem(SAVE_KEY, btoa(JSON.stringify(player)));
-    if (snapshot.checkpoint && snapshot.checkpoint.version === 1 && snapshot.checkpoint.run) {
-      localStorage.setItem(RUN_CHECKPOINT_KEY, JSON.stringify(snapshot.checkpoint));
+    if (snapshot.checkpoints && typeof snapshot.checkpoints === 'object') {
+      const infinite = snapshot.checkpoints.infinite;
+      const level = snapshot.checkpoints.level;
+      if (infinite && infinite.version === 1 && infinite.run) localStorage.setItem(RUN_CHECKPOINT_KEY, JSON.stringify(infinite)); else localStorage.removeItem(RUN_CHECKPOINT_KEY);
+      if (level && level.version === 1 && level.run) localStorage.setItem(LEVEL_RUN_CHECKPOINT_KEY, JSON.stringify(level)); else localStorage.removeItem(LEVEL_RUN_CHECKPOINT_KEY);
+    } else if (snapshot.checkpoint && snapshot.checkpoint.version === 1 && snapshot.checkpoint.run) {
+      const key = snapshot.checkpoint.run.mode === 'level' ? LEVEL_RUN_CHECKPOINT_KEY : RUN_CHECKPOINT_KEY;
+      localStorage.setItem(key, JSON.stringify(snapshot.checkpoint));
     } else {
       localStorage.removeItem(RUN_CHECKPOINT_KEY);
+      localStorage.removeItem(LEVEL_RUN_CHECKPOINT_KEY);
     }
     updateMenuUI();
     buildSkillTree();
@@ -775,8 +791,7 @@
     if (run.mode !== 'level' && typeof submitLeaderboardResult === 'function') submitLeaderboardResult(run);
   }
   function resumeRun() {
-    let checkpoint = null;
-    try { checkpoint = JSON.parse(localStorage.getItem(RUN_CHECKPOINT_KEY) || 'null'); } catch (err) {}
+    const checkpoint = getLatestRunCheckpoint();
     if (!checkpoint || checkpoint.version !== 1 || !checkpoint.run || !Number.isFinite(Number(checkpoint.run.wave))) {
       clearRunCheckpoint();
       return;
