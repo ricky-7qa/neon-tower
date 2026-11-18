@@ -3343,3 +3343,6 @@
 
 #app .profile-data-note{margin:0;padding:12px 16px;color:#91aaba;font-size:10px;line-height:1.5;text-align:center;border-top:1px solid rgba(0,220,255,.14)}
 #app .leaderboard-profile-link{position:relative;z-index:2;pointer-events:auto;cursor:pointer}
+
+/* Player directory search removed; profiles remain accessible from leaderboard names. */
+#app .profile-search-row,#app .profile-search-results{display:none!important}
