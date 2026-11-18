@@ -100,7 +100,7 @@
     hp: { n:"MAX HEALTH", d:"Each level adds maximum health using a growing increment: +4% (levels 2–30), +3% (31–60), +2% (61–100), +1.5% (101–200), then progressively smaller rates.", category:"DEFENSE", b:200, i:30, c:10, cm:1.15, isD:false, col:"#0f0", unlockWave:1 },
     regen: { n:"HEALTH REGEN", d:"Starts at 0.5 HP per second. Each level adds a larger regeneration increase than the previous level; that increase grows by +15% per level (levels 2–10), then +10%, +7%, +4%, +2%, +1%, +0.5%, and +0.25% from level 501 onward.", category:"DEFENSE", b:0, i:0.5, c:25, cm:1.3, isD:true, col:"#0f0", unlockWave:4 },
     armor: { n:"DAMAGE REDUCTION", d:"Reduces damage from every hit.", category:"DEFENSE", b:0, i:2, c:35, cm:1.28, isD:false, col:"#53d6ff", unlockWave:7, max:20 },
-    defensePercent: { n:"FORTIFIED HULL", d:"Reduce all incoming damage by 0.5% per level. Maximum damage reduction: 49.5%.", category:"DEFENSE", b:0, i:0.5, c:45, cm:1.12587, isD:true, col:"#70e6ff", unlockWave:10, max:99 },
+    defensePercent: { n:"DEFENSE BOOST", d:"Reduce all incoming damage by 0.5% per level. Maximum damage reduction: 49.5%.", category:"DEFENSE", b:0, i:0.5, c:45, cm:1.12587, isD:true, col:"#70e6ff", unlockWave:10, max:99 },
     dodge: { n:"DODGE CHANCE", d:"Chance to completely avoid a hit.", category:"DEFENSE", b:0, i:2, c:80, cm:1.38, isD:false, col:"#9b8cff", unlockWave:12, max:20 },
     shieldRecharge: { n:"SHIELD RECHARGE", d:"Shortens the shield's cooldown.", category:"DEFENSE", b:0, i:1, c:90, cm:1.4, isD:false, col:"#55f5dc", unlockWave:15, max:8 },
     range: { n:"TARGETING RANGE", d:"Detects enemies from farther away.", category:"UTILITY", b:300, i:50, c:30, cm:1.2, isD:false, col:"#ffd700", unlockWave:1, max:10 },
