@@ -664,10 +664,12 @@
 
   function getWaveEnemyCount(wave) {
     const w = Math.max(1, Math.floor(Number(wave) || 1));
-    if (w <= 20) return 9 + Math.floor(w * 1.25);
-    if (w <= 50) return 34 + Math.floor((w - 20) * 0.7);
-    if (w <= 100) return 55 + Math.floor((w - 50) * 0.3);
-    return 70 + Math.floor((w - 100) * 0.35);
+    let count;
+    if (w <= 20) count = 9 + Math.floor(w * 1.25);
+    else if (w <= 50) count = 34 + Math.floor((w - 20) * 0.7);
+    else if (w <= 100) count = 55 + Math.floor((w - 50) * 0.3);
+    else count = 70 + Math.floor((w - 100) * 0.35);
+    return Math.round(count * 1.12);
   }
 
   /** MAIN LOOP & RENDERING **/
