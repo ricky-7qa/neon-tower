@@ -337,6 +337,7 @@
         const unlockWave=d.unlockWave||1;
         const waveLocked=run.wave<unlockWave;
         btn.disabled=waveLocked || (run.cash<c) || m;
+        btn.classList.toggle('is-max-level', m);
         const label=waveLocked ? 'LOCKED · WAVE '+unlockWave : m ? 'MAX' : '$'+formatMoney(c);
         const currentEffect=k==='defensePercent'?' · '+getVal(k)+'%':'';
         btn.innerHTML=`<span style="color:${d.col}">${d.n} · LVL ${Math.min(maxLevel||999,(player.ws[k]||0)+l)}${currentEffect}</span><span style="color:${waveLocked?'#ffb45c':'#0f0'}">${label}</span>`;
