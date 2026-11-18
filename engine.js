@@ -282,7 +282,7 @@
       if (waveLabel) waveLabel.textContent = exists ? 'WAVE ' + checkpoint.run.wave : '';
     }
     if (primaryAction) primaryAction.classList.toggle('has-resume', exists);
-    if (startButton) startButton.textContent = exists ? 'NEW RUN' : 'START GAME';
+    if (startButton) startButton.textContent = exists ? 'NEW RUN' : 'START INFINITE MODE';
   }
   function saveRunCheckpoint(pendingPerk = false, pendingDecision = false) {
     if (!game || !game.running || !tower) return;
