@@ -794,7 +794,7 @@
     await Promise.all([loadLeaderboard(), loadWeeklyLeaderboard()]);
   }
 
-  function renderLeaderboardRows(data, list) {
+  function renderLeaderboardRows(data, list, isWeekly = false) {
     if (!list) return;
     if (!data || !data.length) {
       list.innerHTML = '<div class="leaderboard-empty">NO SCORES YET — BE THE FIRST!</div>';
@@ -803,7 +803,7 @@
     list.innerHTML = data.map((entry, index) => {
       const own = entry.player_id === leaderboardPlayerId;
       return '<article class="leaderboard-row ' + (own ? 'is-you' : '') + '">' +
-        '<span class="leaderboard-rank">#' + (index + 1) + '</span>' +
+        '<span class="leaderboard-rank">' + (isWeekly && index === 0 ? '🥇' : isWeekly && index === 1 ? '🥈' : isWeekly && index === 2 ? '🥉' : '#' + (index + 1)) + '</span>' +
         '<span class="leaderboard-player"><strong>' + escapeLeaderboardText(entry.player_name) + (own ? ' <small>YOU</small>' : '') + '</strong><small>WAVE ' + entry.best_wave + ' · ' + Number(entry.best_kills || 0).toLocaleString('en-US') + ' KILLS</small></span>' +
         '<span class="leaderboard-result"><strong>' + entry.best_wave + '</strong><small>WAVE</small></span>' +
         '<span class="leaderboard-result"><strong>' + Number(entry.best_kills || 0).toLocaleString('en-US') + '</strong><small>KILLS</small></span>' +
@@ -853,7 +853,7 @@
         .order('submitted_at', { ascending: true })
         .limit(100);
       if (error) throw error;
-      renderLeaderboardRows(data, list);
+      renderLeaderboardRows(data, list, true);
       if (status) status.textContent = 'THIS WEEK · TOP 100 · ' + (data || []).length + ' PLAYERS';
       if (cloudSaveReady) claimWeeklyRewards();
     } catch (error) {
@@ -879,7 +879,7 @@
       } else {
         const status = document.getElementById('weekly-reward-status');
         if (status && !status.dataset.checked) {
-          status.textContent = 'REWARDS ARE AUTOMATICALLY CREDITED AFTER THE WEEK ENDS.';
+          status.textContent = 'REWARDS ARE AUTOMATICALLY ADDED WHEN YOU NEXT OPEN THE GAME AFTER THE WEEK ENDS.';
           status.dataset.checked = 'true';
         }
       }
