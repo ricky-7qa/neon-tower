@@ -1135,10 +1135,13 @@
     white-space:nowrap;
   }
   #app.device-mobile #target-ui {
-    left:9px;
+    left:9px !important;
+    right:auto !important;
     top:auto !important;
-    bottom:calc(125px + env(safe-area-inset-bottom));
+    bottom:calc(170px + env(safe-area-inset-bottom)) !important;
+    transform:none !important;
     width:min(46vw,194px);
+    box-sizing:border-box;
     padding:9px 10px;
     border:1px solid rgba(255,75,112,.48);
     border-radius:9px;
