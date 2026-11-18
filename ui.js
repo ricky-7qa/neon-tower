@@ -672,19 +672,6 @@
     if (error) { console.error('Own profile load failed:',error); host.innerHTML='<div class="leaderboard-empty">PROFILE COULD NOT BE LOADED. TRY AGAIN.</div>'; return; }
     renderProfileCard(data,true);
   }
-  async function searchPlayerProfiles() {
-    const input = document.getElementById('player-profile-search');
-    const results = document.getElementById('player-profile-search-results');
-    const term = String(input?.value || '').trim();
-    if (!results) return;
-    if (term.length < 3) { results.innerHTML='<div class="leaderboard-empty">ENTER AT LEAST 3 CHARACTERS.</div>'; return; }
-    if (!leaderboardClient) { results.innerHTML='<div class="leaderboard-empty">PLAYER SEARCH IS UNAVAILABLE.</div>'; return; }
-    results.innerHTML='<div class="leaderboard-empty">SEARCHING...</div>';
-    const {data,error}=await leaderboardClient.from('player_profiles').select('user_id,player_name,player_level,title_id,banner_id,best_infinite_wave,total_kills').ilike('player_name','%'+term.replace(/[%,_]/g,'')+'%').order('player_level',{ascending:false}).limit(15);
-    if(error){console.error('Profile search failed:',error);results.innerHTML='<div class="leaderboard-empty">SEARCH FAILED. PLEASE TRY AGAIN.</div>';return;}
-    if(!data?.length){results.innerHTML='<div class="leaderboard-empty">NO PLAYERS FOUND.</div>';return;}
-    results.innerHTML=data.map(p=>'<button class="profile-search-result" onclick="openPlayerProfile(\''+p.user_id+'\')"><strong>'+escapeLeaderboardText(p.player_name)+'</strong><span>LEVEL '+Number(p.player_level||1)+' · WAVE '+Number(p.best_infinite_wave||1)+'</span></button>').join('');
-  }
   async function openPlayerProfile(userId) {
     userId=String(userId||'').trim();
     if(!/^[0-9a-f-]{36}$/i.test(userId) || !leaderboardClient) return;
@@ -755,7 +742,6 @@
     await syncPublicPlayerProfile();
     if(document.getElementById('tab-profile')?.style.display!=='none') loadOwnPublicProfile();
   }
-  window.searchPlayerProfiles=searchPlayerProfiles;
   window.openPlayerProfile=openPlayerProfile;
   window.equipProfileCosmetic=equipProfileCosmetic;
 
