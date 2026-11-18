@@ -500,7 +500,7 @@
       const { error } = await leaderboardClient.from('player_cloud_saves').upsert({
         user_id: userId,
         player_data: snapshot.player,
-        run_checkpoint: snapshot.checkpoint,
+        run_checkpoint: snapshot.checkpoints || snapshot.checkpoint,
         updated_at: new Date().toISOString()
       }, { onConflict: 'user_id' });
       if (error) throw error;
@@ -544,13 +544,17 @@
       if (error) throw error;
       if (!leaderboardSession || leaderboardPlayerId !== userId) return;
       if (data) {
-        window.applyNeonTowerCloudSave({ player: data.player_data, checkpoint: data.run_checkpoint });
+        const checkpointPayload = data.run_checkpoint;
+        const checkpointSnapshot = checkpointPayload && typeof checkpointPayload === 'object' && ('infinite' in checkpointPayload || 'level' in checkpointPayload)
+          ? { checkpoints: checkpointPayload }
+          : { checkpoint: checkpointPayload };
+        window.applyNeonTowerCloudSave({ player: data.player_data, ...checkpointSnapshot });
       } else {
         const localSnapshot = window.getNeonTowerCloudSave();
         const { error: insertError } = await leaderboardClient.from('player_cloud_saves').insert({
           user_id: userId,
           player_data: localSnapshot.player,
-          run_checkpoint: localSnapshot.checkpoint,
+          run_checkpoint: localSnapshot.checkpoints || localSnapshot.checkpoint,
           updated_at: new Date().toISOString()
         });
         if (insertError) throw insertError;
