@@ -967,17 +967,26 @@
     await Promise.all([loadLeaderboard(), loadWeeklyLeaderboard()]);
   }
 
-  function renderLeaderboardRows(data, list, isWeekly = false) {
+  async function renderLeaderboardRows(data, list, isWeekly = false) {
     if (!list) return;
     if (!data || !data.length) {
       list.innerHTML = '<div class="leaderboard-empty">NO SCORES YET — BE THE FIRST!</div>';
       return;
     }
+    const ids=data.map(entry=>entry.player_id);
+    let profileMap={};
+    try {
+      const {data:profiles}=await leaderboardClient.from('player_profiles').select('user_id,banner_id,title_id').in('user_id',ids);
+      (profiles||[]).forEach(profile=>profileMap[profile.user_id]=profile);
+    } catch(error) { console.warn('Leaderboard cosmetics unavailable:',error); }
     list.innerHTML = data.map((entry, index) => {
       const own = entry.player_id === leaderboardPlayerId;
+      const profile=profileMap[entry.player_id];
+      const title=PROFILE_TITLES.find(item=>item.id===profile?.title_id);
+      const banner=PROFILE_BANNERS.find(item=>item.id===profile?.banner_id);
       return '<article class="leaderboard-row ' + (own ? 'is-you' : '') + '">' +
         '<span class="leaderboard-rank">' + (isWeekly && index === 0 ? '🥇' : isWeekly && index === 1 ? '🥈' : isWeekly && index === 2 ? '🥉' : '#' + (index + 1)) + '</span>' +
-        '<span class="leaderboard-player"><button class="leaderboard-profile-link" onclick="openPlayerProfile(\'' + entry.player_id + '\')">' + escapeLeaderboardText(entry.player_name) + (own ? ' <small>YOU</small>' : '') + '</button><small>WAVE ' + entry.best_wave + ' · ' + Number(entry.best_kills || 0).toLocaleString('en-US') + ' KILLS</small></span>' +
+        '<span class="leaderboard-player"><button class="leaderboard-profile-link" onclick="openPlayerProfile(\'' + entry.player_id + '\')">' + escapeLeaderboardText(entry.player_name) + (own ? ' <small>YOU</small>' : '') + '</button><small>WAVE ' + entry.best_wave + ' · ' + Number(entry.best_kills || 0).toLocaleString('en-US') + ' KILLS' + (title && title.id!=='none'?' · '+escapeLeaderboardText(title.name):'') + '</small></span>' +
         '<span class="leaderboard-result"><strong>' + entry.best_wave + '</strong><small>WAVE</small></span>' +
         '<span class="leaderboard-result"><strong>' + Number(entry.best_kills || 0).toLocaleString('en-US') + '</strong><small>KILLS</small></span>' +
         '</article>';
