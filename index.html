@@ -251,7 +251,10 @@
       </div>
       <p class="mission-profit">PROFIT: <span class="c-gold" id="go-coins">+0 COINS</span></p>
     </div>
-    <button id="gameover-return-button" class="btn" style="font-size: 20px; padding: 15px 50px;" onclick="returnToMenu()">RETURN TO BASE</button>
+    <div id="gameover-level-actions" class="gameover-level-actions">
+      <button id="gameover-return-button" class="btn" onclick="returnToMenu()">MENU</button>
+      <button id="gameover-next-level-button" class="btn" onclick="startLevelMode(2)">NEXT LEVEL</button>
+    </div>
   </div>
   <div id="mobile-portrait-guard" role="status" aria-live="polite">
     <div class="portrait-guard-card">
