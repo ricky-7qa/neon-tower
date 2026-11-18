@@ -3,7 +3,7 @@
   const SAVE_KEY = "NeonTowerApexSave_FinalVersion";
   const RUN_CHECKPOINT_KEY = "NeonTowerApexRunCheckpoint";
   const LEVEL_RUN_CHECKPOINT_KEY = "NeonTowerApexLevelRunCheckpoint";
-  function getRunCheckpointKey(mode = null) { return (mode || run.mode || (pendingLevelModeId ? "level" : "infinite")) === "level" ? LEVEL_RUN_CHECKPOINT_KEY : RUN_CHECKPOINT_KEY; }
+  function getRunCheckpointKey(mode = null) { const selectedMode = mode || (pendingLevelModeId ? "level" : (run.mode || "infinite")); return selectedMode === "level" ? LEVEL_RUN_CHECKPOINT_KEY : RUN_CHECKPOINT_KEY; }
   function readRunCheckpoint(mode) { try { return JSON.parse(localStorage.getItem(getRunCheckpointKey(mode)) || "null"); } catch (err) { return null; } }
   function getLatestRunCheckpoint() {
     const infinite = readRunCheckpoint("infinite"), level = readRunCheckpoint("level");
@@ -793,7 +793,7 @@
   function resumeRun() {
     const checkpoint = getLatestRunCheckpoint();
     if (!checkpoint || checkpoint.version !== 1 || !checkpoint.run || !Number.isFinite(Number(checkpoint.run.wave))) {
-      clearRunCheckpoint();
+      clearRunCheckpoint(checkpoint?.run?.mode || 'infinite');
       return;
     }
     if (!player.tutorialSeen) {
