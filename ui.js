@@ -549,6 +549,7 @@
       cloudSavePendingOffline = false;
       setCloudSyncStatus('saved', 'CLOUD SYNCED — ALL PROGRESS SAVED');
       setAuthStatus('CLOUD SAVE SYNCED. YOUR PROGRESS IS LINKED TO THIS ACCOUNT.');
+      claimWeeklyRewards();
       // Publish the existing local/cloud personal best before refreshing the leaderboard.
       if (typeof submitLeaderboardResult === 'function' && Number(player?.highestWave || 0) > 15) {
         await submitLeaderboardResult({
@@ -750,12 +751,64 @@
         .update({ player_name: name })
         .eq('player_id', leaderboardPlayerId);
       if (rankingError) throw rankingError;
+      const { error: weeklyNameError } = await leaderboardClient
+        .from('weekly_leaderboard_entries')
+        .update({ player_name: name })
+        .eq('player_id', leaderboardPlayerId)
+        .eq('week_start', getCurrentWeeklyStart());
+      if (weeklyNameError) throw weeklyNameError;
       setLeaderboardStatus('PLAYER NAME SAVED TO YOUR ACCOUNT');
       await loadLeaderboard();
     } catch (error) {
       console.error('Leaderboard name update failed:', error);
       setLeaderboardStatus('COULD NOT SAVE PLAYER NAME. PLEASE TRY AGAIN.');
     }
+  }
+
+  function getCurrentWeeklyStart() {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Europe/Lisbon', year: 'numeric', month: '2-digit', day: '2-digit'
+    }).formatToParts(new Date());
+    const value = type => Number(parts.find(part => part.type === type)?.value || 0);
+    const localDate = new Date(Date.UTC(value('year'), value('month') - 1, value('day')));
+    const daysSinceWednesday = (localDate.getUTCDay() + 4) % 7;
+    localDate.setUTCDate(localDate.getUTCDate() - daysSinceWednesday);
+    return localDate.toISOString().slice(0, 10);
+  }
+
+  function showLeaderboardMode(mode) {
+    const weekly = mode === 'weekly';
+    const globalView = document.getElementById('global-leaderboard-view');
+    const weeklyView = document.getElementById('weekly-leaderboard-view');
+    const globalTab = document.getElementById('leaderboard-global-tab');
+    const weeklyTab = document.getElementById('leaderboard-weekly-tab');
+    if (globalView) globalView.style.display = weekly ? 'none' : 'block';
+    if (weeklyView) weeklyView.style.display = weekly ? 'block' : 'none';
+    if (globalTab) globalTab.classList.toggle('btn-gold', !weekly);
+    if (weeklyTab) weeklyTab.classList.toggle('btn-gold', weekly);
+    if (weekly) loadWeeklyLeaderboard();
+    else loadLeaderboard();
+  }
+
+  async function refreshLeaderboards() {
+    await Promise.all([loadLeaderboard(), loadWeeklyLeaderboard()]);
+  }
+
+  function renderLeaderboardRows(data, list) {
+    if (!list) return;
+    if (!data || !data.length) {
+      list.innerHTML = '<div class="leaderboard-empty">NO SCORES YET — BE THE FIRST!</div>';
+      return;
+    }
+    list.innerHTML = data.map((entry, index) => {
+      const own = entry.player_id === leaderboardPlayerId;
+      return '<article class="leaderboard-row ' + (own ? 'is-you' : '') + '">' +
+        '<span class="leaderboard-rank">#' + (index + 1) + '</span>' +
+        '<span class="leaderboard-player"><strong>' + escapeLeaderboardText(entry.player_name) + (own ? ' <small>YOU</small>' : '') + '</strong><small>WAVE ' + entry.best_wave + ' · ' + Number(entry.best_kills || 0).toLocaleString('en-US') + ' KILLS</small></span>' +
+        '<span class="leaderboard-result"><strong>' + entry.best_wave + '</strong><small>WAVE</small></span>' +
+        '<span class="leaderboard-result"><strong>' + Number(entry.best_kills || 0).toLocaleString('en-US') + '</strong><small>KILLS</small></span>' +
+        '</article>';
+    }).join('');
   }
 
   async function loadLeaderboard() {
@@ -773,24 +826,69 @@
         .order('best_duration', { ascending: false })
         .limit(100);
       if (error) throw error;
-      if (!data || !data.length) {
-        list.innerHTML = '<div class="leaderboard-empty">NO SCORES YET — BE THE FIRST!</div>';
-      } else {
-        list.innerHTML = data.map((entry, index) => {
-          const own = entry.player_id === leaderboardPlayerId;
-          return '<article class="leaderboard-row ' + (own ? 'is-you' : '') + '">' +
-            '<span class="leaderboard-rank">#' + (index + 1) + '</span>' +
-            '<span class="leaderboard-player"><strong>' + escapeLeaderboardText(entry.player_name) + (own ? ' <small>YOU</small>' : '') + '</strong><small>WAVE ' + entry.best_wave + ' · ' + entry.best_kills + ' KILLS</small></span>' +
-            '<span class="leaderboard-result"><strong>' + entry.best_wave + '</strong><small>WAVE</small></span>' +
-            '<span class="leaderboard-result"><strong>' + entry.best_kills.toLocaleString('en-US') + '</strong><small>KILLS</small></span>' +
-            '</article>';
-        }).join('');
-      }
-      setLeaderboardStatus('GLOBAL TOP 100 · ' + data.length + ' PLAYERS');
+      renderLeaderboardRows(data, list);
+      setLeaderboardStatus('GLOBAL TOP 100 · ' + (data || []).length + ' PLAYERS');
     } catch (error) {
       console.error('Leaderboard load failed:', error);
       setLeaderboardStatus('COULD NOT LOAD RANKINGS');
       if (list) list.innerHTML = '<div class="leaderboard-empty">RANKINGS ARE TEMPORARILY UNAVAILABLE. TRY REFRESHING.</div>';
+    }
+  }
+
+  async function loadWeeklyLeaderboard() {
+    if (!leaderboardClient || !leaderboardSession) return;
+    const status = document.getElementById('weekly-leaderboard-status');
+    const list = document.getElementById('weekly-leaderboard-list');
+    if (status) status.textContent = 'UPDATING THIS WEEK\'S RANKINGS...';
+    try {
+      const weekStart = getCurrentWeeklyStart();
+      const { data, error } = await leaderboardClient
+        .from('weekly_leaderboard_entries')
+        .select('player_id, player_name, best_wave, best_kills, best_bosses, best_duration, submitted_at')
+        .eq('week_start', weekStart)
+        .order('best_wave', { ascending: false })
+        .order('best_kills', { ascending: false })
+        .order('best_bosses', { ascending: false })
+        .order('best_duration', { ascending: false })
+        .order('submitted_at', { ascending: true })
+        .limit(100);
+      if (error) throw error;
+      renderLeaderboardRows(data, list);
+      if (status) status.textContent = 'THIS WEEK · TOP 100 · ' + (data || []).length + ' PLAYERS';
+      if (cloudSaveReady) claimWeeklyRewards();
+    } catch (error) {
+      console.error('Weekly leaderboard load failed:', error);
+      if (status) status.textContent = 'COULD NOT LOAD WEEKLY RANKINGS';
+      if (list) list.innerHTML = '<div class="leaderboard-empty">WEEKLY RANKINGS ARE TEMPORARILY UNAVAILABLE. TRY REFRESHING.</div>';
+    }
+  }
+
+  let weeklyRewardClaimInProgress = false;
+  async function claimWeeklyRewards() {
+    if (!leaderboardClient || !leaderboardSession || !cloudSaveReady || weeklyRewardClaimInProgress) return;
+    weeklyRewardClaimInProgress = true;
+    try {
+      const { data, error } = await leaderboardClient.rpc('claim_weekly_leaderboard_rewards');
+      if (error) throw error;
+      const reward = Number(data?.reward_coins || 0);
+      if (reward > 0) {
+        player.coins = Number(data.coins_balance);
+        saveGame();
+        const status = document.getElementById('weekly-reward-status');
+        if (status) status.textContent = 'WEEKLY REWARD RECEIVED · +' + reward.toLocaleString('en-US') + ' COINS';
+      } else {
+        const status = document.getElementById('weekly-reward-status');
+        if (status && !status.dataset.checked) {
+          status.textContent = 'REWARDS ARE AUTOMATICALLY CREDITED AFTER THE WEEK ENDS.';
+          status.dataset.checked = 'true';
+        }
+      }
+    } catch (error) {
+      console.error('Weekly reward claim failed:', error);
+      const status = document.getElementById('weekly-reward-status');
+      if (status) status.textContent = 'WEEKLY REWARDS COULD NOT BE CHECKED. OPEN THIS TAB AGAIN LATER.';
+    } finally {
+      weeklyRewardClaimInProgress = false;
     }
   }
 
@@ -801,6 +899,18 @@
     if (completedWave <= 15) {
       setLeaderboardStatus('REACH WAVE 16 TO ENTER THE LEADERBOARD');
       return;
+    }
+    try {
+      const { error: weeklyError } = await leaderboardClient.rpc('submit_weekly_leaderboard_score', {
+        p_player_name: name,
+        p_best_wave: Math.max(16, Math.floor(Number(result.wave) || 16)),
+        p_best_kills: Math.max(0, Math.floor(Number(result.kills) || 0)),
+        p_best_bosses: Math.max(0, Math.floor(Number(result.bossKills) || 0)),
+        p_best_duration: Math.min(604800, Math.max(0, Math.floor(Number(result.elapsed) || 0)))
+      });
+      if (weeklyError) console.error('Weekly leaderboard submit failed:', weeklyError);
+    } catch (weeklyError) {
+      console.error('Weekly leaderboard submit failed:', weeklyError);
     }
     try {
       const { data: previous, error: readError } = await leaderboardClient
