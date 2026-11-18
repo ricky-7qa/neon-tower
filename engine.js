@@ -657,7 +657,7 @@
     void notice.offsetWidth;
     notice.classList.add('show');
     clearTimeout(notice.hideTimer);
-    notice.hideTimer = setTimeout(() => notice.classList.remove('show'), 3200);
+    notice.hideTimer = setTimeout(() => notice.classList.remove('show'), 1500);
   }
   window.buyFreeUpgradeChance = buyFreeUpgradeChance;
   function hasSkill(id) { return player.skills.includes(id); }
