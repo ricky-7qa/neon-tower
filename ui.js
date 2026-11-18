@@ -654,7 +654,7 @@
       '<div class="public-profile-stats">' +
       '<div><small>BEST INFINITE WAVE</small><b>'+Number(profile.best_infinite_wave || 1).toLocaleString('en-US')+'</b></div>' +
       '<div><small>TOTAL ENEMIES KILLED</small><b>'+Number(profile.total_kills || 0).toLocaleString('en-US')+'</b></div>' +
-      '<div><small>TOTAL RUNS</small><b>'+Number(profile.total_runs || 0).toLocaleString('en-US')+'</b></div>' +
+      '<div><small>TOTAL RUNS</small><b>'+(profile.total_runs == null ? '—' : Math.max(0,Number(profile.total_runs)||0).toLocaleString('en-US'))+'</b></div>' +
       '<div><small>PLAYER SINCE</small><b>'+esc(started)+'</b></div></div>' +
       (isOwn ? '<button class="btn btn-gold profile-customize-button" onclick="switchTab(\'customization\')">CUSTOMIZE PROFILE</button>' : '') +
       '</article>';
@@ -677,8 +677,6 @@
     if(!/^[0-9a-f-]{36}$/i.test(userId) || !leaderboardClient) return;
     switchTab('profile', true);
     const host=document.getElementById('public-player-profile');
-    const results=document.getElementById('player-profile-search-results');
-    if(results) results.innerHTML='';
     if(host) host.innerHTML='<div class="leaderboard-empty">LOADING PLAYER PROFILE...</div>';
     try {
       const {data:profile,error}=await leaderboardClient.from('player_profiles').select('*').eq('user_id',userId).maybeSingle();
@@ -687,7 +685,7 @@
       const {data:entry,error:entryError}=await leaderboardClient.from('leaderboard_entries').select('player_id,player_name,best_wave,best_kills,updated_at').eq('player_id',userId).eq('is_verified',true).maybeSingle();
       if(entryError) throw entryError;
       if(!entry) { renderProfileCard(null,false); return; }
-      renderProfileCard({player_name:entry.player_name,banner_id:'default',title_id:'none',player_level:1,levels_completed:0,best_infinite_wave:entry.best_wave,total_kills:entry.best_kills,total_runs:0,started_at:entry.updated_at},false);
+      renderProfileCard({player_name:entry.player_name,banner_id:'default',title_id:'none',player_level:1,levels_completed:0,best_infinite_wave:entry.best_wave,total_kills:entry.best_kills,total_runs:null,started_at:entry.updated_at},false);
       const note=document.createElement('p');
       note.className='profile-data-note';
       note.textContent='This player has not created a full public profile yet. Showing leaderboard statistics.';
