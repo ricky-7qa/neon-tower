@@ -338,6 +338,13 @@
         const waveLocked=run.wave<unlockWave;
         btn.disabled=waveLocked || (run.cash<c) || m;
         btn.classList.toggle('is-max-level', m);
+        if (m) {
+          btn.style.setProperty('border', '2px solid #ffd700', 'important');
+          btn.style.setProperty('box-shadow', '0 0 10px rgba(255,215,0,.5), inset 0 0 14px rgba(255,215,0,.12)', 'important');
+        } else {
+          btn.style.removeProperty('border');
+          btn.style.removeProperty('box-shadow');
+        }
         const label=waveLocked ? 'LOCKED · WAVE '+unlockWave : m ? 'MAX' : '$'+formatMoney(c);
         const currentEffect=k==='defensePercent'?' · '+getVal(k)+'%':'';
         btn.innerHTML=`<span style="color:${d.col}">${d.n} · LVL ${Math.min(maxLevel||999,(player.ws[k]||0)+l)}${currentEffect}</span><span style="color:${waveLocked?'#ffb45c':'#0f0'}">${label}</span>`;
