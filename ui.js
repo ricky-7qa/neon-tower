@@ -550,14 +550,14 @@
       setCloudSyncStatus('saved', 'CLOUD SYNCED — ALL PROGRESS SAVED');
       setAuthStatus('CLOUD SAVE SYNCED. YOUR PROGRESS IS LINKED TO THIS ACCOUNT.');
       claimWeeklyRewards();
-      // Publish the existing local/cloud personal best before refreshing the leaderboard.
+      // Sync lifetime personal bests to the global leaderboard only. Historical runs must not enter the current weekly competition.
       if (typeof submitLeaderboardResult === 'function' && Number(player?.highestWave || 0) > 15) {
         await submitLeaderboardResult({
           wave: player.highestWave,
           kills: player.bestKills || 0,
           bossKills: player.bestBosses || 0,
           elapsed: player.bestDuration || 0
-        });
+        }, { includeWeekly: false });
       }
       if (document.getElementById('tab-leaderboard')?.style.display !== 'none') {
         await loadLeaderboard();
@@ -892,7 +892,7 @@
     }
   }
 
-  async function submitLeaderboardResult(result) {
+  async function submitLeaderboardResult(result, options = {}) {
     if (!leaderboardClient || !leaderboardSession || !result) return;
     const name = (String(leaderboardSession.user.user_metadata?.display_name || '').trim() || localStorage.getItem(LEADERBOARD_NAME_KEY) || ('Pilot-' + leaderboardPlayerId.slice(0,4).toUpperCase())).trim();
     const completedWave = Math.floor(Number(result.wave) || 0);
@@ -900,17 +900,20 @@
       setLeaderboardStatus('REACH WAVE 16 TO ENTER THE LEADERBOARD');
       return;
     }
-    try {
-      const { error: weeklyError } = await leaderboardClient.rpc('submit_weekly_leaderboard_score', {
-        p_player_name: name,
-        p_best_wave: Math.max(16, Math.floor(Number(result.wave) || 16)),
-        p_best_kills: Math.max(0, Math.floor(Number(result.kills) || 0)),
-        p_best_bosses: Math.max(0, Math.floor(Number(result.bossKills) || 0)),
-        p_best_duration: Math.min(604800, Math.max(0, Math.floor(Number(result.elapsed) || 0)))
-      });
-      if (weeklyError) console.error('Weekly leaderboard submit failed:', weeklyError);
-    } catch (weeklyError) {
-      console.error('Weekly leaderboard submit failed:', weeklyError);
+    if (options.includeWeekly !== false) {
+      try {
+        const { error: weeklyError } = await leaderboardClient.rpc('submit_weekly_leaderboard_score', {
+          p_player_name: name,
+          p_best_wave: Math.max(16, Math.floor(Number(result.wave) || 16)),
+          p_best_kills: Math.max(0, Math.floor(Number(result.kills) || 0)),
+          p_best_bosses: Math.max(0, Math.floor(Number(result.bossKills) || 0)),
+          p_best_duration: Math.min(604800, Math.max(0, Math.floor(Number(result.elapsed) || 0)))
+        });
+        if (weeklyError) console.error('Weekly leaderboard submit failed:', weeklyError);
+      } catch (weeklyError) {
+        console.error('Weekly leaderboard submit failed:', weeklyError);
+      }
+  
     }
     try {
       const { data: previous, error: readError } = await leaderboardClient
