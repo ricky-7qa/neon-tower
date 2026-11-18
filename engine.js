@@ -128,7 +128,7 @@
 
   const skillDefs = {
     start:{id:'start',req:null,cost:0,n:'Core Systems',d:'Unlocks the tower progression network.'},
-    multishot:{id:'multishot',req:'start',cost:70,n:'Multi-Shot Core',d:'Adds a bonus shot to each firing burst.'},
+    multishot:{id:'multishot',req:'start',cost:70,n:'Multi-Shot Core',d:'Improves Multi-Shot projectile guidance and homing speed.'},
     missiles:{id:'missiles',req:'multishot',cost:325,n:'Missile System',d:'Launches a homing blast every 2 seconds.'},
     lasers:{id:'lasers',req:'multishot',cost:400,n:'Laser Array',d:'Fires a piercing beam every 4 seconds.'},
     shield:{id:'shield',req:'start',cost:140,n:'Energy Shield',d:'Blocks one hit, then recharges.'},
