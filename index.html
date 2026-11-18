@@ -143,12 +143,12 @@
     </button>
     <div class="menu-primary-action">
       <button id="start-new-run-button" class="btn start-game-button" onclick="startGame()" data-goatcounter-click="deploy-click" data-goatcounter-title="Start Game button clicked">START INFINITE MODE</button>
-      <button id="open-level-mode-button" class="btn level-mode-open-button" type="button" onclick="switchTab('levels')">LEVEL MODE · 30 CHALLENGES</button>
       <div id="resume-run-panel" class="resume-run-panel" style="display:none;">
         <div class="resume-run-label">RUN IN PROGRESS · <strong id="resume-run-wave">WAVE</strong></div>
         <button class="btn resume-run-button" onclick="resumeRun()">RESUME RUN</button>
       </div>
     </div>
+    <div class="level-mode-entry"><button id="open-level-mode-button" class="btn level-mode-open-button" type="button" onclick="switchTab('levels')"><span class="level-mode-entry-kicker">NEW CAMPAIGN</span><span class="level-mode-entry-title">LEVEL MODE</span><span class="level-mode-entry-meta">30 CHALLENGES <span aria-hidden="true">→</span></span></button></div>
     <div id="menu-drawer" class="menu-drawer">
       <div class="menu-nav">
         <button class="btn btn-gold" onclick="switchTab('workshop'); closeMenuDrawer()">WORKSHOP</button>
