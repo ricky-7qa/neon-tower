@@ -223,11 +223,11 @@
       const earlyWaveLevels = Math.min(19, Math.max(0, w - 1));
       const middleWaveLevels = Math.max(0, Math.min(30, w - 20));
       const lateWaveLevels = Math.max(0, w - 50);
-      const waveScale = Math.pow(1.075, earlyWaveLevels + lateWaveLevels) * Math.pow(1.15, middleWaveLevels);
+      const waveScale = Math.pow(1.055, earlyWaveLevels) * Math.pow(1.025, middleWaveLevels) * Math.pow(1.008, lateWaveLevels);
       const eliteBoost=getWaveDecisionValue('elite_invasion');
       if(w>=3&&this.type!=='Boss'&&Math.random()<eliteBoost){this.type='Elite';this.c='#ffd166';this.r=18;hpM*=1.8;damageM*=1.25;rewardM*=2.2;}
       this.maxHp=24*waveScale*hpM*(1+(this.type==='Boss'?getWaveDecisionValue('boss_gamble'):0));this.hp=this.maxHp;
-      this.dmg=(3.2*Math.pow(1.045,Math.max(0,w-1)))*damageM*(1+getWaveDecisionValue('blood_money'));
+      this.dmg=(3.2*Math.pow(1.015,Math.max(0,w-1)))*damageM*(1+getWaveDecisionValue('blood_money'));
       this.spd=(68+Math.min(30,w*1.1))*speedM*(1+getWaveDecisionValue('chaos_mode'));
       this.val=Math.floor((5*Math.pow(1.055,Math.max(0,w-1)))*rewardM*(1+(this.type!=='Minion'?getWaveDecisionValue('bounty_hunter'):0)+getWaveDecisionValue('elite_cash')));
       }
