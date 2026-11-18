@@ -3,7 +3,7 @@
 
   const visibleUpgradeKeys = {
     ATTACK: ['damage', 'speed', 'critC', 'critD', 'multishot'],
-    DEFENSE: ['hp', 'regen'],
+    DEFENSE: ['hp', 'regen', 'defensePercent'],
     UTILITY: ['range', 'cashBonus', 'waveBonus', 'bossBounty']
   };
   const isVisibleUpgrade = key => Object.values(visibleUpgradeKeys).some(keys => keys.includes(key));
@@ -75,7 +75,7 @@
       const section=document.createElement('section'); section.className='workshop-section';
       section.innerHTML='<h2 class="workshop-heading">'+category+'</h2><div class="grid workshop-grid"></div>';
       const grid=section.querySelector('.grid');
-      Object.keys(statDefs).filter(k=>isVisibleUpgrade(k) && statDefs[k].category===category).forEach(k=>{
+      Object.keys(statDefs).filter(k=>isVisibleUpgrade(k) && statDefs[k].category===category && k!=='defensePercent').forEach(k=>{
         let d=statDefs[k],lvl=player.ws[k]||0,cost=getCost(k,true),val=getVal(k,true),isMax=d.max&&lvl>=d.max;
         grid.insertAdjacentHTML('beforeend',`<div class="card">
           <div><h3><span style="color:${d.col}">${d.n}</span><span>LVL ${lvl}${d.max?' / '+d.max:''}</span></h3><p>${d.d}<br><br><span style="color:#fff;">Current: ${val}</span></p></div>
@@ -330,7 +330,8 @@
         const waveLocked=run.wave<unlockWave;
         btn.disabled=waveLocked || (run.cash<c) || m;
         const label=waveLocked ? 'LOCKED · WAVE '+unlockWave : m ? 'MAX' : '$'+formatMoney(c);
-        btn.innerHTML=`<span style="color:${d.col}">${d.n} · LVL ${Math.min(d.max||999,(player.ws[k]||0)+l)}</span><span style="color:${waveLocked?'#ffb45c':'#0f0'}">${label}</span>`;
+        const currentEffect=k==='defensePercent'?' · '+getVal(k)+'%':'';
+        btn.innerHTML=`<span style="color:${d.col}">${d.n} · LVL ${Math.min(d.max||999,(player.ws[k]||0)+l)}${currentEffect}</span><span style="color:${waveLocked?'#ffb45c':'#0f0'}">${label}</span>`;
       }
     });
   }
