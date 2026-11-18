@@ -772,7 +772,7 @@
     checkAchievements(); saveGame();
     const returnButton = document.getElementById('gameover-return-button');
     if (returnButton) returnButton.setAttribute('onclick', 'returnToMenu()');
-    if (typeof submitLeaderboardResult === 'function') submitLeaderboardResult(run);
+    if (run.mode !== 'level' && typeof submitLeaderboardResult === 'function') submitLeaderboardResult(run);
   }
   function resumeRun() {
     let checkpoint = null;
