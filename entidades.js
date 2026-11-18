@@ -188,7 +188,8 @@
       const rand = Math.random();
       this.type = "Minion"; this.c = "#ff0055"; this.r = 15;
       let hpM = 1, speedM = 1, damageM = 1, rewardM = 1;
-      if (game.toSpawn === 1 && w % 5 === 0) {
+      const bossInterval = run.mode === 'level' ? (Number(window.NEON_LEVEL_MODE_CONFIG?.difficulty?.bossEveryWaves) || 5) : 5;
+      if (game.toSpawn === 1 && w % bossInterval === 0) {
         this.type = "Boss"; this.c = "#9900ff"; this.r = 34;
         hpM = 36; speedM = 0.58; damageM = 1.8; rewardM = 18;
         this.attackStep = 0; this.bossPulse = 0; this.bossPhase = 0; this.phaseFlash = 0;
