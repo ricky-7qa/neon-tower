@@ -76,9 +76,9 @@
       section.innerHTML='<h2 class="workshop-heading">'+category+'</h2><div class="grid workshop-grid"></div>';
       const grid=section.querySelector('.grid');
       Object.keys(statDefs).filter(k=>isVisibleUpgrade(k) && statDefs[k].category===category).forEach(k=>{
-        let d=statDefs[k],lvl=player.ws[k]||0,cost=getCost(k,true),val=getVal(k,true),isMax=d.max&&lvl>=d.max;
+        let d=statDefs[k],lvl=player.ws[k]||0,cost=getCost(k,true),val=getVal(k,true),wsMax=d.workshopMax||d.max,isMax=wsMax&&lvl>=wsMax;
         grid.insertAdjacentHTML('beforeend',`<div class="card">
-          <div><h3><span style="color:${d.col}">${d.n}</span><span>LVL ${lvl}${d.max?' / '+d.max:''}</span></h3><p>${d.d}<br><br><span style="color:#fff;">Current: ${val}</span></p></div>
+          <div><h3><span style="color:${d.col}">${d.n}</span><span>LVL ${lvl}${wsMax?' / '+wsMax:''}</span></h3><p>${d.d}<br><br><span style="color:#fff;">Current: ${val}</span></p></div>
           <button class="btn btn-gold" ${player.coins<cost||isMax?'disabled':''} onclick="buyWs('${k}')">${isMax?'MAX LEVEL':`UPGRADE · $${formatMoney(cost)}`}</button>
         </div>`);
       });
@@ -193,7 +193,7 @@
       }).join('')+'</div></div>'+
       '<div class="skill-tree-legend"><span><i class="legend-dot unlocked"></i> Unlocked</span><span><i class="legend-dot available"></i> Available</span><span><i class="legend-dot locked"></i> Locked</span></div>';
   }
-  function buyWs(k) { if (!isVisibleUpgrade(k)) return; let c=getCost(k,true); if(player.coins>=c && (!statDefs[k].max || (player.ws[k]||0)<statDefs[k].max)){player.coins-=c;player.ws[k]=(player.ws[k]||0)+1;saveGame();} }
+  function buyWs(k) { if (!isVisibleUpgrade(k)) return; const d=statDefs[k],max=d.workshopMax||d.max; let c=getCost(k,true); if(player.coins>=c && (!max || (player.ws[k]||0)<max)){player.coins-=c;player.ws[k]=(player.ws[k]||0)+1;saveGame();} }
   function buySpeedControl(level) {
     const currentLevel = Math.max(0, Math.min(3, Number(player.speedControlLevel) || 0));
     const nextLevel = currentLevel + 1;
