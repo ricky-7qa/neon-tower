@@ -686,15 +686,29 @@
     results.innerHTML=data.map(p=>'<button class="profile-search-result" onclick="openPlayerProfile(\''+p.user_id+'\')"><strong>'+escapeLeaderboardText(p.player_name)+'</strong><span>LEVEL '+Number(p.player_level||1)+' · WAVE '+Number(p.best_infinite_wave||1)+'</span></button>').join('');
   }
   async function openPlayerProfile(userId) {
-    if(!/^[0-9a-f-]{36}$/i.test(String(userId))) return;
-    switchTab('profile');
+    userId=String(userId||'').trim();
+    if(!/^[0-9a-f-]{36}$/i.test(userId) || !leaderboardClient) return;
+    switchTab('profile', true);
     const host=document.getElementById('public-player-profile');
     const results=document.getElementById('player-profile-search-results');
     if(results) results.innerHTML='';
     if(host) host.innerHTML='<div class="leaderboard-empty">LOADING PLAYER PROFILE...</div>';
-    const {data,error}=await leaderboardClient.from('player_profiles').select('*').eq('user_id',userId).maybeSingle();
-    if(error){console.error('Player profile load failed:',error);if(host)host.innerHTML='<div class="leaderboard-empty">PROFILE COULD NOT BE LOADED.</div>';return;}
-    renderProfileCard(data,userId===leaderboardPlayerId);
+    try {
+      const {data:profile,error}=await leaderboardClient.from('player_profiles').select('*').eq('user_id',userId).maybeSingle();
+      if(error) throw error;
+      if(profile) { renderProfileCard(profile,userId===leaderboardPlayerId); return; }
+      const {data:entry,error:entryError}=await leaderboardClient.from('leaderboard_entries').select('player_id,player_name,best_wave,best_kills,updated_at').eq('player_id',userId).eq('is_verified',true).maybeSingle();
+      if(entryError) throw entryError;
+      if(!entry) { renderProfileCard(null,false); return; }
+      renderProfileCard({player_name:entry.player_name,banner_id:'default',title_id:'none',player_level:1,levels_completed:0,best_infinite_wave:entry.best_wave,total_kills:entry.best_kills,total_runs:0,started_at:entry.updated_at},false);
+      const note=document.createElement('p');
+      note.className='profile-data-note';
+      note.textContent='This player has not created a full public profile yet. Showing leaderboard statistics.';
+      host?.querySelector('.public-profile-card')?.appendChild(note);
+    } catch(error) {
+      console.error('Player profile load failed:',error);
+      if(host) host.innerHTML='<div class="leaderboard-empty">PROFILE COULD NOT BE LOADED. PLEASE TRY AGAIN.</div>';
+    }
   }
   async function syncPublicPlayerProfile() {
     if(!leaderboardClient || !leaderboardSession || !leaderboardPlayerId || !cloudSaveReady) return;
@@ -763,7 +777,7 @@
     if (summary) summary.textContent = completed.size + ' / 30 LEVELS COMPLETED';
   }
 
-  function switchTab(t) {
+  function switchTab(t, skipProfileLoad = false) {
     ['workshop', 'skills', 'achievements', 'player-stats', 'profile', 'customization', 'leaderboard', 'levels'].forEach(x => {
       const tab = document.getElementById('tab-'+x);
       tab.style.display = (x===t?'flex':'none');
@@ -771,7 +785,7 @@
     });
     if (t==='skills') buildSkillTree();
     if (t==='leaderboard') showLeaderboardView();
-    if (t==='profile') loadOwnPublicProfile();
+    if (t==='profile' && !skipProfileLoad) loadOwnPublicProfile();
     if (t==='customization') renderCustomization();
     if (t==='levels') renderLevelMode();
   }
