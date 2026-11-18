@@ -632,7 +632,8 @@
     {id:'neon_legend',name:'NEON LEGEND',unlock:30}
   ];
   function getPlayerCampaignLevel() {
-    return Math.max(1, Math.min(30, (Number(player.levelMode?.highestUnlocked) || 1) - 1));
+    const completed=Array.isArray(player.levelMode?.completed)?new Set(player.levelMode.completed).size:0;
+    return Math.max(1,Math.min(30,completed));
   }
   let lastPublicProfileSignature = '';
   function getPlayerName() {
