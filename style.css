@@ -3064,3 +3064,28 @@
     font:14px/1.6 Arial,sans-serif;
   }
 }
+
+
+/* Weekly leaderboard */
+#app .leaderboard-mode-tabs { display:flex; justify-content:center; gap:8px; margin:16px 0 12px; }
+#app .leaderboard-mode-tabs .btn { min-width:112px; padding:9px 18px; font-size:10px; letter-spacing:1.2px; }
+#app .weekly-competition-card { margin:10px 0 14px; padding:16px; border:1px solid rgba(0,220,255,.22); border-radius:11px; background:linear-gradient(145deg,rgba(5,25,42,.94),rgba(3,9,18,.98)); text-align:center; }
+#app .weekly-competition-kicker { color:#59eaff; font-size:8px; font-weight:900; letter-spacing:2px; }
+#app .weekly-competition-card h3 { margin:7px 0 5px; color:#effcff; font-size:19px; letter-spacing:1.5px; }
+#app .weekly-competition-card p { margin:0 auto 10px; max-width:440px; color:#8ca6b8; font-size:11px; line-height:1.5; }
+#app .weekly-schedule { color:#63e9f7; font-size:9px; font-weight:900; letter-spacing:1px; }
+#app .weekly-prizes { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:14px; }
+#app .weekly-prize { display:flex; flex-direction:column; align-items:center; gap:3px; padding:9px 5px; border:1px solid rgba(100,190,210,.16); border-radius:8px; background:rgba(0,8,17,.55); }
+#app .weekly-prize strong { color:#dffaff; font-size:10px; }
+#app .weekly-prize b { color:#ffd76b; font-size:20px; text-shadow:0 0 12px rgba(255,210,80,.16); }
+#app .weekly-prize small { color:#7893a5; font-size:7px; letter-spacing:1.2px; }
+#app .weekly-reward-status { margin:12px 0 2px; color:#78a7b7; font-size:9px; line-height:1.5; text-align:center; letter-spacing:.5px; }
+@media (max-width:600px) {
+  #app .leaderboard-mode-tabs .btn { min-width:0; flex:1; }
+  #app .weekly-competition-card { padding:12px 9px; }
+  #app .weekly-competition-card h3 { font-size:16px; }
+  #app .weekly-schedule { font-size:8px; letter-spacing:.4px; }
+  #app .weekly-prizes { gap:5px; }
+  #app .weekly-prize { padding:8px 3px; }
+  #app .weekly-prize b { font-size:17px; }
+}
