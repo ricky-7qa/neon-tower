@@ -856,11 +856,13 @@
     player.bestBosses = Math.max(player.bestBosses || 0, run.bossKills || 0);
     player.bestDuration = Math.max(player.bestDuration || 0, run.elapsed || 0);
     document.getElementById('hud').classList.remove('active-hud');
-    document.getElementById('gameover').classList.add('active-layer');
+    const gameover = document.getElementById('gameover');
+    gameover.classList.toggle('level-mode-success', !!completed);
+    gameover.classList.add('active-layer');
     const title = document.getElementById('gameover-title');
-    if (title) { title.textContent = completed ? 'LEVEL COMPLETED!' : 'LEVEL FAILED'; title.style.color = completed ? '#55ffb0' : '#ff3366'; title.style.textShadow = completed ? '0 0 40px rgba(85,255,176,.75)' : '0 0 40px #ff3366'; }
+    if (title) { title.textContent = completed ? 'LEVEL ' + run.levelId + ' COMPLETE!' : 'LEVEL ' + run.levelId + ' FAILED'; title.style.color = completed ? '#55ffb0' : '#ff3366'; title.style.textShadow = completed ? '0 0 40px rgba(85,255,176,.75)' : '0 0 40px #ff3366'; }
     const reportTitle = document.getElementById('gameover-report-title');
-    if (reportTitle) reportTitle.textContent = 'LEVEL ' + run.levelId + ' REPORT';
+    if (reportTitle) reportTitle.textContent = completed ? 'REWARDS' : 'LEVEL ' + run.levelId + ' REPORT';
     document.getElementById('go-wave').innerText = run.wave;
     document.getElementById('go-kills').innerText = run.kills;
     document.getElementById('go-bosses').innerText = run.bossKills || 0;
@@ -870,10 +872,18 @@
     document.getElementById('go-record-time').innerText = formatRunTime(player.bestDuration);
     document.getElementById('go-runs').innerText = player.runsPlayed;
     document.getElementById('go-coins').innerText = completed ? '+' + formatMoney(reward + (Number(run.coins) || 0)) + ' COINS' : '+0 COINS';
+    const profitLabel = document.querySelector('#gameover .mission-profit');
+    if (profitLabel) profitLabel.firstChild.textContent = completed ? 'REWARDS: ' : 'PROFIT: ';
+    const returnButton = document.getElementById('gameover-return-button');
+    if (returnButton) { returnButton.textContent = 'MENU'; returnButton.setAttribute('onclick', 'returnToMenu()'); }
+    const nextButton = document.getElementById('gameover-next-level-button');
+    if (nextButton) {
+      const hasNext = !!completed && Number(run.levelId) < 30;
+      nextButton.style.display = hasNext ? '' : 'none';
+      nextButton.onclick = hasNext ? function(){ document.getElementById('gameover').classList.remove('active-layer','level-mode-success'); startLevelMode(Number(run.levelId) + 1); } : null;
+    }
     run.mode = 'infinite';
     saveGame();
-    const returnButton = document.getElementById('gameover-return-button');
-    if (returnButton) returnButton.setAttribute('onclick', "returnToMenu('levels')");
   }
 
   function updateLevelModeProgress() {
