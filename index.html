@@ -203,8 +203,30 @@
         <div class="leaderboard-heading"><span class="eyebrow">NEON TOWER // GLOBAL</span><h2>WORLD LEADERBOARD</h2><p>Compete with players around the world.</p></div>
         <div id="cloud-sync-status" class="cloud-sync-status" data-state="syncing" role="status" aria-live="polite"><span class="cloud-sync-indicator"></span><span>CHECKING CLOUD STATUS...</span></div>
         <div class="leaderboard-profile"><label for="leaderboard-name">PLAYER NAME</label><div class="leaderboard-name-row"><input id="leaderboard-name" maxlength="16" minlength="3" placeholder="Enter a player name" autocomplete="nickname"><button class="btn btn-gold" onclick="saveLeaderboardName()">SAVE</button></div><small>3–16 characters. Do not use your real name or personal information.</small></div>
-        <div class="leaderboard-toolbar"><span id="leaderboard-status" role="status">CONNECTING...</span><button class="btn" onclick="loadLeaderboard()">REFRESH</button></div>
-        <div id="leaderboard-list" class="leaderboard-list"><div class="leaderboard-empty">LOADING GLOBAL RANKINGS...</div></div>
+        <div class="leaderboard-mode-tabs">
+          <button id="leaderboard-global-tab" type="button" class="btn btn-gold" onclick="showLeaderboardMode('global')">GLOBAL</button>
+          <button id="leaderboard-weekly-tab" type="button" class="btn" onclick="showLeaderboardMode('weekly')">WEEKLY</button>
+        </div>
+        <div id="global-leaderboard-view">
+          <div class="leaderboard-toolbar"><span id="leaderboard-status" role="status">CONNECTING...</span><button class="btn" onclick="refreshLeaderboards()">REFRESH</button></div>
+          <div id="leaderboard-list" class="leaderboard-list"><div class="leaderboard-empty">LOADING GLOBAL RANKINGS...</div></div>
+        </div>
+        <div id="weekly-leaderboard-view" style="display:none;">
+          <div class="weekly-competition-card">
+            <span class="weekly-competition-kicker">NEON TOWER // WEEKLY CHAMPIONSHIP</span>
+            <h3>WEEKLY LEADERBOARD</h3>
+            <p>Reach your highest wave and claim a place in the weekly top three.</p>
+            <div class="weekly-schedule">WEDNESDAY 00:00 – TUESDAY 23:59 · PORTUGAL TIME</div>
+            <div class="weekly-prizes">
+              <div class="weekly-prize"><strong>🥇 1ST</strong><b>500</b><small>COINS</small></div>
+              <div class="weekly-prize"><strong>🥈 2ND</strong><b>300</b><small>COINS</small></div>
+              <div class="weekly-prize"><strong>🥉 3RD</strong><b>150</b><small>COINS</small></div>
+            </div>
+          </div>
+          <div class="leaderboard-toolbar"><span id="weekly-leaderboard-status" role="status">CONNECTING...</span><button class="btn" onclick="loadWeeklyLeaderboard()">REFRESH</button></div>
+          <div id="weekly-leaderboard-list" class="leaderboard-list"><div class="leaderboard-empty">LOADING WEEKLY RANKINGS...</div></div>
+          <p id="weekly-reward-status" class="weekly-reward-status" role="status">REWARDS ARE AUTOMATICALLY CREDITED AFTER THE WEEK ENDS.</p>
+        </div>
         <div class="leaderboard-footer-actions"><button type="button" class="btn" onclick="signOutLeaderboard()">LOG OUT</button></div>
       </section>
     </div>
