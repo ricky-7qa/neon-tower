@@ -694,10 +694,10 @@
     }
     let count;
     if (w <= 20) count = 9 + Math.floor(w * 1.25);
-    else if (w <= 50) count = 34 + Math.floor((w - 20) * 0.7);
-    else if (w <= 100) count = 55 + Math.floor((w - 50) * 0.3);
-    else count = 70 + Math.floor((w - 100) * 0.35);
-    return Math.round(count * 1.12);
+    else if (w <= 50) count = 34 + Math.floor((w - 20) * 0.45);
+    else if (w <= 100) count = 48 + Math.floor((w - 50) * 0.2);
+    else count = 58 + Math.floor((w - 100) * 0.12);
+    return count;
   }
 
   /** MAIN LOOP & RENDERING **/
@@ -787,6 +787,7 @@
     document.getElementById('go-runs').innerText = player.runsPlayed;
     document.getElementById('go-coins').innerText = '+' + formatMoney(run.coins) + ' COINS';
     checkAchievements(); saveGame();
+    if (typeof window.scheduleNeonCloudSave === 'function') window.scheduleNeonCloudSave();
     if (typeof window.syncPublicPlayerProfile === 'function') window.syncPublicPlayerProfile();
     const returnButton = document.getElementById('gameover-return-button');
     if (returnButton) returnButton.setAttribute('onclick', 'returnToMenu()');
@@ -886,6 +887,7 @@
     }
     run.mode = 'infinite';
     saveGame();
+    if (typeof window.scheduleNeonCloudSave === 'function') window.scheduleNeonCloudSave();
     if (typeof window.syncPublicPlayerProfile === 'function') window.syncPublicPlayerProfile();
   }
 
@@ -1034,7 +1036,7 @@
       saveRunCheckpoint(showPerk, showDecision); 
     }
     game.spawnT -= game.dt;
-    if(game.spawnT <= 0 && game.toSpawn > 0) { game.ents.e.push(new Enemy(run.wave)); game.toSpawn--; game.spawnT = Math.max(0.48, 0.82 - (run.wave*0.006)); updateHUD(); }
+    if(game.spawnT <= 0 && game.toSpawn > 0) { game.ents.e.push(new Enemy(run.wave)); game.toSpawn--; game.spawnT = Math.max(0.68, 1.0 - (Math.min(run.wave, 100)*0.003)); updateHUD(); }
 
     tower.update(game.dt); tower.draw();run.comboTimer=Math.max(0,run.comboTimer-game.dt);if(!run.comboTimer)run.combo=0;
 
