@@ -3093,3 +3093,11 @@
   #app .weekly-prize { padding:8px 3px; }
   #app .weekly-prize b { font-size:17px; }
 }
+
+
+/* Run upgrades at their maximum level */
+#upg-content .upg-btn.is-max-level,
+#upg-content .upg-btn.is-max-level:disabled {
+  border: 2px solid #ffd700;
+  box-shadow: 0 0 8px rgba(255,215,0,.38), inset 0 0 14px rgba(255,215,0,.10);
+}
