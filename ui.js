@@ -743,6 +743,7 @@
     if(document.getElementById('tab-profile')?.style.display!=='none') loadOwnPublicProfile();
   }
   window.openPlayerProfile=openPlayerProfile;
+  window.syncPublicPlayerProfile = syncPublicPlayerProfile;
   window.equipProfileCosmetic=equipProfileCosmetic;
 
   function renderLevelMode() {
