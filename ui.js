@@ -331,7 +331,7 @@
     }
 
     Object.keys(statDefs).filter(isVisibleUpgrade).forEach(k => {
-      const d=statDefs[k], l=run.stats[k]||0, c=getCost(k, false), m=!!(d.max && (player.ws[k]||0)+l>=d.max);
+      const d=statDefs[k], l=run.stats[k]||0, c=getCost(k, false), maxLevel=k==='speed'&&run.wave>100?35:d.max, m=!!(maxLevel && (player.ws[k]||0)+l>=maxLevel);
       const btn=document.getElementById('btn-upg-'+k);
       if(btn) {
         const unlockWave=d.unlockWave||1;
@@ -339,7 +339,7 @@
         btn.disabled=waveLocked || (run.cash<c) || m;
         const label=waveLocked ? 'LOCKED · WAVE '+unlockWave : m ? 'MAX' : '$'+formatMoney(c);
         const currentEffect=k==='defensePercent'?' · '+getVal(k)+'%':'';
-        btn.innerHTML=`<span style="color:${d.col}">${d.n} · LVL ${Math.min(d.max||999,(player.ws[k]||0)+l)}${currentEffect}</span><span style="color:${waveLocked?'#ffb45c':'#0f0'}">${label}</span>`;
+        btn.innerHTML=`<span style="color:${d.col}">${d.n} · LVL ${Math.min(maxLevel||999,(player.ws[k]||0)+l)}${currentEffect}</span><span style="color:${waveLocked?'#ffb45c':'#0f0'}">${label}</span>`;
       }
     });
   }
@@ -349,7 +349,8 @@
     const d=statDefs[k];
     if(!d || run.wave<(d.unlockWave||1)) return;
     const c=getCost(k,false);
-    if(run.cash>=c && (!d.max || (player.ws[k]||0)+(run.stats[k]||0)<d.max)) {
+    const maxLevel=k==='speed'&&run.wave>100?35:d.max;
+    if(run.cash>=c && (!maxLevel || (player.ws[k]||0)+(run.stats[k]||0)<maxLevel)) {
       run.cash-=c;
       run.stats[k]=(run.stats[k]||0)+1;
       if(k==='hp') {
