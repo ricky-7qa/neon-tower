@@ -3135,3 +3135,105 @@
   border: 2px solid #ffd700;
   box-shadow: 0 0 8px rgba(255,215,0,.38), inset 0 0 14px rgba(255,215,0,.10);
 }
+
+
+/* LEVEL MODE — campaign feature card redesign */
+#app #menu > .level-mode-entry {
+  position:relative !important;
+  display:block !important;
+  box-sizing:border-box !important;
+  width:min(620px,calc(100% - 32px)) !important;
+  margin:2px auto 18px !important;
+  padding:0 !important;
+}
+#app #menu > .level-mode-entry > #open-level-mode-button {
+  position:relative !important;
+  isolation:isolate;
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) auto !important;
+  grid-template-rows:auto auto !important;
+  align-items:center !important;
+  gap:7px 16px !important;
+  width:100% !important;
+  min-height:88px !important;
+  box-sizing:border-box !important;
+  overflow:hidden !important;
+  padding:15px 20px 15px 24px !important;
+  border:1px solid rgba(49,238,255,.62) !important;
+  border-left:4px solid #20eaff !important;
+  border-radius:13px !important;
+  background:
+    radial-gradient(ellipse at 92% 50%,rgba(0,218,255,.18),transparent 42%),
+    linear-gradient(112deg,rgba(5,42,60,.98),rgba(3,14,30,.99) 68%,rgba(4,28,47,.98)) !important;
+  color:#eafcff !important;
+  text-align:left !important;
+  box-shadow:0 7px 24px rgba(0,0,0,.25),0 0 22px rgba(0,220,255,.11),inset 0 1px rgba(255,255,255,.07) !important;
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease !important;
+}
+#app #menu > .level-mode-entry > #open-level-mode-button::before {
+  content:"";
+  position:absolute;
+  z-index:-1;
+  top:-45px;
+  right:58px;
+  width:150px;
+  height:150px;
+  border:1px solid rgba(65,235,255,.12);
+  border-radius:50%;
+  box-shadow:0 0 0 17px rgba(65,235,255,.025),0 0 0 34px rgba(65,235,255,.02);
+}
+#app #menu > .level-mode-entry > #open-level-mode-button::after {
+  content:"›";
+  grid-column:2;
+  grid-row:1 / 3;
+  align-self:center;
+  color:#52f2ff;
+  font:400 42px/1 Arial,sans-serif;
+  text-shadow:0 0 16px rgba(0,230,255,.65);
+}
+#app #menu .level-mode-entry-kicker {
+  grid-column:1 !important;
+  color:#58dce9 !important;
+  font:900 9px/1 Orbitron,sans-serif !important;
+  letter-spacing:2.6px !important;
+}
+#app #menu .level-mode-entry-title {
+  grid-column:1 !important;
+  color:#f2fdff !important;
+  font:900 clamp(17px,2vw,21px)/1.15 Orbitron,sans-serif !important;
+  letter-spacing:2.2px !important;
+  text-shadow:0 0 15px rgba(0,225,255,.22);
+}
+#app #menu .level-mode-entry-meta {
+  grid-column:1 !important;
+  grid-row:3 !important;
+  color:#9dbbc9 !important;
+  font:800 8px/1.2 Orbitron,sans-serif !important;
+  letter-spacing:1.8px !important;
+}
+#app #menu > .level-mode-entry > #open-level-mode-button:hover {
+  transform:translateY(-2px);
+  border-color:#58f5ff !important;
+  box-shadow:0 10px 28px rgba(0,0,0,.3),0 0 28px rgba(0,225,255,.2),inset 0 1px rgba(255,255,255,.1) !important;
+}
+#app #menu > .level-mode-entry > #open-level-mode-button:active { transform:translateY(0) scale(.99); }
+@media(max-width:700px) {
+  #app #menu > .level-mode-entry {
+    width:calc(100% - 28px) !important;
+    margin:2px auto 13px !important;
+  }
+  #app #menu > .level-mode-entry > #open-level-mode-button {
+    min-height:78px !important;
+    padding:12px 15px 12px 17px !important;
+    gap:6px 10px !important;
+    border-radius:11px !important;
+  }
+  #app #menu .level-mode-entry-kicker { font-size:8px !important; letter-spacing:2px !important; }
+  #app #menu .level-mode-entry-title { font-size:16px !important; letter-spacing:1.7px !important; }
+  #app #menu .level-mode-entry-meta { font-size:7px !important; letter-spacing:1.3px !important; }
+  #app #menu > .level-mode-entry > #open-level-mode-button::after { font-size:36px; }
+}
+@media(max-width:360px) {
+  #app #menu > .level-mode-entry > #open-level-mode-button { min-height:72px !important; padding-left:13px !important; }
+  #app #menu .level-mode-entry-title { font-size:14px !important; }
+}
