@@ -208,6 +208,17 @@
       }
 
       // Gentle, predictable scaling: later waves get tougher without becoming exponential walls.
+      if (run.mode === 'level') {
+        const difficulty = window.NEON_LEVEL_MODE_CONFIG?.difficulty || {};
+        const levelScale = Math.pow(Number(difficulty.healthGrowthPerWave) || 1.045, Math.max(0, w - 1));
+        const damageScale = Math.pow(Number(difficulty.damageGrowthPerWave) || 1.025, Math.max(0, w - 1));
+        const speedScale = Math.max(0, Number(difficulty.speedGrowthPerWave) || 0.65) * Math.max(0, w - 1);
+        this.maxHp = 22 * levelScale * hpM;
+        this.hp = this.maxHp;
+        this.dmg = ((Number(difficulty.damageBase) || 2.4) * damageScale) * damageM;
+        this.spd = ((Number(difficulty.speedBase) || 62) + speedScale) * speedM;
+        this.val = Math.floor((4.5 * Math.pow(1.035, Math.max(0, w - 1))) * rewardM);
+      } else {
       const earlyWaveLevels = Math.min(19, Math.max(0, w - 1));
       const middleWaveLevels = Math.max(0, Math.min(30, w - 20));
       const lateWaveLevels = Math.max(0, w - 50);
@@ -218,6 +229,7 @@
       this.dmg=(3.2*Math.pow(1.045,Math.max(0,w-1)))*damageM*(1+getWaveDecisionValue('blood_money'));
       this.spd=(68+Math.min(30,w*1.1))*speedM*(1+getWaveDecisionValue('chaos_mode'));
       this.val=Math.floor((5*Math.pow(1.055,Math.max(0,w-1)))*rewardM*(1+(this.type!=='Minion'?getWaveDecisionValue('bounty_hunter'):0)+getWaveDecisionValue('elite_cash')));
+      }
       this.fireCd = (this.type === "Boss" ? 1.25 : 0.9) + Math.random() * 1.5;
       this.isAttackingTower = false;
       this.contactAngle = 0;
