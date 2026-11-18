@@ -162,7 +162,7 @@
       reduced*=1-Math.min(.75,getWaveDecisionValue('reinforced_core')+(attacker&&attacker.isProjectile?getWaveDecisionValue('defensive_matrix'):0)+getWaveDecisionValue('glass_cannon_damage_taken'));
       reduced*=1-Math.min(60,parseFloat(getVal('bulletGuard'))+parseFloat(getVal('adaptiveArmor')))/100;
       if(attacker && attacker.type==='Boss') reduced*=1-Math.min(50,parseFloat(getVal('bossWard')))/100;
-      reduced*=1-Math.min(.495,parseFloat(getVal('defensePercent'))/100);
+      reduced*=1-Math.min(.25,parseFloat(getVal('defensePercent'))/100);
       reduced=Math.max(1,reduced-parseFloat(getVal('armor')));
       this.hp=Math.max(0,this.hp-reduced);
       if(this.hp<=0&&(run.secondChanceCharges||0)>0){run.secondChanceCharges--;this.hp=Math.max(1,this.maxHp*(Number(run.secondChanceHeal)||.01));createParts(this.x,this.y,'#ffd166',28,6);return;}
