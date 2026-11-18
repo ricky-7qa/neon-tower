@@ -709,7 +709,7 @@
       best_infinite_wave:Math.max(1,Number(player.highestWave)||1),
       total_kills:Math.min(1000000000,Math.max(0,Math.floor(Number(player.totalKills)||0))),
       total_runs:Math.min(10000000,Math.max(0,Math.floor(Number(player.runsPlayed)||0))),
-      started_at:new Date(Number(player.startedAt)||Date.now()).toISOString(),
+      started_at:leaderboardSession.user.created_at || new Date().toISOString(),
       updated_at:new Date().toISOString()
     };
     const signature=JSON.stringify({...payload,updated_at:undefined});
