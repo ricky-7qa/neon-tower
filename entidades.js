@@ -171,7 +171,7 @@
       
       // End the run immediately at zero HP, before any secondary effects run.
       if(this.hp <= 0) { processGameOver(); return; }
-      if(hasSkill('thorn') && attacker) { attacker.hit(reduced * 0.5); createParts(this.x, this.y, "#fff", 10, 3); }
+      if(hasSkill('thorn') && attacker && !attacker.isProjectile && typeof attacker.hit === 'function') { attacker.hit(reduced * 0.5); createParts(this.x, this.y, "#fff", 10, 3); }
     }
   }
 
