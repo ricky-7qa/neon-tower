@@ -210,8 +210,16 @@
     AudioSys.coin();
   }
   function buySkill(id) {
-    let s = skillDefs[id]; if(hasSkill(id)) return;
-    if(player.coins >= s.cost) { player.coins -= s.cost; player.skills.push(id); saveGame(); buildSkillTree(); AudioSys.coin(); }
+    const s = skillDefs[id];
+    if (!s || hasSkill(id) || (s.req && !hasSkill(s.req))) return;
+    const cost = Number(s.cost);
+    if (!Number.isFinite(cost) || cost < 0 || !Number.isFinite(Number(player.coins)) || Number(player.coins) < cost) return;
+    if (!Array.isArray(player.skills)) player.skills = ['start'];
+    player.coins = Number(player.coins) - cost;
+    player.skills.push(id);
+    saveGame();
+    buildSkillTree();
+    AudioSys.coin();
   }
 
   function openGameSettings() {
