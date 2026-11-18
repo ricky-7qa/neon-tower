@@ -647,16 +647,24 @@
     const title = PROFILE_TITLES.find(item => item.id === profile.title_id) || PROFILE_TITLES[0];
     const esc = escapeLeaderboardText;
     const started = profile.started_at ? new Date(profile.started_at).toLocaleDateString('en-GB') : '—';
+    const number = value => Math.max(0,Math.floor(Number(value)||0)).toLocaleString('en-US');
+    const completedLevels = Math.min(30,Math.max(0,Number(profile.levels_completed)||0));
+    const levelProgress = completedLevels / 30 * 100;
     host.innerHTML = '<article class="public-profile-card">' +
       '<div class="public-profile-banner" style="background:'+banner.style+'"><span>'+esc(banner.name)+' BANNER</span></div>' +
       '<div class="public-profile-identity"><strong>'+esc(profile.player_name)+'</strong><span>'+esc(title.name)+'</span></div>' +
-      '<div class="public-profile-level">PLAYER LEVEL <b>'+Number(profile.player_level || 1)+'</b><small>'+Number(profile.levels_completed || 0)+'/30 LEVELS COMPLETED</small></div>' +
+      '<div class="public-profile-level"><div class="public-profile-level-copy"><span>PLAYER LEVEL <b>'+Number(profile.player_level || 1)+'</b></span><small>'+completedLevels+'/30 LEVELS COMPLETED</small></div><div class="public-profile-level-progress"><span style="width:'+levelProgress+'%"></span></div></div>' +
+      '<div class="public-profile-section-label">CAREER RECORDS</div>' +
       '<div class="public-profile-stats">' +
-      '<div><small>BEST INFINITE WAVE</small><b>'+Number(profile.best_infinite_wave || 1).toLocaleString('en-US')+'</b></div>' +
-      '<div><small>TOTAL ENEMIES KILLED</small><b>'+Number(profile.total_kills || 0).toLocaleString('en-US')+'</b></div>' +
-      '<div><small>TOTAL RUNS</small><b>'+(profile.total_runs == null ? '—' : Math.max(0,Number(profile.total_runs)||0).toLocaleString('en-US'))+'</b></div>' +
+      '<div><small>BEST INFINITE WAVE</small><b>'+number(profile.best_infinite_wave || 1)+'</b></div>' +
+      '<div><small>TOTAL ENEMIES KILLED</small><b>'+number(profile.total_kills)+'</b></div>' +
+      '<div><small>TOTAL RUNS</small><b>'+(profile.total_runs == null ? '—' : number(profile.total_runs))+'</b></div>' +
+      '<div><small>BOSSES DEFEATED</small><b>'+number(profile.bosses_defeated)+'</b></div>' +
+      '<div><small>TOTAL PLAYTIME</small><b>'+formatPlayerStatTime(profile.total_playtime_seconds)+'</b></div>' +
+      '<div><small>BEST RUN KILLS</small><b>'+number(profile.best_run_kills)+'</b></div>' +
+      '<div><small>LONGEST RUN</small><b>'+formatPlayerStatTime(profile.longest_run_seconds)+'</b></div>' +
       '<div><small>PLAYER SINCE</small><b>'+esc(started)+'</b></div></div>' +
-      (isOwn ? '<button class="btn btn-gold profile-customize-button" onclick="switchTab(\'customization\')">CUSTOMIZE PROFILE</button>' : '') +
+      (isOwn ? '<button class="btn btn-gold profile-customize-button" onclick="switchTab(\\'customization\\')">CUSTOMIZE PROFILE</button>' : '') +
       '</article>';
   }
   async function loadOwnPublicProfile() {
@@ -709,6 +717,10 @@
       best_infinite_wave:Math.max(1,Number(player.highestWave)||1),
       total_kills:Math.min(1000000000,Math.max(0,Math.floor(Number(player.totalKills)||0))),
       total_runs:Math.min(10000000,Math.max(0,Math.floor(Number(player.runsPlayed)||0))),
+      total_playtime_seconds:Math.max(0,Number(player.playTime)||0),
+      bosses_defeated:Math.min(1000000000,Math.max(0,Math.floor(Number(player.bossKills)||0))),
+      best_run_kills:Math.min(1000000000,Math.max(0,Math.floor(Number(player.bestKills)||0))),
+      longest_run_seconds:Math.max(0,Number(player.bestDuration)||0),
       started_at:leaderboardSession.user.created_at || new Date().toISOString(),
       updated_at:new Date().toISOString()
     };
