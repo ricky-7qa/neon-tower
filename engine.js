@@ -858,6 +858,7 @@
     saveGame();
     const returnButton = document.getElementById('gameover-return-button');
     if (returnButton) returnButton.setAttribute('onclick', "returnToMenu('levels')");
+    run.mode = 'infinite';
   }
 
   function updateLevelModeProgress() {
