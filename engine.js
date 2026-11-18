@@ -769,7 +769,8 @@
       window.neonTrack({ path: 'game-end', title: reason === 'voluntary' ? 'Game ended voluntarily' : 'Game ended normally', event: true, no_session: true });
     } else if (window.goatcounter && typeof window.goatcounter.count === 'function') {
       window.goatcounter.count({ path: 'game-end', title: reason === 'voluntary' ? 'Game ended voluntarily' : 'Game ended normally', event: true, no_session: true });
-    } document.getElementById('hud').classList.remove('active-hud'); document.getElementById('gameover').classList.add('active-layer');
+    } document.getElementById('hud').classList.remove('active-hud'); document.getElementById('gameover').classList.remove('level-mode-success');
+    document.getElementById('gameover').classList.add('active-layer');
     document.getElementById('go-wave').innerText = run.wave;
     document.getElementById('go-kills').innerText = run.kills;
     document.getElementById('go-bosses').innerText = run.bossKills || 0;
@@ -959,7 +960,7 @@
     const minutes = Math.floor(total / 60);
     return minutes + ':' + String(total % 60).padStart(2, '0');
   }
-  function returnToMenu(tab = 'workshop') { document.getElementById('gameover').classList.remove('active-layer'); document.getElementById('menu').classList.add('active-layer'); if (typeof switchTab === 'function') switchTab(tab); updateMenuUI(); }
+  function returnToMenu(tab = 'workshop') { document.getElementById('gameover').classList.remove('active-layer','level-mode-success'); document.getElementById('menu').classList.add('active-layer'); if (typeof switchTab === 'function') switchTab(tab); updateMenuUI(); }
 
   let bgOffset = 0;
   function drawGrid(dt) {
