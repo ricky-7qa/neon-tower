@@ -272,10 +272,11 @@
     if (gameSessionStartedAt && !gameDurationTracked) trackGameDuration('exit');
   });
 
-  function saveGame() {
+  function saveGame(immediateCloud = false, markProgress = true) {
+    if (markProgress) player.localSaveAt = Date.now();
     localStorage.setItem(SAVE_KEY, btoa(JSON.stringify(player)));
     updateMenuUI();
-    if (typeof window.scheduleNeonCloudSave === 'function') window.scheduleNeonCloudSave();
+    if (typeof window.scheduleNeonCloudSave === 'function') window.scheduleNeonCloudSave(immediateCloud);
   }
   function refreshResumeUI() {
     const infiniteCheckpoint = readRunCheckpoint('infinite');
@@ -384,7 +385,7 @@
     player.freeUpgradeChances = {ATTACK:0,DEFENSE:0,UTILITY:0,...(player.freeUpgradeChances||{})};
     migrateFreeUpgradeChanceProgress();
     Object.keys(statDefs).forEach(k => { if(player.ws[k]===undefined) player.ws[k]=0; });
-    saveGame();
+    saveGame(false, false);
     updateMenuUI(); buildSkillTree();
   }
   function resetSave() { if(confirm("Delete all progress?")) { localStorage.removeItem(SAVE_KEY); location.reload(); } }
