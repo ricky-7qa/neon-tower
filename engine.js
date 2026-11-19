@@ -838,8 +838,19 @@
     run = checkpoint.run;
     const pendingFreeUpgrades = Array.isArray(checkpoint.pendingFreeUpgrades) ? checkpoint.pendingFreeUpgrades : [];
     selectedGameSpeed = 1;
-    // Keep the saved mission and its progress, but hide the tracker for resumed runs.
-    document.getElementById('mission-ui')?.classList.add('mission-hidden-on-resume');
+    // Infinite Mode hides its optional mission tracker on resume; Level Mode must keep its objectives visible.
+    const missionUI = document.getElementById('mission-ui');
+    if (run.mode === 'level' && Array.isArray(run.levelObjectives)) {
+      missionUI?.classList.remove('mission-hidden-on-resume', 'mission-complete');
+      const levelConfig = window.NEON_LEVEL_MODE_CONFIG?.levels?.find(level => level.id === Number(run.levelId));
+      const title = document.getElementById('mission-title');
+      const reward = document.getElementById('mission-reward');
+      if (title) title.textContent = 'LEVEL ' + run.levelId + ' OBJECTIVES';
+      if (reward && levelConfig) reward.textContent = '+' + formatMoney(levelConfig.reward) + ' COINS';
+      updateLevelModeProgress();
+    } else {
+      missionUI?.classList.add('mission-hidden-on-resume');
+    }
     game = {
       running:true, paused:!!checkpoint.pendingPerk, dt:0, last:performance.now(),
       shake:0, playSaveT:0, achievementCheckT:0, spawnT:0.25,
