@@ -194,7 +194,7 @@
       }).join('')+'</div></div>'+
       '<div class="skill-tree-legend"><span><i class="legend-dot unlocked"></i> Unlocked</span><span><i class="legend-dot available"></i> Available</span><span><i class="legend-dot locked"></i> Locked</span></div>';
   }
-  function buyWs(k) { if (!isVisibleUpgrade(k)) return; const d=statDefs[k],max=d.workshopMax||d.max; let c=getCost(k,true); if(player.coins>=c && (!max || (player.ws[k]||0)<max)){player.coins-=c;player.ws[k]=(player.ws[k]||0)+1;saveGame();} }
+  function buyWs(k) { if (!isVisibleUpgrade(k)) return; const d=statDefs[k],max=d.workshopMax||d.max; let c=getCost(k,true); if(player.coins>=c && (!max || (player.ws[k]||0)<max)){player.coins-=c;player.ws[k]=(player.ws[k]||0)+1;saveGame(true);} }
   function buySpeedControl(level) {
     const currentLevel = Math.max(0, Math.min(3, Number(player.speedControlLevel) || 0));
     const nextLevel = currentLevel + 1;
@@ -205,7 +205,7 @@
     player.coins -= costs[level];
     if (level === 3) player.speed3CraftStartedAt = Date.now();
     else player.speedControlLevel = level;
-    saveGame();
+    saveGame(true);
     if (typeof updateGameSpeedButton === 'function') updateGameSpeedButton();
     if (typeof updateMenuUI === 'function') updateMenuUI();
     AudioSys.coin();
@@ -218,7 +218,7 @@
     if (!Array.isArray(player.skills)) player.skills = ['start'];
     player.coins = Number(player.coins) - cost;
     player.skills.push(id);
-    saveGame();
+    saveGame(true);
     buildSkillTree();
     AudioSys.coin();
   }
@@ -680,6 +680,15 @@
     const checkpointSnapshot = checkpointPayload && typeof checkpointPayload === 'object' && ('infinite' in checkpointPayload || 'level' in checkpointPayload)
       ? { checkpoints: checkpointPayload }
       : { checkpoint: checkpointPayload };
+    const localSnapshot = window.getNeonTowerCloudSave();
+    const localSaveAt = Number(localSnapshot.player?.localSaveAt) || 0;
+    const remoteSaveAt = Number(row.player_data.localSaveAt) || 0;
+    if (localSaveAt > remoteSaveAt) {
+      cloudSaveRemotePending = null;
+      setCloudSyncStatus('syncing', 'KEEPING NEWER LOCAL PURCHASES — SYNCING TO CLOUD...');
+      persistNeonCloudSave();
+      return false;
+    }
     window.applyNeonTowerCloudSave({ player: row.player_data, ...checkpointSnapshot });
     cloudSaveLastAppliedAt = updatedAt || Date.now();
     cloudSaveRemotePending = null;
@@ -803,6 +812,19 @@
       if (error) throw error;
       if (!leaderboardSession || leaderboardPlayerId !== userId) return;
       if (data) {
+        const localSnapshot = window.getNeonTowerCloudSave();
+        const localSaveAt = Number(localSnapshot.player?.localSaveAt) || 0;
+        const remoteSaveAt = Number(data.player_data?.localSaveAt) || 0;
+        if (localSaveAt > remoteSaveAt) {
+          cloudSaveReady = true;
+          cloudSaveLoadingUserId = '';
+          persistNeonCloudSave();
+          subscribeToNeonCloudSave(userId);
+          cloudSavePendingOffline = false;
+          setCloudSyncStatus('syncing', 'NEWER LOCAL PROGRESS FOUND — SYNCING TO CLOUD...');
+          setAuthStatus('NEWER LOCAL PROGRESS FOUND. YOUR PURCHASES ARE BEING SYNCED.');
+          return;
+        }
         const checkpointPayload = data.run_checkpoint;
         const checkpointSnapshot = checkpointPayload && typeof checkpointPayload === 'object' && ('infinite' in checkpointPayload || 'level' in checkpointPayload)
           ? { checkpoints: checkpointPayload }
