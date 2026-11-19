@@ -3841,3 +3841,11 @@
     font-size:12px !important;
   }
 }
+
+
+/* Let the Level Mode entry expand when there is no Resume Level panel. */
+#app #menu > .level-mode-entry:not(.has-resume-level) > #open-level-mode-button {
+  flex:1 1 100% !important;
+  width:100% !important;
+  max-width:none !important;
+}
