@@ -303,7 +303,7 @@
     if (primaryAction) primaryAction.classList.toggle('has-resume', infiniteExists);
     if (startButton) startButton.textContent = infiniteExists ? 'NEW RUN' : 'START INFINITE MODE';
   }
-  function saveRunCheckpoint(pendingPerk = false, pendingDecision = false) {
+  function saveRunCheckpoint(pendingPerk = false, pendingDecision = false, pendingFreeUpgrades = null) {
     if (!game || !game.running || !tower) return;
     try {
       const checkpointKey = getRunCheckpointKey();
@@ -320,7 +320,8 @@
         run: savedRun,
         tower: { hp: tower.hp, shield: tower.shield, tempShieldCharges: tower.tempShieldCharges || 0 },
         pendingPerk: !!pendingPerk,
-        pendingDecision: !!pendingDecision
+        pendingDecision: !!pendingDecision,
+        pendingFreeUpgrades: Array.isArray(pendingFreeUpgrades) ? pendingFreeUpgrades : (Array.isArray(previous?.pendingFreeUpgrades) ? previous.pendingFreeUpgrades : [])
       }));
     } catch (err) { console.warn('Could not save run checkpoint', err); }
     refreshResumeUI();
@@ -824,6 +825,7 @@
     document.getElementById('gameover').classList.remove('active-layer');
     document.getElementById('hud').classList.add('active-hud');
     run = checkpoint.run;
+    const pendingFreeUpgrades = Array.isArray(checkpoint.pendingFreeUpgrades) ? checkpoint.pendingFreeUpgrades : [];
     selectedGameSpeed = 1;
     // Keep the saved mission and its progress, but hide the tracker for resumed runs.
     document.getElementById('mission-ui')?.classList.add('mission-hidden-on-resume');
@@ -844,6 +846,10 @@
     updateGameSpeedButton();
     updateHUD();
     refreshResumeUI();
+    if (pendingFreeUpgrades.length) {
+      showFreeUpgradeNotice(pendingFreeUpgrades);
+      saveRunCheckpoint(!!checkpoint.pendingPerk, !!checkpoint.pendingDecision, []);
+    }
     if (checkpoint.pendingPerk) showPerkChoice();
     else if (checkpoint.pendingDecision) showWaveDecisionChoice();
     requestAnimationFrame(loop);
@@ -1045,7 +1051,7 @@
       const showDecision = decisionMilestone || (perkMilestone && !perksAvailable);
       if (showPerk) showPerkChoice();
       else if (showDecision) showWaveDecisionChoice();
-      saveRunCheckpoint(showPerk, showDecision); 
+      saveRunCheckpoint(showPerk, showDecision, freeUpgrades); 
     }
     game.spawnT -= game.dt;
     if(game.spawnT <= 0 && game.toSpawn > 0) { game.ents.e.push(new Enemy(run.wave)); game.toSpawn--; game.spawnT = Math.max(0.68, 1.0 - (Math.min(run.wave, 100)*0.003)); updateHUD(); }
