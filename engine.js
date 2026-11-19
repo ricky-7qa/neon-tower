@@ -353,7 +353,7 @@
   window.applyNeonTowerCloudSave = function(snapshot) {
     if (!snapshot || !snapshot.player || typeof snapshot.player !== 'object') throw new Error('Invalid cloud save data.');
     const incoming = snapshot.player;
-    player = { ...player, ...incoming };
+    player = snapshot.replacePlayer ? { ...incoming } : { ...player, ...incoming };
     player.ws = { ...player.ws, ...(incoming.ws || {}) };
     player.freeUpgradeChances = {ATTACK:0,DEFENSE:0,UTILITY:0,...(incoming.freeUpgradeChances || {})};
     player.freeUpgradeChanceRefundV2 = !!(player.freeUpgradeChanceRefundV2 || incoming.freeUpgradeChanceRefundV2);
