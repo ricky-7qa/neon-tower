@@ -344,6 +344,7 @@
   }
   window.refreshResumeUI = refreshResumeUI;
   window.saveRunCheckpoint = saveRunCheckpoint;
+  window.isNeonTowerRunActive = function() { return typeof game !== 'undefined' && !!(game && game.running); };
   window.getNeonTowerCloudSave = function() {
     const checkpoints = { infinite: readRunCheckpoint('infinite'), level: readRunCheckpoint('level') };
     const checkpoint = getLatestRunCheckpoint();
