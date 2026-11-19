@@ -3789,9 +3789,10 @@
   }
 }
 @media (max-width:700px) {
+  /* Use the same 28px total side allowance as the Start Game action above. */
   #app #menu > .level-mode-entry {
-    width:calc(100% - 74px) !important;
-    margin-left:12px !important;
+    width:calc(100% - 28px) !important;
+    margin-left:auto !important;
     margin-right:auto !important;
     column-gap:7px !important;
   }
