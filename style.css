@@ -3654,7 +3654,7 @@
 /* Resume Level must use the exact Resume Run panel + label + button appearance. */
 #app #menu > .level-mode-entry > #resume-level-panel.resume-run-panel {
   box-sizing:border-box !important;
-  display:flex !important;
+  display:flex;
   flex-direction:column !important;
   align-items:center !important;
   justify-content:center !important;
