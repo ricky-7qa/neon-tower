@@ -234,7 +234,7 @@
       const endgameDamageLevels = Math.max(0, w - 119);
       const damageScale = Math.pow(1.01, earlyDamageLevels) * Math.pow(1.012, middleDamageLevels) * Math.pow(1.014, advancedDamageLevels) * Math.pow(1.022, endgameDamageLevels);
       // Keep contact damage on its original curve; projectile damage is scaled separately below.
-      this.dmg=(3.2*damageScale)*damageM*(1+getWaveDecisionValue('blood_money'));
+      this.dmg=(3.2*damageScale)*37*damageM*(1+getWaveDecisionValue('blood_money'));
       this.spd=(68+Math.min(30,w*1.1))*speedM*(1+getWaveDecisionValue('chaos_mode'));
       const earlyRewardLevels = Math.min(79, Math.max(0, w - 1));
       const advancedRewardLevels = Math.max(0, Math.min(39, w - 80));
