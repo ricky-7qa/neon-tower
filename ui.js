@@ -639,7 +639,7 @@
     status.textContent = message;
   }
 
-  function scheduleNeonCloudSave() {
+  function scheduleNeonCloudSave(immediate = false) {
     if (!leaderboardSession || !leaderboardPlayerId) {
       if (guestModeConfirmed) saveGuestNeonCloudSnapshot();
       return;
@@ -650,8 +650,12 @@
       return;
     }
     if (!cloudSaveReady) return;
-    setCloudSyncStatus('syncing', 'SAVE QUEUED — SYNCING...');
-    if (cloudSaveTimer) clearTimeout(cloudSaveTimer);
+    setCloudSyncStatus('syncing', immediate ? 'WAVE SAVED — SYNCING TO CLOUD...' : 'SAVE QUEUED — SYNCING...');
+    if (cloudSaveTimer) { clearTimeout(cloudSaveTimer); cloudSaveTimer = null; }
+    if (immediate) {
+      persistNeonCloudSave();
+      return;
+    }
     cloudSaveTimer = setTimeout(() => {
       cloudSaveTimer = null;
       persistNeonCloudSave();
