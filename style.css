@@ -3649,3 +3649,64 @@
     gap:7px !important;
   }
 }
+
+
+/* Resume Level must use the exact Resume Run panel + label + button appearance. */
+#app #menu > .level-mode-entry > #resume-level-panel.resume-run-panel {
+  box-sizing:border-box !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:7px !important;
+  width:100% !important;
+  height:76px !important;
+  min-height:76px !important;
+  margin:0 !important;
+  padding:8px 10px !important;
+  border:1px solid rgba(0,255,255,.3) !important;
+  border-radius:10px !important;
+  background:linear-gradient(145deg,rgba(0,35,48,.8),rgba(3,8,18,.95)) !important;
+  text-align:center !important;
+}
+#app #menu > .level-mode-entry > #resume-level-panel .resume-level-details.resume-run-label {
+  display:block !important;
+  margin:0 !important;
+  color:#9db8c8 !important;
+  font:800 8px/1.1 Orbitron,sans-serif !important;
+  letter-spacing:1px !important;
+  white-space:nowrap !important;
+}
+#app #menu > .level-mode-entry > #resume-level-panel > .resume-level-button.resume-run-button {
+  display:block !important;
+  box-sizing:border-box !important;
+  width:100% !important;
+  height:auto !important;
+  min-height:34px !important;
+  margin:0 !important;
+  padding:7px 8px !important;
+  border-color:#0ff !important;
+  color:#0ff !important;
+  font-size:10px !important;
+  letter-spacing:1px !important;
+  line-height:1.2 !important;
+}
+@media(max-width:700px) {
+  #app #menu > .level-mode-entry > #resume-level-panel.resume-run-panel {
+    height:66px !important;
+    min-height:66px !important;
+    gap:4px !important;
+    padding:6px 5px !important;
+  }
+  #app #menu > .level-mode-entry > #resume-level-panel .resume-level-details.resume-run-label {
+    font-size:6px !important;
+    letter-spacing:.5px !important;
+  }
+  #app #menu > .level-mode-entry > #resume-level-panel > .resume-level-button.resume-run-button {
+    height:auto !important;
+    min-height:29px !important;
+    padding:6px 4px !important;
+    font-size:8px !important;
+    letter-spacing:.5px !important;
+  }
+}
