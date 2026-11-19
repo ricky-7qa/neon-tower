@@ -3797,3 +3797,10 @@
     column-gap:0 !important;
   }
 }
+
+
+/* Make only the Level Mode button slightly narrower to leave a clear gap before Resume Level. */
+#app #menu > .level-mode-entry > #open-level-mode-button {
+  width:calc(100% - 8px) !important;
+  justify-self:start !important;
+}
