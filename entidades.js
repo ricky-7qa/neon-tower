@@ -233,9 +233,8 @@
       const advancedDamageLevels = Math.max(0, Math.min(39, w - 80));
       const endgameDamageLevels = Math.max(0, w - 119);
       const damageScale = Math.pow(1.01, earlyDamageLevels) * Math.pow(1.012, middleDamageLevels) * Math.pow(1.014, advancedDamageLevels) * Math.pow(1.022, endgameDamageLevels);
-      // Ramp endgame damage smoothly so a basic Minion deals about 500 contact damage at Wave 151.
-      const endgameDamageBoost = Math.pow(500 / 26.75496293490752, Math.min(31, Math.max(0, w - 120)) / 31) * Math.pow(1.022, Math.max(0, w - 151));
-      this.dmg=(3.2*damageScale*endgameDamageBoost)*damageM*(1+getWaveDecisionValue('blood_money'));
+      // Keep contact damage on its original curve; projectile damage is scaled separately below.
+      this.dmg=(3.2*damageScale)*damageM*(1+getWaveDecisionValue('blood_money'));
       this.spd=(68+Math.min(30,w*1.1))*speedM*(1+getWaveDecisionValue('chaos_mode'));
       const earlyRewardLevels = Math.min(79, Math.max(0, w - 1));
       const advancedRewardLevels = Math.max(0, Math.min(39, w - 80));
@@ -310,7 +309,9 @@
       this.fireCd -= dt; this.phase += dt;
       if (this.fireCd > 0) return;
       const aim = MathUtils.angle(this.x, this.y, tower.x, tower.y);
-      const baseDamage = this.dmg * 0.5;
+      // Scale enemy shots to about 500 damage for a basic Minion at Wave 151, without raising contact damage.
+      const projectileDamageBoost = Math.pow(1000 / 26.75496293490752, Math.min(31, Math.max(0, run.wave - 120)) / 31) * Math.pow(1.022, Math.max(0, run.wave - 151));
+      const baseDamage = this.dmg * 0.5 * projectileDamageBoost;
 
       if (this.type === "Boss") {
         const hpRatio = this.hp / this.maxHp;
