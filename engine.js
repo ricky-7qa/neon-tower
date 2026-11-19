@@ -291,7 +291,15 @@
       const waveLabel = document.getElementById('resume-run-wave');
       if (waveLabel) waveLabel.textContent = infiniteExists ? 'WAVE ' + infiniteCheckpoint.run.wave : '';
     }
-    if (levelPanel) levelPanel.style.display = levelExists ? 'flex' : 'none';
+    if (levelPanel) {
+      levelPanel.style.display = levelExists ? 'flex' : 'none';
+      const levelDetails = document.getElementById('resume-level-details');
+      if (levelDetails) {
+        const savedLevel = Math.max(1, Number(levelCheckpoint?.run?.levelId) || 1);
+        const savedWave = Math.max(1, Number(levelCheckpoint?.run?.wave) || 1);
+        levelDetails.textContent = 'LEVEL ' + savedLevel + ' · WAVE ' + savedWave;
+      }
+    }
     if (primaryAction) primaryAction.classList.toggle('has-resume', infiniteExists);
     if (startButton) startButton.textContent = infiniteExists ? 'NEW RUN' : 'START INFINITE MODE';
   }
