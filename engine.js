@@ -809,7 +809,8 @@
   function resumeRun(mode = null) {
     const checkpoint = readRunCheckpoint(mode || (getLatestRunCheckpoint()?.run?.mode || 'infinite'));
     if (!checkpoint || checkpoint.version !== 1 || !checkpoint.run || !Number.isFinite(Number(checkpoint.run.wave))) {
-      clearRunCheckpoint(checkpoint?.run?.mode || 'infinite');
+      // A missing Level Mode checkpoint must never clear the separate Infinite Mode run.
+      refreshResumeUI();
       return;
     }
     if (!player.tutorialSeen) {
