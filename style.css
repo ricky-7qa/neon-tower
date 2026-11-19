@@ -3728,3 +3728,26 @@
     width:calc(100% - 28px) !important;
   }
 }
+
+
+/* Match the exact horizontal footprint of the Start / Resume Run action above. */
+#app #menu > .level-mode-entry {
+  box-sizing:content-box !important;
+  width:min(620px,calc(100% - 84px)) !important;
+  margin-left:auto !important;
+  margin-right:auto !important;
+}
+@media (min-width:701px) {
+  #app.device-desktop #menu > .level-mode-entry {
+    width:min(620px,calc(100% - 120px)) !important;
+    margin-left:auto !important;
+    margin-right:auto !important;
+  }
+}
+@media (max-width:700px) {
+  #app #menu > .level-mode-entry {
+    width:calc(100% - 74px) !important;
+    margin-left:12px !important;
+    margin-right:auto !important;
+  }
+}
