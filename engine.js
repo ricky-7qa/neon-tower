@@ -724,6 +724,34 @@
     return 120 + Math.floor((w - 200) * 0.56);
   }
 
+  function getWaveSpawnInterval(wave) {
+    const w = Math.max(1, Math.floor(Number(wave) || 1));
+    if (run.mode === 'level') {
+      return Math.max(0.85, 1.0 - (Math.min(w, 100) * 0.003));
+    }
+    const anchors = [
+      [1, 1.15],
+      [10, 1.30],
+      [20, 1.40],
+      [30, 1.50],
+      [50, 1.65],
+      [100, 1.80]
+    ];
+    let rate = anchors[anchors.length - 1][1];
+    if (w < anchors[anchors.length - 1][0]) {
+      for (let i = 0; i < anchors.length - 1; i++) {
+        const [startWave, startRate] = anchors[i];
+        const [endWave, endRate] = anchors[i + 1];
+        if (w <= endWave) {
+          const progress = (w - startWave) / (endWave - startWave);
+          rate = startRate + (endRate - startRate) * progress;
+          break;
+        }
+      }
+    }
+    return 1 / rate;
+  }
+
   /** MAIN LOOP & RENDERING **/
   let pendingLevelModeId = null;
   function startGame(levelId = null) {
@@ -1089,7 +1117,7 @@
       saveRunCheckpoint(showPerk, showDecision, freeUpgrades); 
     }
     game.spawnT -= game.dt;
-    if(game.spawnT <= 0 && game.toSpawn > 0) { game.ents.e.push(new Enemy(run.wave)); game.toSpawn--; game.spawnT = Math.max(0.85, 1.0 - (Math.min(run.wave, 100)*0.003)); updateHUD(); }
+    if(game.spawnT <= 0 && game.toSpawn > 0) { game.ents.e.push(new Enemy(run.wave)); game.toSpawn--; game.spawnT = getWaveSpawnInterval(run.wave); updateHUD(); }
 
     tower.update(game.dt); tower.draw();run.comboTimer=Math.max(0,run.comboTimer-game.dt);if(!run.comboTimer)run.combo=0;
 
