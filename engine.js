@@ -724,6 +724,15 @@
     return 120 + Math.floor((w - 200) * 0.56);
   }
 
+  function getWaveActiveEnemyCap(wave) {
+    if (run.mode === 'level') return Infinity;
+    const w = Math.max(1, Math.floor(Number(wave) || 1));
+    if (w <= 30) return 12;
+    if (w <= 80) return 15;
+    if (w < 120) return 18;
+    return 20;
+  }
+
   function getWaveSpawnInterval(wave) {
     const w = Math.max(1, Math.floor(Number(wave) || 1));
     if (run.mode === 'level') {
@@ -1117,7 +1126,7 @@
       saveRunCheckpoint(showPerk, showDecision, freeUpgrades); 
     }
     game.spawnT -= game.dt;
-    if(game.spawnT <= 0 && game.toSpawn > 0) { game.ents.e.push(new Enemy(run.wave)); game.toSpawn--; game.spawnT = getWaveSpawnInterval(run.wave); updateHUD(); }
+    if(game.spawnT <= 0 && game.toSpawn > 0 && game.ents.e.length < getWaveActiveEnemyCap(run.wave)) { game.ents.e.push(new Enemy(run.wave)); game.toSpawn--; game.spawnT = getWaveSpawnInterval(run.wave); updateHUD(); }
 
     tower.update(game.dt); tower.draw();run.comboTimer=Math.max(0,run.comboTimer-game.dt);if(!run.comboTimer)run.combo=0;
 
