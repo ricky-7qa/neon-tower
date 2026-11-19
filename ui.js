@@ -528,6 +528,12 @@
           return;
         }
         setLeaderboardSession(null);
+        guestModeConfirmed = true;
+        if (!restoreGuestNeonCloudSnapshot()) {
+          const blank = createBlankGuestSnapshot();
+          localStorage.setItem(GUEST_SAVE_KEY, JSON.stringify(blank));
+          window.applyNeonTowerCloudSave({ ...blank, replacePlayer: true });
+        }
         return;
       }
       if (event === 'TOKEN_REFRESHED' && session) {
@@ -571,9 +577,15 @@
       }
       if (passwordRecoveryPending) { setAuthMode('recovery'); showLeaderboardView(); }
       else if (accountBanNotice) { setAuthMode('login'); setAuthStatus(accountBanNotice); }
-    }).catch(error => {
+    }).catch(async error => {
       console.error('Auth session check failed:', error);
-      setAuthStatus('COULD NOT CHECK YOUR ACCOUNT. PLEASE REFRESH.');
+      banEnforcementInProgress = true;
+      try { await leaderboardClient.auth.signOut({ scope: 'local' }); } catch (_) {}
+      banEnforcementInProgress = false;
+      setLeaderboardSession(null);
+      guestModeConfirmed = true;
+      if (!restoreGuestNeonCloudSnapshot()) saveGuestNeonCloudSnapshot(window.getNeonTowerCloudSave?.(), true);
+      setAuthStatus('COULD NOT VERIFY YOUR ACCOUNT. LOG IN IS TEMPORARILY DISABLED. GUEST MODE IS AVAILABLE.');
     });
   }
 
@@ -1113,6 +1125,7 @@
       const authMessage = authErrorMessage(error);
       if (String(error?.message || '').toLowerCase().includes('ban')) {
         accountBanNotice = 'YOUR ACCOUNT IS BANNED. ACCESS TO THIS ACCOUNT IS BLOCKED.';
+        localStorage.setItem(ACCOUNT_BAN_NOTICE_KEY, JSON.stringify({ banned_until: null, message: accountBanNotice }));
         setAuthStatus(accountBanNotice);
       } else setAuthStatus(authMessage);
     }
