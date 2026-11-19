@@ -3756,8 +3756,8 @@
 /* Final sizing: two equal half-width buttons filling the same row width as Start Game. */
 #app #menu > .level-mode-entry {
   display:grid !important;
-  grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
-  column-gap:10px !important;
+  grid-template-columns:50% 50% !important;
+  column-gap:0 !important;
   box-sizing:content-box !important;
   width:min(620px,calc(100% - 84px)) !important;
   margin-left:auto !important;
@@ -3794,6 +3794,6 @@
     width:calc(100% - 28px) !important;
     margin-left:auto !important;
     margin-right:auto !important;
-    column-gap:7px !important;
+    column-gap:0 !important;
   }
 }
