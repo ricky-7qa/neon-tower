@@ -1,10 +1,56 @@
 
   /** CORE ENGINE & DATA **/
   const SAVE_KEY = "NeonTowerApexSave_FinalVersion";
+  const SAVE_BACKUP_KEY = "NeonTowerApexSaveHistory";
   const RUN_CHECKPOINT_KEY = "NeonTowerApexRunCheckpoint";
   const LEVEL_RUN_CHECKPOINT_KEY = "NeonTowerApexLevelRunCheckpoint";
+  const RUN_CHECKPOINT_BACKUP_KEY = "NeonTowerApexRunCheckpointHistory";
+  const LEVEL_RUN_CHECKPOINT_BACKUP_KEY = "NeonTowerApexLevelRunCheckpointHistory";
+  function archiveLocalValue(key, historyKey, maxEntries = 20) {
+    try {
+      const value = localStorage.getItem(key);
+      if (!value) return;
+      const history = JSON.parse(localStorage.getItem(historyKey) || "[]");
+      const entries = Array.isArray(history) ? history : [];
+      if (entries[0]?.value === value) return;
+      entries.unshift({ archivedAt: Date.now(), value });
+      localStorage.setItem(historyKey, JSON.stringify(entries.slice(0, maxEntries)));
+    } catch (err) { console.warn("Could not archive local save", err); }
+  }
+  function getLatestValidPlayerBackup() {
+    try {
+      const history = JSON.parse(localStorage.getItem(SAVE_BACKUP_KEY) || "[]");
+      for (const entry of Array.isArray(history) ? history : []) {
+        try {
+          const candidate = JSON.parse(atob(entry.value));
+          if (candidate && typeof candidate === "object" && !Array.isArray(candidate)) return candidate;
+        } catch (err) {}
+      }
+    } catch (err) {}
+    return null;
+  }
+  function getRunCheckpointBackupKey(mode) { return mode === "level" ? LEVEL_RUN_CHECKPOINT_BACKUP_KEY : RUN_CHECKPOINT_BACKUP_KEY; }
   function getRunCheckpointKey(mode = null) { const selectedMode = mode || (pendingLevelModeId ? "level" : (run.mode || "infinite")); return selectedMode === "level" ? LEVEL_RUN_CHECKPOINT_KEY : RUN_CHECKPOINT_KEY; }
-  function readRunCheckpoint(mode) { try { return JSON.parse(localStorage.getItem(getRunCheckpointKey(mode)) || "null"); } catch (err) { return null; } }
+  function readRunCheckpoint(mode) {
+    const key = getRunCheckpointKey(mode);
+    const raw = localStorage.getItem(key);
+    try { return JSON.parse(raw || "null"); }
+    catch (err) {
+      try {
+        const history = JSON.parse(localStorage.getItem(getRunCheckpointBackupKey(mode || (key === LEVEL_RUN_CHECKPOINT_KEY ? "level" : "infinite"))) || "[]");
+        for (const entry of Array.isArray(history) ? history : []) {
+          try {
+            const candidate = JSON.parse(entry.value);
+            if (candidate && candidate.version === 1 && candidate.run) {
+              localStorage.setItem(key, entry.value);
+              return candidate;
+            }
+          } catch (backupError) {}
+        }
+      } catch (backupError) {}
+      return null;
+    }
+  }
   function getLatestRunCheckpoint() {
     const infinite = readRunCheckpoint("infinite"), level = readRunCheckpoint("level");
     if (infinite && infinite.version === 1 && infinite.run && level && level.version === 1 && level.run) return (Number(level.savedAt) || 0) > (Number(infinite.savedAt) || 0) ? level : infinite;
@@ -274,6 +320,7 @@
 
   function saveGame(immediateCloud = false, markProgress = true) {
     if (markProgress) player.localSaveAt = Date.now();
+    archiveLocalValue(SAVE_KEY, SAVE_BACKUP_KEY);
     localStorage.setItem(SAVE_KEY, btoa(JSON.stringify(player)));
     updateMenuUI();
     if (typeof window.scheduleNeonCloudSave === 'function') window.scheduleNeonCloudSave(immediateCloud);
@@ -325,6 +372,7 @@
           if (previous.run[key] !== undefined) savedRun[key] = previous.run[key];
         });
       }
+      archiveLocalValue(checkpointKey, getRunCheckpointBackupKey(run.mode));
       localStorage.setItem(checkpointKey, JSON.stringify({
         version: 1,
         savedAt: Date.now(),
@@ -362,14 +410,18 @@
     player.skills = Array.isArray(incoming.skills) ? incoming.skills : ['start'];
     player.achievements = Array.isArray(incoming.achievements) ? incoming.achievements : [];
     Object.keys(statDefs).forEach(k => { if (player.ws[k] === undefined) player.ws[k] = 0; });
+    archiveLocalValue(SAVE_KEY, SAVE_BACKUP_KEY);
     localStorage.setItem(SAVE_KEY, btoa(JSON.stringify(player)));
     if (snapshot.checkpoints && typeof snapshot.checkpoints === 'object') {
       const infinite = snapshot.checkpoints.infinite;
       const level = snapshot.checkpoints.level;
+      archiveLocalValue(RUN_CHECKPOINT_KEY, RUN_CHECKPOINT_BACKUP_KEY);
+      archiveLocalValue(LEVEL_RUN_CHECKPOINT_KEY, LEVEL_RUN_CHECKPOINT_BACKUP_KEY);
       if (infinite && infinite.version === 1 && infinite.run) localStorage.setItem(RUN_CHECKPOINT_KEY, JSON.stringify(infinite)); else localStorage.removeItem(RUN_CHECKPOINT_KEY);
       if (level && level.version === 1 && level.run) localStorage.setItem(LEVEL_RUN_CHECKPOINT_KEY, JSON.stringify(level)); else localStorage.removeItem(LEVEL_RUN_CHECKPOINT_KEY);
     } else if (snapshot.checkpoint && snapshot.checkpoint.version === 1 && snapshot.checkpoint.run) {
       const key = snapshot.checkpoint.run.mode === 'level' ? LEVEL_RUN_CHECKPOINT_KEY : RUN_CHECKPOINT_KEY;
+      archiveLocalValue(key, getRunCheckpointBackupKey(snapshot.checkpoint.run.mode));
       localStorage.setItem(key, JSON.stringify(snapshot.checkpoint));
     } else {
       localStorage.removeItem(RUN_CHECKPOINT_KEY);
@@ -381,7 +433,25 @@
   };
   function loadGame() { 
     const s = localStorage.getItem(SAVE_KEY); 
-    if(s) { try { let p=JSON.parse(atob(s)); player={...player,...p}; player.ws={...player.ws,...(p.ws||{})}; player.freeUpgradeChances={ATTACK:0,DEFENSE:0,UTILITY:0,...(p.freeUpgradeChances||{})}; } catch(err) { console.warn("Invalid save data",err); localStorage.removeItem(SAVE_KEY); } }
+    if(s) {
+      try {
+        let p=JSON.parse(atob(s));
+        player={...player,...p};
+        player.ws={...player.ws,...(p.ws||{})};
+        player.freeUpgradeChances={ATTACK:0,DEFENSE:0,UTILITY:0,...(p.freeUpgradeChances||{})};
+      } catch(err) {
+        console.warn("Invalid save data; checking local backups",err);
+        const backup = getLatestValidPlayerBackup();
+        if (backup) {
+          player={...player,...backup};
+          player.ws={...player.ws,...(backup.ws||{})};
+          player.freeUpgradeChances={ATTACK:0,DEFENSE:0,UTILITY:0,...(backup.freeUpgradeChances||{})};
+          localStorage.setItem(SAVE_KEY, btoa(JSON.stringify(player)));
+        } else {
+          localStorage.removeItem(SAVE_KEY);
+        }
+      }
+    }
     player.freeUpgradeChances = {ATTACK:0,DEFENSE:0,UTILITY:0,...(player.freeUpgradeChances||{})};
     migrateFreeUpgradeChanceProgress();
     Object.keys(statDefs).forEach(k => { if(player.ws[k]===undefined) player.ws[k]=0; });
