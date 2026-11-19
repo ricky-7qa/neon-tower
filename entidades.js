@@ -223,7 +223,7 @@
       const earlyWaveLevels = Math.min(19, Math.max(0, w - 1));
       const middleWaveLevels = Math.max(0, Math.min(30, w - 20));
       const lateWaveLevels = Math.max(0, w - 50);
-      const waveScale = Math.pow(1.06, earlyWaveLevels) * Math.pow(1.03, middleWaveLevels) * Math.pow(1.012, lateWaveLevels);
+      const waveScale = Math.pow(1.06, earlyWaveLevels) * Math.pow(1.03, middleWaveLevels) * Math.pow(1.055, lateWaveLevels);
       const eliteBoost=getWaveDecisionValue('elite_invasion');
       if(w>=3&&this.type!=='Boss'&&Math.random()<eliteBoost){this.type='Elite';this.c='#ffd166';this.r=18;hpM*=1.8;damageM*=1.25;rewardM*=2.2;}
       this.maxHp=24*waveScale*hpM*(1+(this.type==='Boss'?getWaveDecisionValue('boss_gamble'):0));this.hp=this.maxHp;
