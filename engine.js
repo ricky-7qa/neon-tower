@@ -299,6 +299,8 @@
       const waveLabel = document.getElementById('resume-run-wave');
       if (waveLabel) waveLabel.textContent = infiniteExists ? 'WAVE ' + infiniteCheckpoint.run.wave : '';
     }
+    const levelEntry = levelPanel?.parentElement;
+    if (levelEntry) levelEntry.classList.toggle('has-resume-level', levelExists);
     if (levelPanel) {
       levelPanel.style.display = levelExists ? 'flex' : 'none';
       const levelDetails = document.getElementById('resume-level-details');
