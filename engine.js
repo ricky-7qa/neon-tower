@@ -280,8 +280,16 @@
   function refreshResumeUI() {
     const infiniteCheckpoint = readRunCheckpoint('infinite');
     const levelCheckpoint = readRunCheckpoint('level');
-    const infiniteExists = !!(infiniteCheckpoint && infiniteCheckpoint.version === 1 && infiniteCheckpoint.run);
-    const levelExists = !!(levelCheckpoint && levelCheckpoint.version === 1 && levelCheckpoint.run);
+    const infiniteExists = !!(infiniteCheckpoint && infiniteCheckpoint.version === 1 && infiniteCheckpoint.run && Number.isFinite(Number(infiniteCheckpoint.run.wave)));
+    // Only show Resume Level when there is a genuine, resumable Level Mode checkpoint.
+    const levelExists = !!(
+      levelCheckpoint &&
+      levelCheckpoint.version === 1 &&
+      levelCheckpoint.run &&
+      levelCheckpoint.run.mode === 'level' &&
+      Number.isFinite(Number(levelCheckpoint.run.levelId)) &&
+      Number.isFinite(Number(levelCheckpoint.run.wave))
+    );
     const panel = document.getElementById('resume-run-panel');
     const levelPanel = document.getElementById('resume-level-panel');
     const startButton = document.getElementById('start-new-run-button');
