@@ -438,6 +438,11 @@
       cloudSaveUserId = '';
       cloudSaveLoadingUserId = '';
       cloudSavePendingOffline = false;
+      cloudSaveRemotePending = null;
+      cloudSaveLastWriteAt = 0;
+      cloudSaveLastAppliedAt = 0;
+      if (cloudRealtimeChannel && leaderboardClient) leaderboardClient.removeChannel(cloudRealtimeChannel);
+      cloudRealtimeChannel = null;
       setCloudSyncStatus('signed-out', 'NOT SIGNED IN — CLOUD SAVE DISABLED');
       if (cloudSaveTimer) { clearTimeout(cloudSaveTimer); cloudSaveTimer = null; }
     }
@@ -460,6 +465,10 @@
   let cloudSaveWriteQueue = Promise.resolve();
   let cloudNetworkListenersBound = false;
   let cloudSavePendingOffline = false;
+  let cloudRealtimeChannel = null;
+  let cloudSaveLastWriteAt = 0;
+  let cloudSaveLastAppliedAt = 0;
+  let cloudSaveRemotePending = null;
 
   function setCloudSyncStatus(state, message) {
     const status = document.getElementById('cloud-sync-status');
@@ -485,6 +494,80 @@
   }
   window.scheduleNeonCloudSave = scheduleNeonCloudSave;
 
+  function isNeonLocalRunActive() {
+    return typeof window.isNeonTowerRunActive === 'function' && window.isNeonTowerRunActive();
+  }
+
+  function applyRemoteNeonCloudRow(row) {
+    if (!row || !row.player_data || !window.applyNeonTowerCloudSave) return false;
+    const updatedAt = Date.parse(row.updated_at || '') || 0;
+    if (updatedAt && (updatedAt <= cloudSaveLastAppliedAt || updatedAt <= cloudSaveLastWriteAt)) return false;
+    if (isNeonLocalRunActive()) {
+      cloudSaveRemotePending = row;
+      setCloudSyncStatus('warning', 'NEWER CLOUD SAVE AVAILABLE — FINISH THIS RUN TO SYNC');
+      return false;
+    }
+    const checkpointPayload = row.run_checkpoint;
+    const checkpointSnapshot = checkpointPayload && typeof checkpointPayload === 'object' && ('infinite' in checkpointPayload || 'level' in checkpointPayload)
+      ? { checkpoints: checkpointPayload }
+      : { checkpoint: checkpointPayload };
+    window.applyNeonTowerCloudSave({ player: row.player_data, ...checkpointSnapshot });
+    cloudSaveLastAppliedAt = updatedAt || Date.now();
+    cloudSaveRemotePending = null;
+    setCloudSyncStatus('saved', 'PROGRESS UPDATED FROM CLOUD');
+    return true;
+  }
+
+  async function pullLatestNeonCloudSave() {
+    if (!cloudSaveReady || !leaderboardSession || !leaderboardPlayerId || !navigator.onLine || isNeonLocalRunActive()) return;
+    const userId = leaderboardPlayerId;
+    try {
+      const { data, error } = await leaderboardClient
+        .from('player_cloud_saves')
+        .select('user_id, player_data, run_checkpoint, updated_at')
+        .eq('user_id', userId)
+        .maybeSingle();
+      if (error) throw error;
+      if (leaderboardPlayerId === userId && data) applyRemoteNeonCloudRow(data);
+    } catch (error) {
+      console.warn('Could not refresh cloud progress:', error);
+    }
+  }
+
+  function subscribeToNeonCloudSave(userId) {
+    if (!leaderboardClient || !userId) return;
+    if (cloudRealtimeChannel) leaderboardClient.removeChannel(cloudRealtimeChannel);
+    cloudRealtimeChannel = leaderboardClient
+      .channel('neon-cloud-save-' + userId)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'player_cloud_saves',
+        filter: 'user_id=eq.' + userId
+      }, payload => {
+        if (leaderboardPlayerId === userId && payload.new && payload.new.user_id === userId) {
+          applyRemoteNeonCloudRow(payload.new);
+        }
+      })
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') console.warn('Cloud progress realtime subscription:', status);
+      });
+  }
+
+  if (!window.neonCloudRefreshListenersBound) {
+    window.addEventListener('focus', () => {
+      if (cloudSaveRemotePending && !isNeonLocalRunActive()) applyRemoteNeonCloudRow(cloudSaveRemotePending);
+      else pullLatestNeonCloudSave();
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState !== 'visible') return;
+      if (cloudSaveRemotePending && !isNeonLocalRunActive()) applyRemoteNeonCloudRow(cloudSaveRemotePending);
+      else pullLatestNeonCloudSave();
+    });
+    window.neonCloudRefreshListenersBound = true;
+  }
+
+
   function persistNeonCloudSave() {
     if (!cloudSaveReady || !leaderboardSession || !leaderboardPlayerId || !window.getNeonTowerCloudSave) return;
     if (!navigator.onLine) {
@@ -495,13 +578,15 @@
     const userId = leaderboardPlayerId;
     setCloudSyncStatus('syncing', 'SYNCING YOUR PROGRESS...');
     const snapshot = window.getNeonTowerCloudSave();
+    const savedAt = new Date().toISOString();
+    cloudSaveLastWriteAt = Date.parse(savedAt) || Date.now();
     cloudSaveWriteQueue = cloudSaveWriteQueue.then(async () => {
       if (!leaderboardSession || leaderboardPlayerId !== userId) return;
       const { error } = await leaderboardClient.from('player_cloud_saves').upsert({
         user_id: userId,
         player_data: snapshot.player,
         run_checkpoint: snapshot.checkpoints || snapshot.checkpoint,
-        updated_at: new Date().toISOString()
+        updated_at: savedAt
       }, { onConflict: 'user_id' });
       if (error) throw error;
       if (leaderboardPlayerId === userId) {
@@ -539,7 +624,7 @@
     try {
       const { data, error } = await leaderboardClient
         .from('player_cloud_saves')
-        .select('user_id, player_data, run_checkpoint')
+        .select('user_id, player_data, run_checkpoint, updated_at')
         .eq('user_id', userId)
         .maybeSingle();
       if (error) throw error;
@@ -550,6 +635,7 @@
           ? { checkpoints: checkpointPayload }
           : { checkpoint: checkpointPayload };
         window.applyNeonTowerCloudSave({ player: data.player_data, ...checkpointSnapshot });
+        cloudSaveLastAppliedAt = Date.parse(data.updated_at || '') || Date.now();
       } else {
         const localSnapshot = window.getNeonTowerCloudSave();
         const { error: insertError } = await leaderboardClient.from('player_cloud_saves').insert({
@@ -562,6 +648,7 @@
       }
       cloudSaveReady = true;
       cloudSaveLoadingUserId = '';
+      subscribeToNeonCloudSave(userId);
       cloudSavePendingOffline = false;
       setCloudSyncStatus('saved', 'CLOUD SYNCED — ALL PROGRESS SAVED');
       setAuthStatus('CLOUD SAVE SYNCED. YOUR PROGRESS IS LINKED TO THIS ACCOUNT.');
