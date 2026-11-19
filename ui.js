@@ -846,6 +846,23 @@
       }
       cloudSaveReady = true;
       cloudSaveLoadingUserId = '';
+      // Reconcile the local lifetime best with the authoritative leaderboard record.
+      // The leaderboard may be ahead of an older player/cloud snapshot.
+      try {
+        const { data: lifetimeRecord, error: lifetimeRecordError } = await leaderboardClient
+          .from('leaderboard_entries')
+          .select('best_wave')
+          .eq('player_id', userId)
+          .maybeSingle();
+        if (lifetimeRecordError) throw lifetimeRecordError;
+        const leaderboardBestWave = Math.max(1, Math.floor(Number(lifetimeRecord?.best_wave) || 1));
+        if (leaderboardBestWave > (Number(player.highestWave) || 1)) {
+          player.highestWave = leaderboardBestWave;
+          saveGame(true);
+        }
+      } catch (recordSyncError) {
+        console.warn('Could not reconcile lifetime best wave from leaderboard:', recordSyncError);
+      }
       subscribeToNeonCloudSave(userId);
       cloudSavePendingOffline = false;
       setCloudSyncStatus('saved', 'CLOUD SYNCED — ALL PROGRESS SAVED');
