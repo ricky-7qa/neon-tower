@@ -749,7 +749,14 @@
       {id:'kills', title:'ELIMINATE 30 ENEMIES', description:'Defeat 30 enemies during this run.', target:30, reward:25},
       {id:'survive', title:'SURVIVE 2 MINUTES', description:'Stay alive for 120 seconds.', target:120, reward:25}
     ];
-    document.getElementById('mission-ui')?.classList.remove('mission-complete', 'mission-hidden-on-resume');
+    const missionUI = document.getElementById('mission-ui');
+    missionUI?.classList.remove('mission-complete', 'mission-hidden-on-resume');
+    if (levelConfig && missionUI) {
+      // Level objectives must always be visible during active Level Mode gameplay.
+      missionUI.style.display = 'block';
+      missionUI.style.visibility = 'visible';
+      missionUI.style.opacity = '1';
+    }
     if (levelConfig) {
       run.mission = null;
       document.getElementById('mission-title').textContent = 'LEVEL ' + levelConfig.id + ' OBJECTIVES';
@@ -842,6 +849,11 @@
     const missionUI = document.getElementById('mission-ui');
     if (run.mode === 'level' && Array.isArray(run.levelObjectives)) {
       missionUI?.classList.remove('mission-hidden-on-resume', 'mission-complete');
+      if (missionUI) {
+        missionUI.style.display = 'block';
+        missionUI.style.visibility = 'visible';
+        missionUI.style.opacity = '1';
+      }
       const levelConfig = window.NEON_LEVEL_MODE_CONFIG?.levels?.find(level => level.id === Number(run.levelId));
       const title = document.getElementById('mission-title');
       const reward = document.getElementById('mission-reward');
