@@ -716,12 +716,12 @@
       if (w <= 50) return Math.max(8, Math.round((cfg.middleBase || 26) + (w - 20) * (cfg.middlePerWave || 0.5)));
       return Math.max(10, Math.round((cfg.lateBase || 41) + (w - 50) * (cfg.latePerWave || 0.25)));
     }
-    let count;
-    if (w <= 20) count = 9 + Math.floor(w * 1.25);
-    else if (w <= 50) count = 34 + Math.floor((w - 20) * 0.45);
-    else if (w <= 100) count = 48 + Math.floor((w - 50) * 0.2);
-    else count = 58 + Math.floor((w - 100) * 0.12);
-    return count;
+    if (w <= 20) return 9 + Math.floor(w * 1.25);
+    if (w <= 50) return 34 + Math.floor((w - 20) * 0.6);
+    if (w <= 100) return 52 + Math.floor((w - 50) * 0.36);
+    if (w <= 150) return 70 + Math.floor((w - 100) * 0.46);
+    if (w <= 200) return 93 + Math.floor((w - 150) * 0.54);
+    return 120 + Math.floor((w - 200) * 0.56);
   }
 
   /** MAIN LOOP & RENDERING **/
@@ -1089,7 +1089,7 @@
       saveRunCheckpoint(showPerk, showDecision, freeUpgrades); 
     }
     game.spawnT -= game.dt;
-    if(game.spawnT <= 0 && game.toSpawn > 0) { game.ents.e.push(new Enemy(run.wave)); game.toSpawn--; game.spawnT = Math.max(0.68, 1.0 - (Math.min(run.wave, 100)*0.003)); updateHUD(); }
+    if(game.spawnT <= 0 && game.toSpawn > 0) { game.ents.e.push(new Enemy(run.wave)); game.toSpawn--; game.spawnT = Math.max(0.85, 1.0 - (Math.min(run.wave, 100)*0.003)); updateHUD(); }
 
     tower.update(game.dt); tower.draw();run.comboTimer=Math.max(0,run.comboTimer-game.dt);if(!run.comboTimer)run.combo=0;
 
