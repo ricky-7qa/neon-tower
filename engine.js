@@ -1148,7 +1148,13 @@
              game.ents.txt.push(new FText(e.x, e.y-e.r, Math.floor(dmg), p.crit ? "#ff3366" : "#fff", p.crit ? 24 : 14));
              createParts(p.x, p.y, p.crit ? "#ff3366" : "#0ff", p.crit?10:3, 3);
           }
-          if(e.hit(dmg)) { game.ents.e.splice(j,1); updateHUD(); }
+          if(e.hit(dmg)) {
+            const defeatedBoss = e.type === 'Boss';
+            game.ents.e.splice(j,1);
+            updateHUD();
+            // Keep a recovery checkpoint on the Boss wave immediately after its defeat.
+            if(defeatedBoss && run.mode !== 'level') saveRunCheckpoint(false, false);
+          }
           
           if(p instanceof Laser) { /* Laser pierces all targets. */ }
           else if((p.pierceRemaining||0)>0){p.pierceRemaining--;p.dead=false;}
