@@ -3600,3 +3600,52 @@
   #app #menu .level-mode-entry-meta { font-size:5px !important; }
   #app #menu .resume-level-details { font-size:5px; }
 }
+
+
+/* Final menu alignment: equal columns and Resume Level uses the same button treatment as Resume Run. */
+#app #menu > .level-mode-entry {
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  align-items:stretch !important;
+  gap:10px !important;
+}
+#app #menu > .level-mode-entry > #open-level-mode-button,
+#app #menu > .level-mode-entry > #resume-level-panel {
+  box-sizing:border-box !important;
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  flex:none !important;
+}
+#app #menu > .level-mode-entry > #resume-level-panel {
+  padding:0 !important;
+}
+#app #menu > .level-mode-entry > #resume-level-panel > .resume-level-button {
+  box-sizing:border-box !important;
+  display:flex !important;
+  width:100% !important;
+  min-width:0 !important;
+  height:100% !important;
+  min-height:0 !important;
+  align-items:center !important;
+  justify-content:center !important;
+  border:1px solid #0ff !important;
+  border-radius:6px !important;
+  color:#0ff !important;
+  background:rgba(0,18,28,.58) !important;
+  box-shadow:0 4px 6px rgba(0,0,0,.5),inset 0 0 15px rgba(0,255,255,.1) !important;
+  backdrop-filter:blur(8px);
+}
+#app #menu > .level-mode-entry > #resume-level-panel > .resume-level-button:hover:not(:disabled) {
+  background:rgba(0,255,255,.24) !important;
+  color:#fff !important;
+  border-color:#fff !important;
+  box-shadow:0 0 20px rgba(0,255,255,.65) !important;
+  transform:translateY(-2px) scale(1.025) !important;
+}
+@media(max-width:700px) {
+  #app #menu > .level-mode-entry {
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:7px !important;
+  }
+}
