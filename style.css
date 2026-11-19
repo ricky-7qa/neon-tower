@@ -3456,3 +3456,44 @@
     letter-spacing:.5px !important;
   }
 }
+
+
+/* Match Level Mode action heights to the Infinite Run action buttons. */
+#app #menu > .level-mode-entry {
+  height:76px !important;
+  min-height:76px !important;
+}
+#app #menu > .level-mode-entry > #open-level-mode-button {
+  height:76px !important;
+  min-height:76px !important;
+  padding-top:8px !important;
+  padding-bottom:8px !important;
+  row-gap:3px !important;
+}
+#app #menu > .level-mode-entry > #resume-level-panel {
+  height:76px !important;
+  min-height:76px !important;
+  padding:0 !important;
+}
+#app #menu > .level-mode-entry > #resume-level-panel > .resume-level-button {
+  box-sizing:border-box !important;
+  height:100% !important;
+  min-height:76px !important;
+}
+@media(max-width:700px) {
+  #app #menu > .level-mode-entry,
+  #app #menu > .level-mode-entry > #open-level-mode-button,
+  #app #menu > .level-mode-entry > #resume-level-panel {
+    height:66px !important;
+    min-height:66px !important;
+  }
+  #app #menu > .level-mode-entry > #open-level-mode-button {
+    padding:8px 12px !important;
+    row-gap:3px !important;
+  }
+  #app #menu > .level-mode-entry > #resume-level-panel > .resume-level-button {
+    height:100% !important;
+    min-height:66px !important;
+    padding:7px 5px !important;
+  }
+}
