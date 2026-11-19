@@ -760,7 +760,8 @@
       if (leaderboardPlayerId === userId) {
         cloudSavePendingOffline = false;
         setCloudSyncStatus('saved', 'CLOUD SYNCED — ALL PROGRESS SAVED');
-        await syncPublicPlayerProfile();
+        try { await syncPublicPlayerProfile(); }
+        catch (profileError) { console.warn('Public profile sync is temporarily unavailable:', profileError); }
       }
     }).catch(error => {
       console.error('Cloud save failed:', error);
@@ -806,13 +807,16 @@
         cloudSaveLastAppliedAt = Date.parse(data.updated_at || '') || Date.now();
       } else {
         const localSnapshot = window.getNeonTowerCloudSave();
-        const { error: insertError } = await leaderboardClient.from('player_cloud_saves').insert({
-          user_id: userId,
-          player_data: localSnapshot.player,
-          run_checkpoint: localSnapshot.checkpoints || localSnapshot.checkpoint,
-          updated_at: new Date().toISOString()
+        const { data: saveResult, error: insertError } = await leaderboardClient.functions.invoke('account-cloud-save', {
+          body: {
+            run_session_key: accountRunSessionKey,
+            player_data: localSnapshot.player,
+            run_checkpoint: localSnapshot.checkpoints || localSnapshot.checkpoint,
+            updated_at: new Date().toISOString()
+          }
         });
         if (insertError) throw insertError;
+        if (!saveResult || saveResult.saved !== true) throw new Error('Initial account cloud save was not confirmed.');
       }
       cloudSaveReady = true;
       cloudSaveLoadingUserId = '';
