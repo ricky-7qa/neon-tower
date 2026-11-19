@@ -3849,3 +3849,14 @@
   width:100% !important;
   max-width:none !important;
 }
+
+
+/* When Resume Level is hidden, remove the empty second grid column. */
+#app #menu > .level-mode-entry:not(.has-resume-level) {
+  grid-template-columns:minmax(0,1fr) !important;
+}
+#app #menu > .level-mode-entry:not(.has-resume-level) > #open-level-mode-button {
+  grid-column:1 / -1 !important;
+  width:100% !important;
+  justify-self:stretch !important;
+}
