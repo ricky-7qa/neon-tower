@@ -742,6 +742,16 @@
       if (cloudSaveRemotePending && !isNeonLocalRunActive()) applyRemoteNeonCloudRow(cloudSaveRemotePending);
       else pullLatestNeonCloudSave();
     });
+    // Periodic cloud refresh: reconcile remote progress every five minutes.
+    // Never apply a remote snapshot while a local run is active; keep it pending instead.
+    window.setInterval(() => {
+      if (!leaderboardSession || !cloudSaveReady || !navigator.onLine) return;
+      if (cloudSaveRemotePending && !isNeonLocalRunActive()) {
+        applyRemoteNeonCloudRow(cloudSaveRemotePending);
+        return;
+      }
+      pullLatestNeonCloudSave();
+    }, 5 * 60 * 1000);
     window.neonCloudRefreshListenersBound = true;
   }
 
