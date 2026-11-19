@@ -3860,3 +3860,17 @@
   width:100% !important;
   justify-self:stretch !important;
 }
+
+
+/* Keep three-digit wave numbers fully visible on narrow mobile screens. */
+@media (orientation:portrait) and (pointer:coarse) and (max-width:430px) {
+  #app.device-mobile .game-topbar .topbar-left .stat-box:first-child {
+    flex:0 0 56px;
+    width:56px;
+    min-width:56px;
+  }
+  #app.device-mobile #hud-wave {
+    font-size:13px;
+    letter-spacing:0;
+  }
+}
