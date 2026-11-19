@@ -335,7 +335,7 @@
       }));
     } catch (err) { console.warn('Could not save run checkpoint', err); }
     refreshResumeUI();
-    if (typeof window.scheduleNeonCloudSave === 'function') window.scheduleNeonCloudSave();
+    if (typeof window.scheduleNeonCloudSave === 'function') window.scheduleNeonCloudSave(true);
   }
   function clearRunCheckpoint(mode = null) {
     localStorage.removeItem(getRunCheckpointKey(mode));
