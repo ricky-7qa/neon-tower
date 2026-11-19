@@ -3537,7 +3537,6 @@
   transform:translateY(-50%) !important;
 }
 #app #menu > .level-mode-entry > #resume-level-panel {
-  display:flex !important;
   align-items:stretch !important;
   justify-content:stretch !important;
   height:76px !important;
