@@ -384,6 +384,7 @@
   let guestModeConfirmed = false;
   let accountBanNotice = '';
   let banEnforcementInProgress = false;
+  let accountRunSessionKey = '';
   let leaderboardClient = null;
   let leaderboardPlayerId = '';
   let leaderboardSession = null;
@@ -487,7 +488,8 @@
       await rejectBannedAccount(data.banned_until);
       return false;
     }
-    if (!data || data.banned !== false) throw new Error('Account status could not be verified.');
+    if (!data || data.banned !== false || typeof data.run_session_key !== 'string') throw new Error('Account status could not be verified.');
+    accountRunSessionKey = data.run_session_key;
     clearAccountBanNotice();
     return true;
   }
@@ -581,6 +583,7 @@
     if (leaderboardSession) {
       initializeNeonCloudSave(leaderboardSession);
     } else {
+      accountRunSessionKey = '';
       cloudSaveReady = false;
       cloudSaveUserId = '';
       cloudSaveLoadingUserId = '';
@@ -719,7 +722,7 @@
 
 
   function persistNeonCloudSave() {
-    if (!cloudSaveReady || !leaderboardSession || !leaderboardPlayerId || !window.getNeonTowerCloudSave) return;
+    if (!cloudSaveReady || !leaderboardSession || !leaderboardPlayerId || !accountRunSessionKey || !window.getNeonTowerCloudSave) return;
     if (!navigator.onLine) {
       cloudSavePendingOffline = true;
       setCloudSyncStatus('offline', 'OFFLINE — PROGRESS IS SAVED ON THIS DEVICE');
@@ -732,13 +735,16 @@
     cloudSaveLastWriteAt = Date.parse(savedAt) || Date.now();
     cloudSaveWriteQueue = cloudSaveWriteQueue.then(async () => {
       if (!leaderboardSession || leaderboardPlayerId !== userId) return;
-      const { error } = await leaderboardClient.from('player_cloud_saves').upsert({
-        user_id: userId,
-        player_data: snapshot.player,
-        run_checkpoint: snapshot.checkpoints || snapshot.checkpoint,
-        updated_at: savedAt
-      }, { onConflict: 'user_id' });
+      const { data, error } = await leaderboardClient.functions.invoke('account-cloud-save', {
+        body: {
+          run_session_key: accountRunSessionKey,
+          player_data: snapshot.player,
+          run_checkpoint: snapshot.checkpoints || snapshot.checkpoint,
+          updated_at: savedAt
+        }
+      });
       if (error) throw error;
+      if (!data || data.saved !== true) throw new Error('Account cloud save was not confirmed.');
       if (leaderboardPlayerId === userId) {
         cloudSavePendingOffline = false;
         setCloudSyncStatus('saved', 'CLOUD SYNCED — ALL PROGRESS SAVED');
