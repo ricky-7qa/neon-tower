@@ -3804,3 +3804,40 @@
   width:calc(100% - 8px) !important;
   justify-self:start !important;
 }
+
+/* Always provide a way back to the menu from the run report. */
+#gameover .gameover-level-actions {
+  display:flex !important;
+  width:min(520px,calc(100% - 24px));
+  margin:0 auto;
+  gap:12px;
+  justify-content:center;
+  flex-wrap:wrap;
+}
+#gameover .gameover-level-actions .btn {
+  flex:1 1 145px;
+  min-height:54px;
+  padding:13px 18px !important;
+  border:1px solid #08eaff;
+  border-radius:10px;
+  background:linear-gradient(120deg,rgba(0,57,68,.95),rgba(0,17,30,.98));
+  color:#43f5ff;
+  font-size:14px !important;
+  font-weight:900;
+  letter-spacing:1.5px;
+  box-shadow:0 0 16px rgba(0,225,255,.1);
+}
+#gameover .gameover-level-actions #gameover-next-level-button {
+  display:none;
+}
+#gameover.level-mode-success .gameover-level-actions #gameover-next-level-button {
+  display:inline-flex;
+}
+@media(max-width:700px) {
+  #gameover .gameover-level-actions { width:calc(100% - 16px); gap:9px; }
+  #gameover .gameover-level-actions .btn {
+    min-height:52px;
+    padding:12px 10px !important;
+    font-size:12px !important;
+  }
+}
