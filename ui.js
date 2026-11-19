@@ -379,6 +379,11 @@
   const LEADERBOARD_URL = 'https://iioagfxyzfxyoifjclgw.supabase.co';
   const LEADERBOARD_KEY = 'sb_publishable_Xop-cOuasc5PmiD3e4ed5A_hWr-mclf';
   const LEADERBOARD_NAME_KEY = 'neonTowerLeaderboardName';
+  const GUEST_SAVE_KEY = 'neonTowerGuestSaveV1';
+  const ACCOUNT_BAN_NOTICE_KEY = 'neonTowerAccountBanNoticeV1';
+  let guestModeConfirmed = false;
+  let accountBanNotice = '';
+  let banEnforcementInProgress = false;
   let leaderboardClient = null;
   let leaderboardPlayerId = '';
   let leaderboardSession = null;
@@ -387,6 +392,104 @@
 
   function escapeLeaderboardText(value) {
     return String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+  }
+
+  function createBlankGuestSnapshot() {
+    return {
+      player: {
+        coins: 0, highestWave: 1, totalKills: 0, bossKills: 0, playTime: 0,
+        runsPlayed: 0, bestKills: 0, bestBosses: 0, bestDuration: 0,
+        ws: {}, freeUpgradeChances: { ATTACK: 0, DEFENSE: 0, UTILITY: 0 },
+        freeUpgradeChanceRefundV2: false, speedControlLevel: 0, speed3CraftStartedAt: 0,
+        skills: ['start'], achievements: [], tutorialSeen: false,
+        bannerId: 'default', titleId: 'none', startedAt: Date.now(),
+        levelMode: { highestUnlocked: 1, completed: [], claimedRewards: [] }
+      },
+      checkpoint: null,
+      checkpoints: { infinite: null, level: null }
+    };
+  }
+
+  function saveGuestNeonCloudSnapshot(snapshot = null, onlyIfMissing = false) {
+    if (leaderboardSession || (!guestModeConfirmed && !onlyIfMissing)) return false;
+    try {
+      if (onlyIfMissing && localStorage.getItem(GUEST_SAVE_KEY)) return true;
+      const value = snapshot || (window.getNeonTowerCloudSave && window.getNeonTowerCloudSave());
+      if (!value) return false;
+      localStorage.setItem(GUEST_SAVE_KEY, JSON.stringify(value));
+      return true;
+    } catch (error) {
+      console.warn('Could not save guest progress separately:', error);
+      return false;
+    }
+  }
+
+  function restoreGuestNeonCloudSnapshot() {
+    try {
+      const raw = localStorage.getItem(GUEST_SAVE_KEY);
+      if (!raw || !window.applyNeonTowerCloudSave) return false;
+      const snapshot = JSON.parse(raw);
+      if (!snapshot || !snapshot.player) return false;
+      window.applyNeonTowerCloudSave({ ...snapshot, replacePlayer: true });
+      return true;
+    } catch (error) {
+      console.warn('Could not restore guest progress:', error);
+      return false;
+    }
+  }
+
+  function formatAccountBanNotice(bannedUntil) {
+    const untilMs = Date.parse(bannedUntil || '');
+    if (!untilMs || untilMs <= Date.now()) return 'YOUR ACCOUNT IS BANNED. ACCESS TO THIS ACCOUNT IS BLOCKED.';
+    const date = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Europe/Lisbon', dateStyle: 'long', timeStyle: 'short', hour12: false
+    }).format(new Date(untilMs));
+    const remaining = untilMs - Date.now();
+    const totalMinutes = Math.max(1, Math.ceil(remaining / 60000));
+    const days = Math.floor(totalMinutes / 1440);
+    const hours = Math.floor((totalMinutes % 1440) / 60);
+    const minutes = totalMinutes % 60;
+    const duration = [days ? days + 'D' : '', hours ? hours + 'H' : '', minutes && !days ? minutes + 'M' : ''].filter(Boolean).join(' ');
+    return 'YOUR ACCOUNT IS BANNED. ACCESS IS BLOCKED FOR ' + (duration || 'LESS THAN 1M') + '. UNBAN: ' + date + ' (PORTUGAL TIME).';
+  }
+
+  function clearAccountBanNotice() {
+    accountBanNotice = '';
+    localStorage.removeItem(ACCOUNT_BAN_NOTICE_KEY);
+  }
+
+  async function rejectBannedAccount(bannedUntil) {
+    accountBanNotice = formatAccountBanNotice(bannedUntil);
+    localStorage.setItem(ACCOUNT_BAN_NOTICE_KEY, JSON.stringify({ banned_until: bannedUntil || null, message: accountBanNotice }));
+    banEnforcementInProgress = true;
+    try { await leaderboardClient.auth.signOut({ scope: 'local' }); } catch (error) { console.warn('Could not clear banned local session:', error); }
+    banEnforcementInProgress = false;
+    setLeaderboardSession(null);
+    guestModeConfirmed = true;
+    if (!restoreGuestNeonCloudSnapshot()) {
+      const blank = createBlankGuestSnapshot();
+      localStorage.setItem(GUEST_SAVE_KEY, JSON.stringify(blank));
+      window.applyNeonTowerCloudSave({ ...blank, replacePlayer: true });
+    }
+    setAuthMode('login');
+    setAuthStatus(accountBanNotice);
+    showLeaderboardView();
+    return false;
+  }
+
+  async function verifyAccountIsNotBanned(session) {
+    if (!session || !session.access_token) return false;
+    const { data, error } = await leaderboardClient.functions.invoke('account-status', {
+      headers: { Authorization: 'Bearer ' + session.access_token }
+    });
+    if (error) throw error;
+    if (data && data.banned === true) {
+      await rejectBannedAccount(data.banned_until);
+      return false;
+    }
+    if (!data || data.banned !== false) throw new Error('Account status could not be verified.');
+    clearAccountBanNotice();
+    return true;
   }
 
   function initializeLeaderboard() {
@@ -413,15 +516,59 @@
       cloudNetworkListenersBound = true;
     }
     leaderboardClient.auth.onAuthStateChange((event, session) => {
+      if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') return;
       if (event === 'PASSWORD_RECOVERY') passwordRecoveryPending = true;
-      setLeaderboardSession(session);
+      if (event === 'SIGNED_OUT') {
+        if (banEnforcementInProgress) return;
+        if (leaderboardSession && isNeonLocalRunActive()) {
+          // Keep the already-open run's last valid access token available for its final cloud checkpoints.
+          if (leaderboardSession.access_token && leaderboardClient.rest?.setAuth) leaderboardClient.rest.setAuth(leaderboardSession.access_token);
+          return;
+        }
+        setLeaderboardSession(null);
+        return;
+      }
+      if (event === 'TOKEN_REFRESHED' && session) {
+        leaderboardSession = session;
+        leaderboardPlayerId = session.user?.id || '';
+        return;
+      }
       if (event === 'PASSWORD_RECOVERY') { setAuthMode('recovery'); showLeaderboardView(); }
     });
-    leaderboardClient.auth.getSession().then(({ data, error }) => {
+    leaderboardClient.auth.getSession().then(async ({ data, error }) => {
       if (error) throw error;
       passwordRecoveryPending = window.location.hash.includes('type=recovery') || window.location.search.includes('auth=recovery');
-      setLeaderboardSession(data.session);
+      const session = data.session;
+      if (session) {
+        if (!localStorage.getItem(GUEST_SAVE_KEY)) {
+          localStorage.setItem(GUEST_SAVE_KEY, JSON.stringify(createBlankGuestSnapshot()));
+        }
+        try {
+          const allowed = await verifyAccountIsNotBanned(session);
+          if (allowed) {
+            guestModeConfirmed = false;
+            setLeaderboardSession(session);
+          }
+        } catch (statusError) {
+          console.error('Account ban check failed:', statusError);
+          banEnforcementInProgress = true;
+          try { await leaderboardClient.auth.signOut({ scope: 'local' }); } catch (_) {}
+          banEnforcementInProgress = false;
+          setLeaderboardSession(null);
+          guestModeConfirmed = true;
+          restoreGuestNeonCloudSnapshot();
+          setAuthStatus('ACCOUNT STATUS COULD NOT BE VERIFIED. LOG IN IS TEMPORARILY DISABLED. GUEST MODE IS AVAILABLE.');
+        }
+      } else {
+        setLeaderboardSession(null);
+        guestModeConfirmed = true;
+        if (!restoreGuestNeonCloudSnapshot()) saveGuestNeonCloudSnapshot(window.getNeonTowerCloudSave?.());
+        const storedNotice = (() => { try { return JSON.parse(localStorage.getItem(ACCOUNT_BAN_NOTICE_KEY) || 'null'); } catch (_) { return null; } })();
+        if (storedNotice?.banned_until && Date.parse(storedNotice.banned_until) <= Date.now()) clearAccountBanNotice();
+        else if (storedNotice?.message) accountBanNotice = storedNotice.message;
+      }
       if (passwordRecoveryPending) { setAuthMode('recovery'); showLeaderboardView(); }
+      else if (accountBanNotice) { setAuthMode('login'); setAuthStatus(accountBanNotice); }
     }).catch(error => {
       console.error('Auth session check failed:', error);
       setAuthStatus('COULD NOT CHECK YOUR ACCOUNT. PLEASE REFRESH.');
@@ -478,7 +625,10 @@
   }
 
   function scheduleNeonCloudSave() {
-    if (!leaderboardSession || !leaderboardPlayerId) return;
+    if (!leaderboardSession || !leaderboardPlayerId) {
+      if (guestModeConfirmed) saveGuestNeonCloudSnapshot();
+      return;
+    }
     if (!navigator.onLine) {
       if (cloudSaveReady) cloudSavePendingOffline = true;
       setCloudSyncStatus('offline', 'OFFLINE — PROGRESS IS SAVED ON THIS DEVICE');
@@ -911,7 +1061,7 @@
     if (newPassword) newPassword.style.display = recovery ? 'block' : 'none';
     const email = document.getElementById('auth-email');
     if (email) email.style.display = recovery ? 'none' : 'block';
-    setAuthStatus(recovery ? 'CHOOSE A NEW PASSWORD FOR YOUR ACCOUNT.' : (authMode === 'signup' ? 'CREATE AN ACCOUNT TO ENTER THE GLOBAL LEADERBOARD.' : 'LOG IN TO ACCESS YOUR GLOBAL RANKING.'));
+    setAuthStatus(accountBanNotice || (recovery ? 'CHOOSE A NEW PASSWORD FOR YOUR ACCOUNT.' : (authMode === 'signup' ? 'CREATE AN ACCOUNT TO ENTER THE GLOBAL LEADERBOARD.' : 'LOG IN TO ACCESS YOUR GLOBAL RANKING.')));
   }
 
   async function submitLeaderboardAuth() {
@@ -922,6 +1072,7 @@
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return setAuthStatus('ENTER A VALID EMAIL ADDRESS.');
     if (password.length < 8) return setAuthStatus('PASSWORD MUST HAVE AT LEAST 8 CHARACTERS.');
     try {
+      saveGuestNeonCloudSnapshot(window.getNeonTowerCloudSave?.(), true);
       if (authMode === 'signup') {
         const confirm = document.getElementById('auth-confirm-password')?.value || '';
         if (password !== confirm) return setAuthStatus('PASSWORDS DO NOT MATCH.');
@@ -934,18 +1085,30 @@
         if (!data.session) {
           setAuthStatus('ACCOUNT CREATED, BUT EMAIL CONFIRMATION IS STILL ENABLED. DISABLE IT IN SUPABASE TO LOG IN WITHOUT EMAIL.');
         } else {
+          const allowed = await verifyAccountIsNotBanned(data.session);
+          if (!allowed) return;
+          guestModeConfirmed = false;
+          clearAccountBanNotice();
           setAuthStatus('ACCOUNT CREATED. OPENING YOUR ACCOUNT...');
           setLeaderboardSession(data.session);
         }
       } else {
         const { data, error } = await leaderboardClient.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        const allowed = await verifyAccountIsNotBanned(data.session);
+        if (!allowed) return;
+        guestModeConfirmed = false;
+        clearAccountBanNotice();
         setAuthStatus('LOGGED IN. OPENING YOUR ACCOUNT...');
         setLeaderboardSession(data.session);
       }
     } catch (error) {
       console.error('Leaderboard authentication failed:', error);
-      setAuthStatus(authErrorMessage(error));
+      const authMessage = authErrorMessage(error);
+      if (String(error?.message || '').toLowerCase().includes('ban')) {
+        accountBanNotice = 'YOUR ACCOUNT IS BANNED. ACCESS TO THIS ACCOUNT IS BLOCKED.';
+        setAuthStatus(accountBanNotice);
+      } else setAuthStatus(authMessage);
     }
   }
 
@@ -954,6 +1117,7 @@
     if (message.includes('already registered') || message.includes('already been registered')) return 'THIS EMAIL ALREADY HAS AN ACCOUNT. TRY LOGGING IN.';
     if (message.includes('invalid login credentials')) return 'EMAIL OR PASSWORD IS INCORRECT.';
     if (message.includes('email not confirmed')) return 'CHECK YOUR EMAIL AND CONFIRM YOUR ACCOUNT FIRST.';
+    if (message.includes('ban') || String(error?.code || '').toLowerCase().includes('ban')) return 'YOUR ACCOUNT IS BANNED. ACCESS TO THIS ACCOUNT IS BLOCKED.';
     if (message.includes('rate limit')) return 'TOO MANY ATTEMPTS. PLEASE WAIT A LITTLE AND TRY AGAIN.';
     return error && error.message ? error.message.toUpperCase() : 'SOMETHING WENT WRONG. PLEASE TRY AGAIN.';
   }
@@ -993,11 +1157,19 @@
 
   async function signOutLeaderboard() {
     if (!leaderboardClient) return;
-    const { error } = await leaderboardClient.auth.signOut();
+    const { error } = await leaderboardClient.auth.signOut({ scope: 'local' });
     if (error) {
       setAuthStatus(authErrorMessage(error));
       return;
     }
+    setLeaderboardSession(null);
+    guestModeConfirmed = true;
+    if (!restoreGuestNeonCloudSnapshot()) {
+      const blank = createBlankGuestSnapshot();
+      localStorage.setItem(GUEST_SAVE_KEY, JSON.stringify(blank));
+      window.applyNeonTowerCloudSave({ ...blank, replacePlayer: true });
+    }
+    clearAccountBanNotice();
     setAuthMode('login');
     showLeaderboardView();
   }
