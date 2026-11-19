@@ -3497,3 +3497,107 @@
     padding:7px 5px !important;
   }
 }
+
+
+/* Level Mode actions: equal height and fully visible content, matching Run actions. */
+#app #menu > .level-mode-entry {
+  height:76px !important;
+  min-height:76px !important;
+  align-items:stretch !important;
+}
+#app #menu > .level-mode-entry > #open-level-mode-button {
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:flex-start !important;
+  justify-content:center !important;
+  gap:3px !important;
+  height:76px !important;
+  min-height:76px !important;
+  padding:7px 42px 7px 18px !important;
+  overflow:hidden !important;
+}
+#app #menu .level-mode-entry-kicker,
+#app #menu .level-mode-entry-title,
+#app #menu .level-mode-entry-meta {
+  display:block !important;
+  grid-column:auto !important;
+  grid-row:auto !important;
+  line-height:1.1 !important;
+}
+#app #menu .level-mode-entry-meta {
+  white-space:nowrap !important;
+  font-size:7px !important;
+}
+#app #menu > .level-mode-entry > #open-level-mode-button::after {
+  position:absolute !important;
+  top:50% !important;
+  right:15px !important;
+  grid-column:auto !important;
+  grid-row:auto !important;
+  transform:translateY(-50%) !important;
+}
+#app #menu > .level-mode-entry > #resume-level-panel {
+  display:flex !important;
+  align-items:stretch !important;
+  justify-content:stretch !important;
+  height:76px !important;
+  min-height:76px !important;
+  padding:0 !important;
+  border:0 !important;
+  background:transparent !important;
+}
+#app #menu > .level-mode-entry > #resume-level-panel > .resume-level-button {
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:4px !important;
+  width:100% !important;
+  height:76px !important;
+  min-height:76px !important;
+  box-sizing:border-box !important;
+  padding:7px 5px !important;
+  border-radius:11px !important;
+  line-height:1.1 !important;
+}
+#app #menu .resume-level-details {
+  display:block;
+  color:#8bdde8;
+  font:800 8px/1.1 Orbitron,sans-serif;
+  letter-spacing:.7px;
+  white-space:nowrap;
+}
+#app #menu .resume-level-action {
+  display:block;
+  color:inherit;
+  font:900 11px/1.1 Orbitron,sans-serif;
+  letter-spacing:1px;
+}
+@media(max-width:700px) {
+  #app #menu > .level-mode-entry,
+  #app #menu > .level-mode-entry > #open-level-mode-button,
+  #app #menu > .level-mode-entry > #resume-level-panel,
+  #app #menu > .level-mode-entry > #resume-level-panel > .resume-level-button {
+    height:66px !important;
+    min-height:66px !important;
+  }
+  #app #menu > .level-mode-entry > #open-level-mode-button {
+    gap:3px !important;
+    padding:6px 32px 6px 12px !important;
+  }
+  #app #menu .level-mode-entry-kicker { font-size:7px !important; letter-spacing:1.5px !important; }
+  #app #menu .level-mode-entry-title { font-size:14px !important; letter-spacing:1.2px !important; }
+  #app #menu .level-mode-entry-meta { font-size:6px !important; letter-spacing:.8px !important; }
+  #app #menu > .level-mode-entry > #open-level-mode-button::after { right:9px !important; font-size:30px !important; }
+  #app #menu > .level-mode-entry > #resume-level-panel > .resume-level-button {
+    gap:3px !important;
+    padding:6px 3px !important;
+  }
+  #app #menu .resume-level-details { font-size:6px; letter-spacing:.2px; }
+  #app #menu .resume-level-action { font-size:9px; letter-spacing:.5px; }
+}
+@media(max-width:360px) {
+  #app #menu .level-mode-entry-title { font-size:12px !important; }
+  #app #menu .level-mode-entry-meta { font-size:5px !important; }
+  #app #menu .resume-level-details { font-size:5px; }
+}
