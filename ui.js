@@ -1123,7 +1123,7 @@
     } catch (error) {
       console.error('Leaderboard authentication failed:', error);
       const authMessage = authErrorMessage(error);
-      if (String(error?.message || '').toLowerCase().includes('ban')) {
+      if (authMessage.includes('YOUR ACCOUNT IS BANNED')) {
         accountBanNotice = 'YOUR ACCOUNT IS BANNED. ACCESS TO THIS ACCOUNT IS BLOCKED.';
         localStorage.setItem(ACCOUNT_BAN_NOTICE_KEY, JSON.stringify({ banned_until: null, message: accountBanNotice }));
         setAuthStatus(accountBanNotice);
