@@ -3751,3 +3751,48 @@
     margin-right:auto !important;
   }
 }
+
+
+/* Final sizing: two equal half-width buttons filling the same row width as Start Game. */
+#app #menu > .level-mode-entry {
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+  column-gap:10px !important;
+  box-sizing:content-box !important;
+  width:min(620px,calc(100% - 84px)) !important;
+  margin-left:auto !important;
+  margin-right:auto !important;
+  padding:0 !important;
+}
+#app #menu > .level-mode-entry > #open-level-mode-button,
+#app #menu > .level-mode-entry > #resume-level-panel {
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  box-sizing:border-box !important;
+  justify-self:stretch !important;
+}
+#app #menu > .level-mode-entry > #resume-level-panel {
+  padding:0 !important;
+}
+#app #menu > .level-mode-entry > #resume-level-panel > .resume-level-button {
+  display:flex !important;
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  box-sizing:border-box !important;
+}
+@media (min-width:701px) {
+  #app.device-desktop #menu > .level-mode-entry {
+    width:min(620px,calc(100% - 120px)) !important;
+    column-gap:10px !important;
+  }
+}
+@media (max-width:700px) {
+  #app #menu > .level-mode-entry {
+    width:calc(100% - 74px) !important;
+    margin-left:12px !important;
+    margin-right:auto !important;
+    column-gap:7px !important;
+  }
+}
