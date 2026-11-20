@@ -934,8 +934,8 @@
     if (returnButton) returnButton.setAttribute('onclick', 'returnToMenu()');
     if (run.mode !== 'level' && typeof submitLeaderboardResult === 'function') submitLeaderboardResult(run);
   }
-  function resumeRun(mode = null) {
-    const checkpoint = readRunCheckpoint(mode || (getLatestRunCheckpoint()?.run?.mode || 'infinite'));
+  function resumeRun(mode = 'infinite') {
+    const checkpoint = readRunCheckpoint(mode === 'level' ? 'level' : 'infinite');
     if (!checkpoint || ![1, 2].includes(Number(checkpoint.version)) || !checkpoint.run || !Number.isFinite(Number(checkpoint.run.wave))) {
       // A missing Level Mode checkpoint must never clear the separate Infinite Mode run.
       refreshResumeUI();
