@@ -187,7 +187,7 @@
       // Portrait phones have a much narrower playfield, which otherwise makes
       // side-spawned enemies start unusually close to the tower.
       const isPortraitMobile = window.matchMedia('(orientation: portrait) and (pointer: coarse)').matches;
-      const minMobileSpawnDistance = Math.max(300, Math.max(canvas.width, canvas.height) * 0.55);
+      const minMobileSpawnDistance = Math.max(420, Math.max(canvas.width, canvas.height) * 0.70);
       const spawnDistance = isPortraitMobile ? Math.max(edgeDistance, minMobileSpawnDistance) : edgeDistance;
       this.x = game.cx + dx * spawnDistance; this.y = game.cy + dy * spawnDistance;
 
