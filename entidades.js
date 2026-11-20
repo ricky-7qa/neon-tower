@@ -164,7 +164,9 @@
       reduced*=1-Math.min(60,parseFloat(getVal('bulletGuard'))+parseFloat(getVal('adaptiveArmor')))/100;
       if(attacker && attacker.type==='Boss') reduced*=1-Math.min(50,parseFloat(getVal('bossWard')))/100;
       reduced*=1-Math.min(.495,parseFloat(getVal('defensePercent'))/100);
-      reduced=Math.max(1,reduced-parseFloat(getVal('armor')));
+      // Flat armor cannot remove more than 60% of the hit after percentage defences.
+      const flatArmor = Math.min(parseFloat(getVal('armor')) || 0, reduced * 0.6);
+      reduced=Math.max(1,reduced-flatArmor);
       this.hp=Math.max(0,this.hp-reduced);
       if(this.hp<=0&&(run.secondChanceCharges||0)>0){run.secondChanceCharges--;this.hp=Math.max(1,this.maxHp*(Number(run.secondChanceHeal)||.01));createParts(this.x,this.y,'#ffd166',28,6);return;}
       game.shake=0.14;AudioSys.hit();
