@@ -679,7 +679,10 @@
   function getCloudCheckpointVersion(payload) {
     if (!payload || typeof payload !== 'object') return 0;
     if ('infinite' in payload || 'level' in payload) {
-      return Math.max(Number(payload.infinite?.savedAt) || 0, Number(payload.level?.savedAt) || 0);
+      return Math.max(
+        Number(payload.revisions?.infinite) || Number(payload.infinite?.savedAt) || 0,
+        Number(payload.revisions?.level) || Number(payload.level?.savedAt) || 0
+      );
     }
     return Number(payload.savedAt) || 0;
   }
@@ -735,7 +738,7 @@
     const localSnapshot = window.getNeonTowerCloudSave();
     const localSaveAt = Number(localSnapshot.player?.localSaveAt) || 0;
     const remoteSaveAt = Number(row.player_data.localSaveAt) || 0;
-    const localCheckpointAt = getCloudCheckpointVersion(localSnapshot.checkpoints || localSnapshot.checkpoint);
+    const localCheckpointAt = getCloudCheckpointVersion(localSnapshot.cloudCheckpoints || localSnapshot.checkpoints || localSnapshot.checkpoint);
     const remoteCheckpointAt = getCloudCheckpointVersion(row.run_checkpoint);
     if (localSaveAt > remoteSaveAt || (localSaveAt === remoteSaveAt && localCheckpointAt > remoteCheckpointAt)) {
       cloudSaveRemotePending = null;
@@ -828,7 +831,7 @@
         body: {
           run_session_key: accountRunSessionKey,
           player_data: snapshot.player,
-          run_checkpoint: snapshot.checkpoints || snapshot.checkpoint,
+          run_checkpoint: snapshot.cloudCheckpoints || snapshot.checkpoints || snapshot.checkpoint,
           updated_at: savedAt
         }
       });
@@ -884,7 +887,7 @@
         const localSnapshot = window.getNeonTowerCloudSave();
         const localSaveAt = Number(localSnapshot.player?.localSaveAt) || 0;
         const remoteSaveAt = Number(data.player_data?.localSaveAt) || 0;
-        const localCheckpointAt = getCloudCheckpointVersion(localSnapshot.checkpoints || localSnapshot.checkpoint);
+        const localCheckpointAt = getCloudCheckpointVersion(localSnapshot.cloudCheckpoints || localSnapshot.checkpoints || localSnapshot.checkpoint);
         const remoteCheckpointAt = getCloudCheckpointVersion(data.run_checkpoint);
         if (localSaveAt > remoteSaveAt || (localSaveAt === remoteSaveAt && localCheckpointAt > remoteCheckpointAt)) {
           cloudSaveReady = true;
@@ -915,7 +918,7 @@
           body: {
             run_session_key: accountRunSessionKey,
             player_data: localSnapshot.player,
-            run_checkpoint: localSnapshot.checkpoints || localSnapshot.checkpoint,
+            run_checkpoint: localSnapshot.cloudCheckpoints || localSnapshot.checkpoints || localSnapshot.checkpoint,
             updated_at: new Date().toISOString()
           }
         });
