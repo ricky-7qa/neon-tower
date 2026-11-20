@@ -76,9 +76,11 @@ jobs:
           test -f www/manifest.webmanifest
           test -f www/neon-tower-icon.svg
 
-      - name: Create Android project
+      - name: Create or update Android project
         run: |
-          npx cap add android
+          if [ ! -d android ]; then
+            npx cap add android
+          fi
           npx cap sync android
 
       - name: Build debug APK
