@@ -957,6 +957,24 @@
     document.getElementById('gameover').classList.remove('active-layer');
     document.getElementById('hud').classList.add('active-hud');
     run = checkpoint.run;
+    // Older checkpoints were saved mid-wave and did not preserve active enemies.
+    // Recreate only enemies that had not already been defeated. New version-2
+    // checkpoints are wave-start snapshots, so this normally equals the full count.
+    let defeatedBeforeCurrentWave = 0;
+    for (let previousWave = 1; previousWave < run.wave; previousWave++) {
+      defeatedBeforeCurrentWave += getWaveEnemyCount(previousWave);
+    }
+    const currentWaveEnemyCount = getWaveEnemyCount(run.wave);
+    const alreadyDefeatedThisWave = Math.max(0, Math.min(
+      currentWaveEnemyCount,
+      (Number(run.kills) || 0) - defeatedBeforeCurrentWave
+    ));
+    const remainingWaveEnemies = Math.max(0, currentWaveEnemyCount - alreadyDefeatedThisWave);
+    const bossInterval = run.mode === 'level'
+      ? (Number(window.NEON_LEVEL_MODE_CONFIG?.difficulty?.bossEveryWaves) || 5)
+      : 5;
+    run.bossAlreadyKilledInWave = run.wave % bossInterval === 0 &&
+      (Number(run.bossKills) || 0) > Math.floor((run.wave - 1) / bossInterval);
     // Revert lifetime kills and achievement rewards earned inside the interrupted
     // wave, because the checkpoint restarts that wave from its beginning.
     if (restoreCheckpointPlayerProgress(checkpoint.playerProgress)) saveGame(true);
@@ -983,7 +1001,7 @@
     game = {
       running:true, paused:!!checkpoint.pendingPerk, dt:0, last:performance.now(),
       shake:0, playSaveT:0, achievementCheckT:0, spawnT:0.25,
-      toSpawn:getWaveEnemyCount(run.wave),
+      toSpawn:remainingWaveEnemies,
       ents:{e:[],p:[],b:[],part:[],txt:[]},
       cx:canvas.width/2, cy:canvas.height/2
     };
@@ -1200,6 +1218,7 @@
 
     if(game.toSpawn <= 0 && game.ents.e.length === 0) {
       run.wave++;
+      run.bossAlreadyKilledInWave = false;
       if(tower) { const repairPct=parseFloat(getVal('waveRepair'))+parseFloat(getVal('repairBurst')); if(repairPct>0) tower.hp=Math.min(tower.maxHp,tower.hp+tower.maxHp*repairPct/100); }
       game.toSpawn = getWaveEnemyCount(run.wave);
       run.coins += Math.max(1,Math.floor((Math.floor(run.wave/2)+2+Math.floor(parseFloat(getVal('coinCache'))))*0.4));
