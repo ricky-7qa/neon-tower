@@ -1215,6 +1215,18 @@
     game.spawnT -= game.dt;
     if(game.spawnT <= 0 && game.toSpawn > 0 && game.ents.e.length < getWaveActiveEnemyCap(run.wave)) { game.ents.e.push(new Enemy(run.wave)); game.toSpawn--; game.spawnT = getWaveSpawnInterval(run.wave); updateHUD(); }
 
+    // Show the exact targeting boundary, including the Extended Radar perk.
+    drawWorld(() => {
+      const targetingRadius = parseFloat(getVal('range')) * (1 + getPerkValue('radar') / 100);
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(game.cx, game.cy, targetingRadius, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(185, 195, 205, 0.62)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.restore();
+    });
+
     tower.update(game.dt); drawWorld(() => tower.draw());run.comboTimer=Math.max(0,run.comboTimer-game.dt);if(!run.comboTimer)run.combo=0;
 
     for(let i = game.ents.p.length - 1; i >= 0; i--) {
