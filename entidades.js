@@ -182,8 +182,13 @@
       const halfW = Math.max(1, canvas.width / 2), halfH = Math.max(1, canvas.height / 2), margin = 24;
       const tx = Math.abs(dx) > 0.001 ? (halfW + margin) / Math.abs(dx) : Infinity;
       const ty = Math.abs(dy) > 0.001 ? (halfH + margin) / Math.abs(dy) : Infinity;
-      const d = Math.min(tx, ty);
-      this.x = game.cx + dx * d; this.y = game.cy + dy * d;
+      const edgeDistance = Math.min(tx, ty);
+      // Portrait phones have a much narrower playfield, which otherwise makes
+      // side-spawned enemies start unusually close to the tower.
+      const isPortraitMobile = window.matchMedia('(orientation: portrait) and (pointer: coarse)').matches;
+      const minMobileSpawnDistance = Math.max(300, Math.max(canvas.width, canvas.height) * 0.55);
+      const spawnDistance = isPortraitMobile ? Math.max(edgeDistance, minMobileSpawnDistance) : edgeDistance;
+      this.x = game.cx + dx * spawnDistance; this.y = game.cy + dy * spawnDistance;
 
       const rand = Math.random();
       this.type = "Minion"; this.c = "#ff0055"; this.r = 15;
