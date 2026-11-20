@@ -959,7 +959,7 @@
     run = checkpoint.run;
     // Revert lifetime kills and achievement rewards earned inside the interrupted
     // wave, because the checkpoint restarts that wave from its beginning.
-    if (restoreCheckpointPlayerProgress(checkpoint.playerProgress)) saveGame();
+    if (restoreCheckpointPlayerProgress(checkpoint.playerProgress)) saveGame(true);
     const pendingFreeUpgrades = Array.isArray(checkpoint.pendingFreeUpgrades) ? checkpoint.pendingFreeUpgrades : [];
     selectedGameSpeed = 1;
     // Infinite Mode hides its optional mission tracker on resume; Level Mode must keep its objectives visible.
