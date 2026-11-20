@@ -1366,7 +1366,10 @@
       const banner=PROFILE_BANNERS.find(item=>item.id===profile?.banner_id);
       return '<article class="leaderboard-row ' + (own ? 'is-you' : '') + '">' +
         '<span class="leaderboard-rank">' + (isWeekly && index === 0 ? '🥇' : isWeekly && index === 1 ? '🥈' : isWeekly && index === 2 ? '🥉' : '#' + (index + 1)) + '</span>' +
-        '<span class="leaderboard-player"><button class="leaderboard-profile-link" onclick="openPlayerProfile(\'' + entry.player_id + '\')">' + escapeLeaderboardText(entry.player_name) + (own ? ' <small>YOU</small>' : '') + '</button><small>WAVE ' + entry.best_wave + ' · ' + Number(entry.best_kills || 0).toLocaleString('en-US') + ' KILLS' + (title && title.id!=='none'?' · '+escapeLeaderboardText(title.name):'') + '</small></span>' +
+        '<span class="leaderboard-player"><span class="leaderboard-player-heading">' +
+        (banner ? '<span class="leaderboard-mini-banner" style="background:' + banner.style + '" aria-label="' + escapeLeaderboardText(banner.name) + ' banner"></span>' : '') +
+        '<button class="leaderboard-profile-link" onclick="openPlayerProfile(\'' + entry.player_id + '\')">' + escapeLeaderboardText(entry.player_name) + (own ? ' <small>YOU</small>' : '') + '</button></span>' +
+        '<small>WAVE ' + entry.best_wave + ' · ' + Number(entry.best_kills || 0).toLocaleString('en-US') + ' KILLS' + (title && title.id!=='none'?' · '+escapeLeaderboardText(title.name):'') + '</small></span>' +
         '<span class="leaderboard-result"><strong>' + entry.best_wave + '</strong><small>WAVE</small></span>' +
         '<span class="leaderboard-result"><strong>' + Number(entry.best_kills || 0).toLocaleString('en-US') + '</strong><small>KILLS</small></span>' +
         '</article>';
