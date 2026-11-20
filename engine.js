@@ -31,18 +31,23 @@
   }
   function getRunCheckpointBackupKey(mode) { return mode === "level" ? LEVEL_RUN_CHECKPOINT_BACKUP_KEY : RUN_CHECKPOINT_BACKUP_KEY; }
   function getRunCheckpointKey(mode = null) { const selectedMode = mode || (pendingLevelModeId ? "level" : (run.mode || "infinite")); return selectedMode === "level" ? LEVEL_RUN_CHECKPOINT_KEY : RUN_CHECKPOINT_KEY; }
+  function normalizeRunCheckpoint(candidate) {
+    if (!candidate || typeof candidate !== 'object' || !candidate.run || ![1, 2].includes(Number(candidate.version))) return null;
+    if (Number(candidate.version) === 1) return { ...candidate, version: 2, playerProgress: candidate.playerProgress || null };
+    return candidate;
+  }
   function readRunCheckpoint(mode) {
     const key = getRunCheckpointKey(mode);
     const raw = localStorage.getItem(key);
-    try { return JSON.parse(raw || "null"); }
+    try { return normalizeRunCheckpoint(JSON.parse(raw || "null")); }
     catch (err) {
       try {
         const history = JSON.parse(localStorage.getItem(getRunCheckpointBackupKey(mode || (key === LEVEL_RUN_CHECKPOINT_KEY ? "level" : "infinite"))) || "[]");
         for (const entry of Array.isArray(history) ? history : []) {
           try {
-            const candidate = JSON.parse(entry.value);
-            if (candidate && candidate.version === 1 && candidate.run) {
-              localStorage.setItem(key, entry.value);
+            const candidate = normalizeRunCheckpoint(JSON.parse(entry.value));
+            if (candidate) {
+              localStorage.setItem(key, JSON.stringify(candidate));
               return candidate;
             }
           } catch (backupError) {}
@@ -53,8 +58,24 @@
   }
   function getLatestRunCheckpoint() {
     const infinite = readRunCheckpoint("infinite"), level = readRunCheckpoint("level");
-    if (infinite && infinite.version === 1 && infinite.run && level && level.version === 1 && level.run) return (Number(level.savedAt) || 0) > (Number(infinite.savedAt) || 0) ? level : infinite;
-    return level && level.version === 1 && level.run ? level : infinite;
+    if (infinite && infinite.run && level && level.run) return (Number(level.savedAt) || 0) > (Number(infinite.savedAt) || 0) ? level : infinite;
+    return level && level.run ? level : infinite;
+  }
+  function getCheckpointPlayerProgress() {
+    return {
+      coins: Math.max(0, Number(player.coins) || 0),
+      totalKills: Math.max(0, Number(player.totalKills) || 0),
+      bossKills: Math.max(0, Number(player.bossKills) || 0),
+      achievements: Array.isArray(player.achievements) ? [...player.achievements] : []
+    };
+  }
+  function restoreCheckpointPlayerProgress(snapshot) {
+    if (!snapshot || typeof snapshot !== 'object') return false;
+    player.coins = Math.max(0, Number(snapshot.coins) || 0);
+    player.totalKills = Math.max(0, Number(snapshot.totalKills) || 0);
+    player.bossKills = Math.max(0, Number(snapshot.bossKills) || 0);
+    player.achievements = Array.isArray(snapshot.achievements) ? [...snapshot.achievements] : [];
+    return true;
   }
   function formatMoney(value) {
     const amount = Math.max(0, Number(value) || 0);
@@ -328,11 +349,10 @@
   function refreshResumeUI() {
     const infiniteCheckpoint = readRunCheckpoint('infinite');
     const levelCheckpoint = readRunCheckpoint('level');
-    const infiniteExists = !!(infiniteCheckpoint && infiniteCheckpoint.version === 1 && infiniteCheckpoint.run && Number.isFinite(Number(infiniteCheckpoint.run.wave)));
+    const infiniteExists = !!(infiniteCheckpoint && infiniteCheckpoint.run && Number.isFinite(Number(infiniteCheckpoint.run.wave)));
     // Only show Resume Level when there is a genuine, resumable Level Mode checkpoint.
     const levelExists = !!(
       levelCheckpoint &&
-      levelCheckpoint.version === 1 &&
       levelCheckpoint.run &&
       levelCheckpoint.run.mode === 'level' &&
       Number.isFinite(Number(levelCheckpoint.run.levelId)) &&
@@ -361,27 +381,31 @@
     if (primaryAction) primaryAction.classList.toggle('has-resume', infiniteExists);
     if (startButton) startButton.textContent = infiniteExists ? 'NEW RUN' : 'START INFINITE MODE';
   }
-  function saveRunCheckpoint(pendingPerk = false, pendingDecision = false, pendingFreeUpgrades = null) {
+  function saveRunCheckpoint(pendingPerk = false, pendingDecision = false, pendingFreeUpgrades = null, forceWaveSnapshot = false) {
     if (!game || !game.running || !tower) return;
     try {
       const checkpointKey = getRunCheckpointKey();
       const previous = readRunCheckpoint(run.mode);
-      const savedRun = JSON.parse(JSON.stringify(run));
-      if (previous && previous.run && Number(previous.run.wave) === Number(run.wave)) {
-        ['kills','bossKills','elapsed','mission','graze','combo','comboTimer'].forEach(key => {
-          if (previous.run[key] !== undefined) savedRun[key] = previous.run[key];
-        });
-      }
-      archiveLocalValue(checkpointKey, getRunCheckpointBackupKey(run.mode));
-      localStorage.setItem(checkpointKey, JSON.stringify({
-        version: 1,
-        savedAt: Date.now(),
-        run: savedRun,
+      const sameWave = !!(previous && previous.run && Number(previous.run.wave) === Number(run.wave));
+      // Keep one stable snapshot at the start of each wave. Mid-wave purchases and
+      // kills do not replace it because Resume restarts the interrupted wave.
+      if (sameWave && !forceWaveSnapshot) return;
+      const revision = Math.max(Date.now(), (Number(player.localSaveAt) || 0) + 1);
+      player.localSaveAt = revision;
+      const checkpoint = {
+        version: 2,
+        savedAt: revision,
+        run: JSON.parse(JSON.stringify(run)),
         tower: { hp: tower.hp, shield: tower.shield, tempShieldCharges: tower.tempShieldCharges || 0 },
+        playerProgress: getCheckpointPlayerProgress(),
         pendingPerk: !!pendingPerk,
         pendingDecision: !!pendingDecision,
-        pendingFreeUpgrades: Array.isArray(pendingFreeUpgrades) ? pendingFreeUpgrades : (Array.isArray(previous?.pendingFreeUpgrades) ? previous.pendingFreeUpgrades : [])
-      }));
+        pendingFreeUpgrades: Array.isArray(pendingFreeUpgrades) ? pendingFreeUpgrades : []
+      };
+      archiveLocalValue(SAVE_KEY, SAVE_BACKUP_KEY);
+      localStorage.setItem(SAVE_KEY, btoa(JSON.stringify(player)));
+      archiveLocalValue(checkpointKey, getRunCheckpointBackupKey(run.mode));
+      localStorage.setItem(checkpointKey, JSON.stringify(checkpoint));
     } catch (err) { console.warn('Could not save run checkpoint', err); }
     refreshResumeUI();
     if (typeof window.scheduleNeonCloudSave === 'function') window.scheduleNeonCloudSave(true);
@@ -417,9 +441,9 @@
       const level = snapshot.checkpoints.level;
       archiveLocalValue(RUN_CHECKPOINT_KEY, RUN_CHECKPOINT_BACKUP_KEY);
       archiveLocalValue(LEVEL_RUN_CHECKPOINT_KEY, LEVEL_RUN_CHECKPOINT_BACKUP_KEY);
-      if (infinite && infinite.version === 1 && infinite.run) localStorage.setItem(RUN_CHECKPOINT_KEY, JSON.stringify(infinite)); else localStorage.removeItem(RUN_CHECKPOINT_KEY);
-      if (level && level.version === 1 && level.run) localStorage.setItem(LEVEL_RUN_CHECKPOINT_KEY, JSON.stringify(level)); else localStorage.removeItem(LEVEL_RUN_CHECKPOINT_KEY);
-    } else if (snapshot.checkpoint && snapshot.checkpoint.version === 1 && snapshot.checkpoint.run) {
+      if (infinite && [1, 2].includes(Number(infinite.version)) && infinite.run) localStorage.setItem(RUN_CHECKPOINT_KEY, JSON.stringify(infinite)); else localStorage.removeItem(RUN_CHECKPOINT_KEY);
+      if (level && [1, 2].includes(Number(level.version)) && level.run) localStorage.setItem(LEVEL_RUN_CHECKPOINT_KEY, JSON.stringify(level)); else localStorage.removeItem(LEVEL_RUN_CHECKPOINT_KEY);
+    } else if (snapshot.checkpoint && [1, 2].includes(Number(snapshot.checkpoint.version)) && snapshot.checkpoint.run) {
       const key = snapshot.checkpoint.run.mode === 'level' ? LEVEL_RUN_CHECKPOINT_KEY : RUN_CHECKPOINT_KEY;
       archiveLocalValue(key, getRunCheckpointBackupKey(snapshot.checkpoint.run.mode));
       localStorage.setItem(key, JSON.stringify(snapshot.checkpoint));
@@ -458,7 +482,13 @@
     saveGame(false, false);
     updateMenuUI(); buildSkillTree();
   }
-  function resetSave() { if(confirm("Delete all progress?")) { localStorage.removeItem(SAVE_KEY); location.reload(); } }
+  function resetSave() {
+    if (!confirm("WIPE THIS DEVICE'S LOCAL SAVE, RUN CHECKPOINTS AND LOCAL BACKUPS? Progress stored in a signed-in cloud account will remain and can be synced again.")) return;
+    [SAVE_KEY, SAVE_BACKUP_KEY, RUN_CHECKPOINT_KEY, LEVEL_RUN_CHECKPOINT_KEY,
+      RUN_CHECKPOINT_BACKUP_KEY, LEVEL_RUN_CHECKPOINT_BACKUP_KEY, 'neonTowerGuestSaveV1'
+    ].forEach(key => localStorage.removeItem(key));
+    location.reload();
+  }
 
   function checkAchievements() {
     let changed = false;
@@ -567,7 +597,7 @@
       case'boss_gamble':effect(id,pct(.3),5);effect('boss_gamble_reward',pct(1),5);break;
       case'last_stand':if(tower)tower.hp=Math.max(1,tower.hp*.5);effect(id,pct(.5),1);break;
     }
-    const panel=document.getElementById('perk-choice');panel.classList.remove('visible');panel.innerHTML='';game.paused=false;game.last=performance.now();updateHUD();saveRunCheckpoint(false,false);
+    const panel=document.getElementById('perk-choice');panel.classList.remove('visible');panel.innerHTML='';game.paused=false;game.last=performance.now();updateHUD();saveRunCheckpoint(false,false,null,true);
   }
 
   function renderRunPerks() {
@@ -602,7 +632,7 @@
     panel.classList.remove('visible'); panel.innerHTML='';
     if(id==='repair' && tower) { const baseRegen=parseFloat(getVal('regen'))+parseFloat(getVal('nanoMatrix')); tower.hp=Math.min(tower.maxHp,tower.hp+baseRegen*selectedPerk.values[rarity]*4/100); }
     game.paused=false; game.last=performance.now(); updateHUD();
-    saveRunCheckpoint(false);
+    saveRunCheckpoint(false, false, null, true);
     notify('PERK UNLOCKED',selectedPerk.name+' · '+perkRarities[rarity].label);
   }
 
@@ -841,11 +871,11 @@
   function startGame(levelId = null) {
     if (Number.isInteger(Number(levelId)) && Number(levelId) > 0) pendingLevelModeId = Number(levelId);
     const selectedLevelId = pendingLevelModeId;
-    clearRunCheckpoint();
     if (!player.tutorialSeen) {
       document.getElementById('tutorial').classList.add('visible');
       return;
     }
+    clearRunCheckpoint(selectedLevelId ? 'level' : 'infinite');
     pendingLevelModeId = null;
     AudioSys.init();
     resize(); // Recalculate the canvas after the device/layout selection and before starting the run.
@@ -895,6 +925,7 @@
     saveRunCheckpoint(false);
     updateHUD();
     requestAnimationFrame(loop);
+    if (typeof window.startNeonLeaderboardRun === 'function') window.startNeonLeaderboardRun();
     if (typeof window.neonTrack === 'function') {
       window.neonTrack({ path: 'game-start', title: 'Game started', event: true, no_session: true });
     } else if (window.goatcounter && typeof window.goatcounter.count === 'function') {
@@ -938,7 +969,7 @@
   }
   function resumeRun(mode = null) {
     const checkpoint = readRunCheckpoint(mode || (getLatestRunCheckpoint()?.run?.mode || 'infinite'));
-    if (!checkpoint || checkpoint.version !== 1 || !checkpoint.run || !Number.isFinite(Number(checkpoint.run.wave))) {
+    if (!checkpoint || ![1, 2].includes(Number(checkpoint.version)) || !checkpoint.run || !Number.isFinite(Number(checkpoint.run.wave))) {
       // A missing Level Mode checkpoint must never clear the separate Infinite Mode run.
       refreshResumeUI();
       return;
@@ -956,6 +987,9 @@
     document.getElementById('gameover').classList.remove('active-layer');
     document.getElementById('hud').classList.add('active-hud');
     run = checkpoint.run;
+    // Revert lifetime kills and achievement rewards earned inside the interrupted
+    // wave, because the checkpoint restarts that wave from its beginning.
+    if (restoreCheckpointPlayerProgress(checkpoint.playerProgress)) saveGame();
     const pendingFreeUpgrades = Array.isArray(checkpoint.pendingFreeUpgrades) ? checkpoint.pendingFreeUpgrades : [];
     selectedGameSpeed = 1;
     // Infinite Mode hides its optional mission tracker on resume; Level Mode must keep its objectives visible.
@@ -993,13 +1027,10 @@
     updateGameSpeedButton();
     updateHUD();
     refreshResumeUI();
-    if (pendingFreeUpgrades.length) {
-      showFreeUpgradeNotice(pendingFreeUpgrades);
-      saveRunCheckpoint(!!checkpoint.pendingPerk, !!checkpoint.pendingDecision, []);
-    }
     if (checkpoint.pendingPerk) showPerkChoice();
     else if (checkpoint.pendingDecision) showWaveDecisionChoice();
     requestAnimationFrame(loop);
+    if (typeof window.startNeonLeaderboardRun === 'function') window.startNeonLeaderboardRun();
   }
   window.resumeRun = resumeRun;
 
@@ -1216,7 +1247,7 @@
       const showDecision = decisionMilestone || (perkMilestone && !perksAvailable);
       if (showPerk) showPerkChoice();
       else if (showDecision) showWaveDecisionChoice();
-      saveRunCheckpoint(showPerk, showDecision, freeUpgrades); 
+      saveRunCheckpoint(showPerk, showDecision, freeUpgrades, true); 
     }
     game.spawnT -= game.dt;
     if(game.spawnT <= 0 && game.toSpawn > 0 && game.ents.e.length < getWaveActiveEnemyCap(run.wave)) { game.ents.e.push(new Enemy(run.wave)); game.toSpawn--; game.spawnT = getWaveSpawnInterval(run.wave); updateHUD(); }
@@ -1261,8 +1292,8 @@
             const defeatedBoss = e.type === 'Boss';
             game.ents.e.splice(j,1);
             updateHUD();
-            // Keep a recovery checkpoint on the Boss wave immediately after its defeat.
-            if(defeatedBoss && run.mode !== 'level') saveRunCheckpoint(false, false);
+            // The next wave transition creates the next stable checkpoint. Saving here
+            // would replay this Boss if the player resumed before that transition.
           }
           
           if(p instanceof Laser) { /* Laser pierces all targets. */ }
