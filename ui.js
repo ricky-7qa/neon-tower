@@ -539,6 +539,11 @@
       if (event === 'TOKEN_REFRESHED' && session) {
         leaderboardSession = session;
         leaderboardPlayerId = session.user?.id || '';
+        // Account run-session keys expire after 12 hours. Renew them when the
+        // Supabase access token refreshes so long-running sessions keep syncing.
+        verifyAccountIsNotBanned(session).catch(error => {
+          console.warn('Could not refresh the account run session:', error);
+        });
         return;
       }
       if (event === 'PASSWORD_RECOVERY') { setAuthMode('recovery'); showLeaderboardView(); }
