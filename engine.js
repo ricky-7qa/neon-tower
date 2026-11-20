@@ -129,7 +129,7 @@
   
   const MathUtils = { dist:(x1,y1,x2,y2)=>Math.hypot(x2-x1,y2-y1), angle:(x1,y1,x2,y2)=>Math.atan2(y2-y1,x2-x1) };
   function segmentHitsCircle(x1,y1,x2,y2,cx,cy,r){const dx=x2-x1,dy=y2-y1,l=dx*dx+dy*dy,t=l?Math.max(0,Math.min(1,((cx-x1)*dx+(cy-y1)*dy)/l)):0;return MathUtils.dist(x1+t*dx,y1+t*dy,cx,cy)<=r;}
-  class EnemyBullet{constructor(){this.active=false;}activate(x,y,a,s,d,k){this.x=x;this.y=y;this.vx=Math.cos(a)*s;this.vy=Math.sin(a)*s;this.damage=d;this.kind=k;this.r=5;this.grazed=false;this.active=true;return this;}update(dt){this.x+=this.vx*dt;this.y+=this.vy*dt;}draw(){ctx.save();ctx.shadowBlur=12;ctx.shadowColor='#ffb000';ctx.fillStyle='#ffb000';ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fill();ctx.restore();}}
+  class EnemyBullet{constructor(){this.active=false;this.dead=false;this.life=8;}activate(x,y,a,s,d,k){this.x=x;this.y=y;this.vx=Math.cos(a)*s;this.vy=Math.sin(a)*s;this.damage=d;this.kind=k;this.r=5;this.grazed=false;this.life=8;this.dead=false;this.active=true;return this;}update(dt){this.life-=dt;if(this.life<=0){this.dead=true;return;}this.x+=this.vx*dt;this.y+=this.vy*dt;}draw(){ctx.save();ctx.shadowBlur=12;ctx.shadowColor='#ffb000';ctx.fillStyle='#ffb000';ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fill();ctx.restore();}}
   const bulletPool={free:Array.from({length:500},()=>new EnemyBullet()),acquire(x,y,a,s,d,k){let b=this.free.pop();return b?b.activate(x,y,a,s,d,k):null;},release(b){if(b&&b.active){b.active=false;if(this.free.length<500)this.free.push(b);}}};
   function spawnBullet(x,y,a,s,d,k){let b=bulletPool.acquire(x,y,a,s,d,k);if(b&&game.ents.b)game.ents.b.push(b);}
 
@@ -1238,7 +1238,7 @@
       updateHUD(); AudioSys.coin(); checkAchievements();
       const completedWave = run.wave - 1;
       const freeUpgrades = FREE_UPGRADE_CATEGORIES.map(category => ({category,key:applyFreeUpgradeChance(category)})).filter(item => item.key);
-      if (freeUpgrades.length) showFreeUpgradeNotice(freeUpgrades);
+      // Free upgrades are applied silently; game notifications are disabled.
       tickWaveDecisionEffects();
       const perkMilestone = completedWave % 10 === 5;
       const decisionMilestone = completedWave % 10 === 0;
@@ -1312,7 +1312,36 @@
         if(bullet.kind==='boss') { bulletPool.release(bullet); game.ents.b.splice(i,1); }
       }
     }
-    for(let i=game.ents.b.length-1;i>=0;i--){let b=game.ents.b[i];b.update(game.dt);drawWorld(() => b.draw());let d=MathUtils.dist(b.x,b.y,tower.x,tower.y);if(d<tower.r+b.r){if(tower.invuln<=0)tower.hit(b.damage,{type:b.kind==='boss'?'Boss':'Projectile',isProjectile:true});if(!game.running)return;bulletPool.release(b);game.ents.b.splice(i,1);continue;}if(!b.grazed&&d<tower.r+b.r+18){b.grazed=true;run.graze++;AudioSys.play('graze',1500,900,'sine',.08,.08);}if(b.x<-30||b.x>canvas.width+30||b.y<-30||b.y>canvas.height+30){bulletPool.release(b);game.ents.b.splice(i,1);}}
+    for (let i = game.ents.b.length - 1; i >= 0; i--) {
+      const bullet = game.ents.b[i];
+      bullet.update(game.dt);
+      if (bullet.dead) {
+        bulletPool.release(bullet);
+        game.ents.b.splice(i, 1);
+        continue;
+      }
+      drawWorld(() => bullet.draw());
+      const distance = MathUtils.dist(bullet.x, bullet.y, tower.x, tower.y);
+      if (distance < tower.r + bullet.r) {
+        if (tower.invuln <= 0) tower.hit(bullet.damage, { type: bullet.kind === 'boss' ? 'Boss' : 'Projectile', isProjectile: true });
+        if (!game.running) return;
+        bulletPool.release(bullet);
+        game.ents.b.splice(i, 1);
+        continue;
+      }
+      if (!bullet.grazed && distance < tower.r + bullet.r + 18) {
+        bullet.grazed = true;
+        run.graze++;
+        AudioSys.play('graze', 1500, 900, 'sine', .08, .08);
+      }
+      // Enemies can spawn outside the viewport on portrait phones. Keep their
+      // bullets alive long enough to travel into the visible play area.
+      const maxBulletDistance = Math.max(canvas.width, canvas.height) * 2.2;
+      if (distance > maxBulletDistance) {
+        bulletPool.release(bullet);
+        game.ents.b.splice(i, 1);
+      }
+    }
     for(let i = game.ents.e.length - 1; i >= 0; i--) {
       let e = game.ents.e[i];
       if(e.hp <= 0) { game.ents.e.splice(i,1); continue; } 
