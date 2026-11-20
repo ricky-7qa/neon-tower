@@ -2,9 +2,9 @@
   const DEVICE_MODE_KEY = 'neonTowerDeviceMode';
 
   const visibleUpgradeKeys = {
-    ATTACK: ['damage', 'speed', 'critC', 'critD', 'multishot'],
-    DEFENSE: ['hp', 'regen', 'defensePercent'],
-    UTILITY: ['range', 'cashBonus', 'waveBonus', 'bossBounty']
+    ATTACK: ['damage', 'speed', 'critC', 'critD', 'multishot', 'projectileSpeed', 'bossDamage', 'plasmaCore', 'precisionArray', 'executionProtocol', 'overclockDrive'],
+    DEFENSE: ['hp', 'regen', 'armor', 'defensePercent', 'dodge', 'shieldRecharge', 'bulletGuard', 'waveRepair', 'nanoMatrix', 'adaptiveArmor', 'bossWard', 'repairBurst'],
+    UTILITY: ['range', 'cashBonus', 'waveBonus', 'bossBounty', 'salvage', 'waveDividend', 'killContract', 'bossContract', 'coinCache']
   };
   const isVisibleUpgrade = key => Object.values(visibleUpgradeKeys).some(keys => keys.includes(key));
 
@@ -594,7 +594,11 @@
     leaderboardPlayerId = leaderboardSession ? leaderboardSession.user.id : '';
     if (leaderboardSession) {
       initializeNeonCloudSave(leaderboardSession);
+      if (isNeonLocalRunActive() && run.mode !== 'level') startNeonLeaderboardRun();
     } else {
+      leaderboardRunToken = '';
+      leaderboardRunTokenUserId = '';
+      leaderboardRunTokenPromise = Promise.resolve('');
       accountRunSessionKey = '';
       cloudSaveReady = false;
       cloudSaveUserId = '';
@@ -631,6 +635,40 @@
   let cloudSaveLastWriteAt = 0;
   let cloudSaveLastAppliedAt = 0;
   let cloudSaveRemotePending = null;
+  let leaderboardRunToken = '';
+  let leaderboardRunTokenUserId = '';
+  let leaderboardRunTokenPromise = Promise.resolve('');
+
+  function startNeonLeaderboardRun() {
+    if (!leaderboardClient || !leaderboardSession || !leaderboardPlayerId || !accountRunSessionKey ||
+        !isNeonLocalRunActive() || run.mode === 'level') return Promise.resolve('');
+    const userId = leaderboardPlayerId;
+    leaderboardRunToken = '';
+    leaderboardRunTokenUserId = userId;
+    leaderboardRunTokenPromise = leaderboardClient.functions.invoke('start-game-run', {
+      body: { run_session_key: accountRunSessionKey }
+    }).then(({ data, error }) => {
+      if (error) throw error;
+      if (!data || typeof data.run_token !== 'string') throw new Error('Server did not issue a run token.');
+      if (leaderboardPlayerId !== userId) return '';
+      leaderboardRunToken = data.run_token;
+      return leaderboardRunToken;
+    }).catch(error => {
+      console.error('Could not start verified leaderboard run:', error);
+      if (leaderboardPlayerId === userId) setLeaderboardStatus('LEADERBOARD SESSION UNAVAILABLE — THIS RUN MAY NOT BE SUBMITTED');
+      return '';
+    });
+    return leaderboardRunTokenPromise;
+  }
+  window.startNeonLeaderboardRun = startNeonLeaderboardRun;
+
+  function getCloudCheckpointVersion(payload) {
+    if (!payload || typeof payload !== 'object') return 0;
+    if ('infinite' in payload || 'level' in payload) {
+      return Math.max(Number(payload.infinite?.savedAt) || 0, Number(payload.level?.savedAt) || 0);
+    }
+    return Number(payload.savedAt) || 0;
+  }
 
   function setCloudSyncStatus(state, message) {
     const status = document.getElementById('cloud-sync-status');
@@ -670,7 +708,7 @@
   function applyRemoteNeonCloudRow(row) {
     if (!row || !row.player_data || !window.applyNeonTowerCloudSave) return false;
     const updatedAt = Date.parse(row.updated_at || '') || 0;
-    if (updatedAt && (updatedAt <= cloudSaveLastAppliedAt || updatedAt <= cloudSaveLastWriteAt)) return false;
+    if (updatedAt && updatedAt <= cloudSaveLastAppliedAt) return false;
     if (isNeonLocalRunActive()) {
       cloudSaveRemotePending = row;
       setCloudSyncStatus('warning', 'NEWER CLOUD SAVE AVAILABLE — FINISH THIS RUN TO SYNC');
@@ -683,7 +721,9 @@
     const localSnapshot = window.getNeonTowerCloudSave();
     const localSaveAt = Number(localSnapshot.player?.localSaveAt) || 0;
     const remoteSaveAt = Number(row.player_data.localSaveAt) || 0;
-    if (localSaveAt > remoteSaveAt) {
+    const localCheckpointAt = getCloudCheckpointVersion(localSnapshot.checkpoints || localSnapshot.checkpoint);
+    const remoteCheckpointAt = getCloudCheckpointVersion(row.run_checkpoint);
+    if (localSaveAt > remoteSaveAt || (localSaveAt === remoteSaveAt && localCheckpointAt > remoteCheckpointAt)) {
       cloudSaveRemotePending = null;
       setCloudSyncStatus('syncing', 'KEEPING NEWER LOCAL PURCHASES — SYNCING TO CLOUD...');
       persistNeonCloudSave();
@@ -696,8 +736,8 @@
     return true;
   }
 
-  async function pullLatestNeonCloudSave() {
-    if (!cloudSaveReady || !leaderboardSession || !leaderboardPlayerId || !navigator.onLine || isNeonLocalRunActive()) return;
+  async function pullLatestNeonCloudSave(allowActiveRun = false) {
+    if (!cloudSaveReady || !leaderboardSession || !leaderboardPlayerId || !navigator.onLine || (!allowActiveRun && isNeonLocalRunActive())) return;
     const userId = leaderboardPlayerId;
     try {
       const { data, error } = await leaderboardClient
@@ -779,6 +819,11 @@
         }
       });
       if (error) throw error;
+      if (data?.stale === true) {
+        setCloudSyncStatus('warning', 'NEWER CLOUD SAVE FOUND — KEEPING LOCAL BACKUP AND CHECKING CLOUD');
+        await pullLatestNeonCloudSave(true);
+        return;
+      }
       if (!data || data.saved !== true) throw new Error('Account cloud save was not confirmed.');
       if (leaderboardPlayerId === userId) {
         cloudSavePendingOffline = false;
@@ -825,7 +870,9 @@
         const localSnapshot = window.getNeonTowerCloudSave();
         const localSaveAt = Number(localSnapshot.player?.localSaveAt) || 0;
         const remoteSaveAt = Number(data.player_data?.localSaveAt) || 0;
-        if (localSaveAt > remoteSaveAt) {
+        const localCheckpointAt = getCloudCheckpointVersion(localSnapshot.checkpoints || localSnapshot.checkpoint);
+        const remoteCheckpointAt = getCloudCheckpointVersion(data.run_checkpoint);
+        if (localSaveAt > remoteSaveAt || (localSaveAt === remoteSaveAt && localCheckpointAt > remoteCheckpointAt)) {
           cloudSaveReady = true;
           cloudSaveLoadingUserId = '';
           persistNeonCloudSave();
@@ -878,15 +925,6 @@
       setCloudSyncStatus('saved', 'CLOUD SYNCED — ALL PROGRESS SAVED');
       setAuthStatus('CLOUD SAVE SYNCED. YOUR PROGRESS IS LINKED TO THIS ACCOUNT.');
       claimWeeklyRewards();
-      // Sync lifetime personal bests to the global leaderboard only. Historical runs must not enter the current weekly competition.
-      if (typeof submitLeaderboardResult === 'function' && Number(player?.highestWave || 0) > 15) {
-        await submitLeaderboardResult({
-          wave: player.highestWave,
-          kills: player.bestKills || 0,
-          bossKills: player.bestBosses || 0,
-          elapsed: player.bestDuration || 0
-        }, { includeWeekly: false });
-      }
       await syncPublicPlayerProfile();
       if (document.getElementById('tab-profile')?.style.display !== 'none') await loadOwnPublicProfile();
       if (document.getElementById('tab-leaderboard')?.style.display !== 'none') {
@@ -1265,21 +1303,15 @@
       if (profileError) throw profileError;
       if (updatedUser?.user) leaderboardSession.user = updatedUser.user;
       localStorage.setItem(LEADERBOARD_NAME_KEY, name);
-      const { error: rankingError } = await leaderboardClient
-        .from('leaderboard_entries')
-        .update({ player_name: name })
-        .eq('player_id', leaderboardPlayerId);
-      if (rankingError) throw rankingError;
-      const { error: weeklyNameError } = await leaderboardClient
-        .from('weekly_leaderboard_entries')
-        .update({ player_name: name })
-        .eq('player_id', leaderboardPlayerId)
-        .eq('week_start', getCurrentWeeklyStart());
-      if (weeklyNameError) throw weeklyNameError;
+      const { data: nameResult, error: nameError } = await leaderboardClient.functions.invoke('update-player-name', {
+        body: { run_session_key: accountRunSessionKey, player_name: name }
+      });
+      if (nameError) throw nameError;
+      if (!nameResult || nameResult.saved !== true) throw new Error('Name update was not confirmed.');
       setLeaderboardStatus('PLAYER NAME SAVED TO YOUR ACCOUNT');
-      lastPublicProfileSignature='';
+      lastPublicProfileSignature = '';
       await syncPublicPlayerProfile();
-      await loadLeaderboard();
+      await Promise.all([loadLeaderboard(), loadWeeklyLeaderboard()]);
     } catch (error) {
       console.error('Leaderboard name update failed:', error);
       setLeaderboardStatus('COULD NOT SAVE PLAYER NAME. PLEASE TRY AGAIN.');
@@ -1422,60 +1454,39 @@
     }
   }
 
-  async function submitLeaderboardResult(result, options = {}) {
+  async function submitLeaderboardResult(result) {
     if (!leaderboardClient || !leaderboardSession || !result) return;
-    const name = (String(leaderboardSession.user.user_metadata?.display_name || '').trim() || localStorage.getItem(LEADERBOARD_NAME_KEY) || ('Pilot-' + leaderboardPlayerId.slice(0,4).toUpperCase())).trim();
     const completedWave = Math.floor(Number(result.wave) || 0);
     if (completedWave <= 15) {
       setLeaderboardStatus('REACH WAVE 16 TO ENTER THE LEADERBOARD');
       return;
     }
-    if (options.includeWeekly !== false) {
-      try {
-        const { error: weeklyError } = await leaderboardClient.rpc('submit_weekly_leaderboard_score', {
-          p_player_name: name,
-          p_best_wave: Math.max(16, Math.floor(Number(result.wave) || 16)),
-          p_best_kills: Math.max(0, Math.floor(Number(result.kills) || 0)),
-          p_best_bosses: Math.max(0, Math.floor(Number(result.bossKills) || 0)),
-          p_best_duration: Math.min(604800, Math.max(0, Math.floor(Number(result.elapsed) || 0)))
-        });
-        if (weeklyError) console.error('Weekly leaderboard submit failed:', weeklyError);
-      } catch (weeklyError) {
-        console.error('Weekly leaderboard submit failed:', weeklyError);
-      }
-  
-    }
+    const userId = leaderboardPlayerId;
     try {
-      const { data: previous, error: readError } = await leaderboardClient
-        .from('leaderboard_entries')
-        .select('best_wave, best_kills, best_bosses, best_duration')
-        .eq('player_id', leaderboardPlayerId)
-        .maybeSingle();
-      if (readError) throw readError;
-      const incoming = {
-        best_wave: Math.max(1, Math.floor(Number(result.wave) || 1)),
-        best_kills: Math.max(0, Math.floor(Number(result.kills) || 0)),
-        best_bosses: Math.max(0, Math.floor(Number(result.bossKills) || 0)),
-        best_duration: Math.min(604800, Math.max(0, Math.floor(Number(result.elapsed) || 0)))
-      };
-      const beatsPrevious = !previous ||
-        incoming.best_wave > previous.best_wave ||
-        (incoming.best_wave === previous.best_wave && incoming.best_kills > previous.best_kills) ||
-        (incoming.best_wave === previous.best_wave && incoming.best_kills === previous.best_kills && incoming.best_bosses > previous.best_bosses) ||
-        (incoming.best_wave === previous.best_wave && incoming.best_kills === previous.best_kills && incoming.best_bosses === previous.best_bosses && incoming.best_duration > previous.best_duration);
-      if (!beatsPrevious) return;
-      const { error } = await leaderboardClient.from('leaderboard_entries').upsert({
-        player_id: leaderboardPlayerId,
-        player_name: name,
-        is_verified: true,
-        ...incoming,
-        updated_at: new Date().toISOString()
-      }, { onConflict: 'player_id' });
+      const runToken = await leaderboardRunTokenPromise;
+      if (!runToken || leaderboardRunTokenUserId !== userId || leaderboardPlayerId !== userId) {
+        setLeaderboardStatus('THIS RUN HAS NO VERIFIED LEADERBOARD SESSION — START A NEW RUN WHILE ONLINE');
+        return;
+      }
+      const { data, error } = await leaderboardClient.functions.invoke('submit-leaderboard-score', {
+        body: {
+          run_token: runToken,
+          wave: completedWave,
+          kills: Math.max(0, Math.floor(Number(result.kills) || 0)),
+          bosses: Math.max(0, Math.floor(Number(result.bossKills) || 0)),
+          duration: Math.min(604800, Math.max(0, Math.floor(Number(result.elapsed) || 0)))
+        }
+      });
       if (error) throw error;
-      setLeaderboardStatus('YOUR NEW RECORD WAS SUBMITTED');
+      if (!data || data.accepted !== true) throw new Error('Server did not accept this score.');
+      leaderboardRunToken = '';
+      leaderboardRunTokenUserId = '';
+      leaderboardRunTokenPromise = Promise.resolve('');
+      setLeaderboardStatus('YOUR SCORE WAS VERIFIED AND SUBMITTED');
+      await Promise.all([loadLeaderboard(), loadWeeklyLeaderboard()]);
     } catch (error) {
       console.error('Leaderboard submit failed:', error);
-      setLeaderboardStatus('RECORD COULD NOT BE SUBMITTED');
+      setLeaderboardStatus('SCORE COULD NOT BE VERIFIED OR SUBMITTED — TRY AGAIN IN A NEW RUN');
     }
   }
 
