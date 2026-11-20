@@ -889,7 +889,14 @@
         window.applyNeonTowerCloudSave({ player: data.player_data, ...checkpointSnapshot });
         cloudSaveLastAppliedAt = Date.parse(data.updated_at || '') || Date.now();
       } else {
-        const localSnapshot = window.getNeonTowerCloudSave();
+        let localSnapshot = window.getNeonTowerCloudSave();
+        // New devices start with localSaveAt=0 so an empty default save can never
+        // overwrite an existing account. Only stamp it when the cloud row is absent.
+        if (!(Number(localSnapshot.player?.localSaveAt) > 0)) {
+          player.localSaveAt = Math.max(Date.now(), (Number(player.localSaveAt) || 0) + 1);
+          saveGame(false, false);
+          localSnapshot = window.getNeonTowerCloudSave();
+        }
         const { data: saveResult, error: insertError } = await leaderboardClient.functions.invoke('account-cloud-save', {
           body: {
             run_session_key: accountRunSessionKey,
