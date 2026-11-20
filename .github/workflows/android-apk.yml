@@ -52,12 +52,32 @@ jobs:
       - name: Install Android SDK platform
         run: sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
+      - name: Check JavaScript syntax
+        run: |
+          node --check engine.js
+          node --check entidades.js
+          node --check ui.js
+          node --check level-mode-config.js
+          node --check sw.js
+          node --check scripts/copy-web.mjs
+
       - name: Install dependencies
         run: npm install
 
-      - name: Copy game files and create Android project
+      - name: Build and verify web assets
         run: |
           npm run build
+          test -f www/index.html
+          test -f www/engine.js
+          test -f www/entidades.js
+          test -f www/ui.js
+          test -f www/level-mode-config.js
+          test -f www/sw.js
+          test -f www/manifest.webmanifest
+          test -f www/neon-tower-icon.svg
+
+      - name: Create Android project
+        run: |
           npx cap add android
           npx cap sync android
 
