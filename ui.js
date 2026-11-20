@@ -1484,7 +1484,7 @@
     try {
       const runToken = await leaderboardRunTokenPromise;
       if (!runToken || leaderboardRunTokenUserId !== userId || leaderboardPlayerId !== userId) {
-        setLeaderboardStatus('THIS RUN HAS NO VERIFIED LEADERBOARD SESSION — START A NEW RUN WHILE ONLINE');
+        setLeaderboardStatus('THIS RUN HAS NO SERVER VALIDATION TOKEN — START A NEW RUN AFTER CLOUD SYNC COMPLETES');
         return;
       }
       const { data, error } = await leaderboardClient.functions.invoke('submit-leaderboard-score', {
