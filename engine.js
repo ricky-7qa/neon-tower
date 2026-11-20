@@ -157,7 +157,7 @@
     defensePercent: { n:"DEFENSE BOOST", d:"Reduce all incoming damage by 0.5% per level. Maximum damage reduction: 49.5%.", category:"DEFENSE", b:0, i:0.5, c:45, cm:1.12587, isD:true, col:"#70e6ff", unlockWave:10, max:99, workshopMax:50 },
     dodge: { n:"DODGE CHANCE", d:"Chance to completely avoid a hit.", category:"DEFENSE", b:0, i:2, c:80, cm:1.38, isD:false, col:"#9b8cff", unlockWave:12, max:20 },
     shieldRecharge: { n:"SHIELD RECHARGE", d:"Shortens the shield's cooldown.", category:"DEFENSE", b:0, i:1, c:90, cm:1.4, isD:false, col:"#55f5dc", unlockWave:15, max:8 },
-    range: { n:"TARGETING RANGE", d:"Detects enemies from farther away.", category:"UTILITY", b:300, i:25, c:30, cm:1.2, isD:false, col:"#ffd700", unlockWave:1, max:10 },
+    range: { n:"TARGETING RANGE", d:"Detects enemies from farther away.", category:"UTILITY", b:220, i:20, c:30, cm:1.2, isD:false, col:"#ffd700", unlockWave:1, max:10 },
     cashBonus: { n:"CASH BONUS", d:"Earn more cash for every enemy defeated.", category:"UTILITY", b:0, i:10, c:45, cm:1.25, isD:false, col:"#ffd700", unlockWave:5, max:10 },
     waveBonus: { n:"WAVE INCOME", d:"Earn extra cash when a wave is cleared.", category:"UTILITY", b:0, i:5, c:55, cm:1.3, isD:false, col:"#ffd700", unlockWave:8, max:10 },
     projectileSpeed: { n:"PROJECTILE VELOCITY", d:"Your shots travel faster and reach enemies sooner.", category:"ATTACK", b:900, i:90, c:70, cm:1.45, isD:false, col:"#39d5ff", unlockWave:6, max:8 },
