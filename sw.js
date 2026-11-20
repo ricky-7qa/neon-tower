@@ -1,4 +1,4 @@
-const CACHE_NAME = "neon-tower-pwa-v57";
+const CACHE_NAME = "neon-tower-pwa-v58";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -39,11 +39,13 @@ self.addEventListener("fetch", event => {
   event.respondWith(
     fetch(request)
       .then(response => {
-        if (response.ok) {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
-        }
-        return response;
+        if (!response.ok) return response;
+        const copy = response.clone();
+        // Keep the response alive until its cache write finishes. A detached
+        // cache.put() can be cancelled when the service worker is suspended.
+        return caches.open(CACHE_NAME)
+          .then(cache => cache.put(request, copy).catch(() => {}))
+          .then(() => response);
       })
       .catch(() => caches.match(request, { ignoreSearch: true })
         .then(cached => cached || (request.mode === "navigate" ? caches.match("./index.html") : Response.error())))
