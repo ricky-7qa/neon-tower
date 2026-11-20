@@ -1132,6 +1132,18 @@
   function returnToMenu(tab = 'workshop') { document.getElementById('gameover').classList.remove('active-layer','level-mode-success'); document.getElementById('menu').classList.add('active-layer'); if (typeof switchTab === 'function') switchTab(tab); updateMenuUI(); }
 
   let bgOffset = 0;
+  // Apply a visual-only zoom-out on portrait phones; gameplay coordinates and hitboxes stay unchanged.
+  const mobileWorldVisualScale = 0.78;
+  function drawWorld(callback) {
+    const isPortraitMobile = window.matchMedia('(orientation: portrait) and (pointer: coarse)').matches;
+    if (!isPortraitMobile) { callback(); return; }
+    ctx.save();
+    ctx.translate(game.cx, game.cy);
+    ctx.scale(mobileWorldVisualScale, mobileWorldVisualScale);
+    ctx.translate(-game.cx, -game.cy);
+    try { callback(); } finally { ctx.restore(); }
+  }
+
   function drawGrid(dt) {
     bgOffset = (bgOffset + 20 * dt) % 40;
     ctx.lineWidth = 1;
@@ -1203,10 +1215,10 @@
     game.spawnT -= game.dt;
     if(game.spawnT <= 0 && game.toSpawn > 0 && game.ents.e.length < getWaveActiveEnemyCap(run.wave)) { game.ents.e.push(new Enemy(run.wave)); game.toSpawn--; game.spawnT = getWaveSpawnInterval(run.wave); updateHUD(); }
 
-    tower.update(game.dt); tower.draw();run.comboTimer=Math.max(0,run.comboTimer-game.dt);if(!run.comboTimer)run.combo=0;
+    tower.update(game.dt); drawWorld(() => tower.draw());run.comboTimer=Math.max(0,run.comboTimer-game.dt);if(!run.comboTimer)run.combo=0;
 
     for(let i = game.ents.p.length - 1; i >= 0; i--) {
-      let p = game.ents.p[i]; p.update(game.dt); p.draw();
+      let p = game.ents.p[i]; p.update(game.dt); drawWorld(() => p.draw());
       if(p.x<0||p.x>canvas.width||p.y<0||p.y>canvas.height || p.dead) { game.ents.p.splice(i,1); continue; }
       
       let hitSomething = false;
@@ -1247,7 +1259,7 @@
         if(bullet.kind==='boss') { bulletPool.release(bullet); game.ents.b.splice(i,1); }
       }
     }
-    for(let i=game.ents.b.length-1;i>=0;i--){let b=game.ents.b[i];b.update(game.dt);b.draw();let d=MathUtils.dist(b.x,b.y,tower.x,tower.y);if(d<tower.r+b.r){if(tower.invuln<=0)tower.hit(b.damage,{type:b.kind==='boss'?'Boss':'Projectile',isProjectile:true});if(!game.running)return;bulletPool.release(b);game.ents.b.splice(i,1);continue;}if(!b.grazed&&d<tower.r+b.r+18){b.grazed=true;run.graze++;AudioSys.play('graze',1500,900,'sine',.08,.08);}if(b.x<-30||b.x>canvas.width+30||b.y<-30||b.y>canvas.height+30){bulletPool.release(b);game.ents.b.splice(i,1);}}
+    for(let i=game.ents.b.length-1;i>=0;i--){let b=game.ents.b[i];b.update(game.dt);drawWorld(() => b.draw());let d=MathUtils.dist(b.x,b.y,tower.x,tower.y);if(d<tower.r+b.r){if(tower.invuln<=0)tower.hit(b.damage,{type:b.kind==='boss'?'Boss':'Projectile',isProjectile:true});if(!game.running)return;bulletPool.release(b);game.ents.b.splice(i,1);continue;}if(!b.grazed&&d<tower.r+b.r+18){b.grazed=true;run.graze++;AudioSys.play('graze',1500,900,'sine',.08,.08);}if(b.x<-30||b.x>canvas.width+30||b.y<-30||b.y>canvas.height+30){bulletPool.release(b);game.ents.b.splice(i,1);}}
     for(let i = game.ents.e.length - 1; i >= 0; i--) {
       let e = game.ents.e[i];
       if(e.hp <= 0) { game.ents.e.splice(i,1); continue; } 
@@ -1308,11 +1320,11 @@
         e.isAttackingTower = true;
         e.contactDamageTimer = 0.35 + (Math.abs(Math.sin(e.phase)) * 0.65);
       }
-      e.draw();
+      drawWorld(() => e.draw());
     }
     
-    for(let i = game.ents.part.length - 1; i >= 0; i--) { let p = game.ents.part[i]; p.update(game.dt); p.draw(); if(p.l<=0) game.ents.part.splice(i,1); }
-    for(let i = game.ents.txt.length - 1; i >= 0; i--) { let t = game.ents.txt[i]; t.update(game.dt); t.draw(); if(t.l<=0) game.ents.txt.splice(i,1); }
+    for(let i = game.ents.part.length - 1; i >= 0; i--) { let p = game.ents.part[i]; p.update(game.dt); drawWorld(() => p.draw()); if(p.l<=0) game.ents.part.splice(i,1); }
+    for(let i = game.ents.txt.length - 1; i >= 0; i--) { let t = game.ents.txt[i]; t.update(game.dt); drawWorld(() => t.draw()); if(t.l<=0) game.ents.txt.splice(i,1); }
     
     updateHUD();
     updateGameSpeedButton();
