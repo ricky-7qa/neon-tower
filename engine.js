@@ -1132,14 +1132,16 @@
   function returnToMenu(tab = 'workshop') { document.getElementById('gameover').classList.remove('active-layer','level-mode-success'); document.getElementById('menu').classList.add('active-layer'); if (typeof switchTab === 'function') switchTab(tab); updateMenuUI(); }
 
   let bgOffset = 0;
-  // Fit the full maximum targeting radius on portrait phones without changing gameplay coordinates.
-  const mobileWorldMaxRange = 550 * 1.45; // Includes three Legendary Extended Radar stacks.
+  // Fit the live targeting boundary inside the visible portrait viewport.
+  // Use viewport CSS dimensions rather than canvas backing dimensions to avoid device-pixel scaling errors.
   function getMobileWorldVisualScale() {
-    const safeRadius = Math.max(1, Math.min(canvas.width, canvas.height) * 0.5 - 16);
-    return Math.min(0.78, safeRadius / mobileWorldMaxRange);
+    const safeRadius = Math.max(1, Math.min(window.innerWidth, window.innerHeight) * 0.5 - 16);
+    const liveTargetingRadius = Math.max(1, parseFloat(getVal('range')) * (1 + getPerkValue('radar') / 100));
+    return Math.min(0.78, safeRadius / liveTargetingRadius);
   }
   function drawWorld(callback) {
-    const isPortraitMobile = window.matchMedia('(orientation: portrait) and (pointer: coarse)').matches;
+    const isPortraitMobile = window.matchMedia('(orientation: portrait)').matches &&
+      (window.innerWidth <= 700 || document.getElementById('app')?.classList.contains('device-mobile'));
     if (!isPortraitMobile) { callback(); return; }
     ctx.save();
     ctx.translate(game.cx, game.cy);
