@@ -315,9 +315,9 @@
       this.fireCd -= dt; this.phase += dt;
       if (this.fireCd > 0) return;
       const aim = MathUtils.angle(this.x, this.y, tower.x, tower.y);
-      // Scale enemy shots to about 500 damage for a basic Minion at Wave 151, without raising contact damage.
-      const projectileDamageBoost = Math.pow(1000 / 26.75496293490752, Math.min(31, Math.max(0, run.wave - 120)) / 31) * Math.pow(1.022, Math.max(0, run.wave - 151));
-      const baseDamage = this.dmg * 0.5 * projectileDamageBoost;
+      // Enemy projectiles deal half the current contact-damage value.
+      // At Wave 151 this keeps a basic Minion shot close to 500 damage.
+      const baseDamage = this.dmg * 0.5;
 
       if (this.type === "Boss") {
         const hpRatio = this.hp / this.maxHp;
@@ -383,9 +383,13 @@
     }
 
     hit(dmg) {
+      // AoE missiles and overlapping projectiles can touch the same dead enemy
+      // during one frame. A defeated enemy may only award progress once.
+      if (this.hp <= 0) return false;
       this.hitFlash = 0.14;
       this.hp -= dmg;
       if (this.hp <= 0) {
+        this.hp = 0;
         AudioSys.explosion(); run.kills++; player.totalKills++;
         run.combo++; run.comboTimer = 3;
         run.cash += Math.floor(this.val * (1 + Math.min(run.combo, 10) * 0.1) *
