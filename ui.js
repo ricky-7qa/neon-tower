@@ -594,7 +594,6 @@
     leaderboardPlayerId = leaderboardSession ? leaderboardSession.user.id : '';
     if (leaderboardSession) {
       initializeNeonCloudSave(leaderboardSession);
-      if (isNeonLocalRunActive() && run.mode !== 'level') startNeonLeaderboardRun();
     } else {
       leaderboardRunToken = '';
       leaderboardRunTokenUserId = '';
@@ -641,23 +640,33 @@
 
   function startNeonLeaderboardRun() {
     if (!leaderboardClient || !leaderboardSession || !leaderboardPlayerId || !accountRunSessionKey ||
-        !isNeonLocalRunActive() || run.mode === 'level') return Promise.resolve('');
+        !cloudSaveReady || !isNeonLocalRunActive() || run.mode === 'level') return Promise.resolve('');
     const userId = leaderboardPlayerId;
     leaderboardRunToken = '';
     leaderboardRunTokenUserId = userId;
-    leaderboardRunTokenPromise = leaderboardClient.functions.invoke('start-game-run', {
-      body: { run_session_key: accountRunSessionKey }
-    }).then(({ data, error }) => {
-      if (error) throw error;
-      if (!data || typeof data.run_token !== 'string') throw new Error('Server did not issue a run token.');
-      if (leaderboardPlayerId !== userId) return '';
-      leaderboardRunToken = data.run_token;
-      return leaderboardRunToken;
-    }).catch(error => {
-      console.error('Could not start verified leaderboard run:', error);
-      if (leaderboardPlayerId === userId) setLeaderboardStatus('LEADERBOARD SESSION UNAVAILABLE — THIS RUN MAY NOT BE SUBMITTED');
-      return '';
-    });
+    leaderboardRunTokenPromise = (async () => {
+      try {
+        // The server must see the exact wave-start checkpoint before issuing a score token.
+        await cloudSaveWriteQueue;
+        if (!leaderboardSession || leaderboardPlayerId !== userId || !cloudSaveReady ||
+            !isNeonLocalRunActive() || run.mode === 'level') return '';
+        const snapshot = window.getNeonTowerCloudSave();
+        const localSaveAt = Number(snapshot.player?.localSaveAt) || 0;
+        if (!localSaveAt) throw new Error('A current cloud save revision is required.');
+        const { data, error } = await leaderboardClient.functions.invoke('start-game-run', {
+          body: { run_session_key: accountRunSessionKey, local_save_at: localSaveAt }
+        });
+        if (error) throw error;
+        if (!data || typeof data.run_token !== 'string') throw new Error('Server did not issue a run token.');
+        if (leaderboardPlayerId !== userId) return '';
+        leaderboardRunToken = data.run_token;
+        return leaderboardRunToken;
+      } catch (error) {
+        console.error('Could not start validated leaderboard run:', error);
+        if (leaderboardPlayerId === userId) setLeaderboardStatus('LEADERBOARD SESSION UNAVAILABLE — THIS RUN MAY NOT BE SUBMITTED');
+        return '';
+      }
+    })();
     return leaderboardRunTokenPromise;
   }
   window.startNeonLeaderboardRun = startNeonLeaderboardRun;
