@@ -340,7 +340,7 @@
   });
 
   function saveGame(immediateCloud = false, markProgress = true) {
-    if (markProgress) player.localSaveAt = Date.now();
+    if (markProgress) player.localSaveAt = Math.max(Date.now(), (Number(player.localSaveAt) || 0) + 1);
     archiveLocalValue(SAVE_KEY, SAVE_BACKUP_KEY);
     localStorage.setItem(SAVE_KEY, btoa(JSON.stringify(player)));
     updateMenuUI();
@@ -479,6 +479,7 @@
     player.freeUpgradeChances = {ATTACK:0,DEFENSE:0,UTILITY:0,...(player.freeUpgradeChances||{})};
     migrateFreeUpgradeChanceProgress();
     Object.keys(statDefs).forEach(k => { if(player.ws[k]===undefined) player.ws[k]=0; });
+    if (!Number(player.localSaveAt)) player.localSaveAt = Date.now();
     saveGame(false, false);
     updateMenuUI(); buildSkillTree();
   }
@@ -762,50 +763,6 @@
     updateHUD();
     return key;
   }
-  function showFreeUpgradeNotice(upgrades) {
-    if (!Array.isArray(upgrades) || !upgrades.length) return;
-    const app = document.getElementById('app');
-    if (!app) return;
-    let notice = document.getElementById('free-upgrade-notice');
-    if (!notice) {
-      notice = document.createElement('div');
-      notice.id = 'free-upgrade-notice';
-      notice.className = 'free-upgrade-notice';
-      notice.setAttribute('aria-live', 'polite');
-      app.appendChild(notice);
-    }
-    const categoryNames = {ATTACK:'ATTACK',DEFENSE:'DEFENSE',UTILITY:'UTILITY'};
-    notice.innerHTML = '';
-    const title = document.createElement('div');
-    title.className = 'free-upgrade-notice-title';
-    title.textContent = 'FREE UPGRADES';
-    notice.appendChild(title);
-    upgrades.forEach(item => {
-      const row = document.createElement('div');
-      row.className = 'free-upgrade-notice-row';
-      const category = document.createElement('span');
-      category.className = 'free-upgrade-notice-category';
-      category.textContent = categoryNames[item.category] || item.category;
-      const divider = document.createElement('span');
-      divider.className = 'free-upgrade-notice-divider';
-      const name = document.createElement('strong');
-      name.textContent = (statDefs[item.key]?.n || item.key) + ' +1';
-      row.append(category, divider, name);
-      notice.appendChild(row);
-    });
-    notice.classList.remove('show');
-    void notice.offsetWidth;
-    notice.classList.add('show');
-    clearTimeout(notice.hideTimer);
-    const hideFreeUpgradeNotice = () => {
-      if (game && game.paused) {
-        notice.hideTimer = setTimeout(hideFreeUpgradeNotice, 500);
-        return;
-      }
-      notice.hideTimer = setTimeout(() => notice.classList.remove('show'), 5000);
-    };
-    hideFreeUpgradeNotice();
-  }
   window.buyFreeUpgradeChance = buyFreeUpgradeChance;
   function hasSkill(id) { return run.mode === 'level' ? false : player.skills.includes(id); }
 
@@ -917,7 +874,7 @@
     }
     Object.keys(statDefs).forEach(k => run.stats[k]=0);
     
-    game = { running: true, paused:false, dt: 0, last: performance.now(), shake: 0, playSaveT: 0, achievementCheckT: 0, spawnT: 0.25, toSpawn: 10, ents: { e:[], p:[], b:[], part:[], txt:[] }, cx: canvas.width/2, cy: canvas.height/2 };
+    game = { running: true, paused:false, dt: 0, last: performance.now(), shake: 0, playSaveT: 0, achievementCheckT: 0, spawnT: 0.25, toSpawn: getWaveEnemyCount(1), ents: { e:[], p:[], b:[], part:[], txt:[] }, cx: canvas.width/2, cy: canvas.height/2 };
     
     tower = new Tower(); 
     initUpgBar();
