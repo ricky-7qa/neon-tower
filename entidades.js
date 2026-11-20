@@ -197,7 +197,7 @@
       this.type = "Minion"; this.c = "#ff0055"; this.r = 15;
       let hpM = 1, speedM = 1, damageM = 1, rewardM = 1;
       const bossInterval = run.mode === 'level' ? (Number(window.NEON_LEVEL_MODE_CONFIG?.difficulty?.bossEveryWaves) || 5) : 5;
-      if (game.toSpawn === 1 && w % bossInterval === 0) {
+      if (game.toSpawn === 1 && w % bossInterval === 0 && !run.bossAlreadyKilledInWave) {
         this.type = "Boss"; this.c = "#9900ff"; this.r = 34;
         hpM = 36; speedM = 0.58; damageM = 1.8; rewardM = 18;
         this.attackStep = 0; this.bossPulse = 0; this.bossPhase = 0; this.phaseFlash = 0;
@@ -403,6 +403,7 @@
         if (hasSkill("vampire") && tower) tower.hp = Math.min(tower.maxHp, tower.hp + tower.maxHp * 0.02);
         run.cash += Math.floor(this.val * parseFloat(getVal("salvage"))/100);
         if (this.type === "Boss") {
+          run.bossAlreadyKilledInWave = true;
           player.bossKills++;run.bossKills=(run.bossKills||0)+1;run.coins+=Math.floor(15*(1+getWaveDecisionValue('boss_contract')+getWaveDecisionValue('boss_gamble_reward')));
           run.cash += Math.floor(this.val * (parseFloat(getVal("bossBounty")) + parseFloat(getVal("bossContract")))/100 * (1+getWaveDecisionValue("boss_gamble_reward")));
           game.shake = 0.35; createParts(this.x, this.y, this.c, 45, 7, 1.2);
