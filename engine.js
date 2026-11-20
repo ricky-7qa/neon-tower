@@ -1221,8 +1221,12 @@
       ctx.save();
       ctx.beginPath();
       ctx.arc(game.cx, game.cy, targetingRadius, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(185, 195, 205, 0.62)';
-      ctx.lineWidth = 2;
+      // A subtle dark under-stroke keeps the exact range boundary readable over the grid.
+      ctx.strokeStyle = 'rgba(8, 13, 22, 0.72)';
+      ctx.lineWidth = 4;
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(195, 205, 215, 0.88)';
+      ctx.lineWidth = 2.4;
       ctx.stroke();
       ctx.restore();
     });
