@@ -695,6 +695,9 @@
       v=getCumulativeTieredValue(d.b,d.i,l,[0.03,0.025,0.015,0.0125,0.009,0.007,0.005,0.0035,0.0025,0.002,0.001],run.wave>100?35:20);
     } else if(k==='hp') {
       v=getCumulativeTieredValue(d.b,d.i,l,[0.04,0.03,0.02,0.015,0.011,0.0085,0.0065,0.0045,0.003,0.002,0.0015]);
+    } else if (k === 'armor') {
+      // Clamp legacy saves too, not just future purchases.
+      v = d.b + Math.min(l, d.max || 20) * d.i;
     } else {
       v=d.b+(l*d.i);
     }
