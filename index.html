@@ -162,7 +162,7 @@
         <span class="menu-footer-label">SYSTEM</span>
         <button class="btn page-refresh-btn" onclick="window.location.reload()">REFRESH PAGE</button>
         <button class="btn change-device-btn" onclick="closeMenuDrawer(); changeDeviceMode()">CHANGE DEVICE</button>
-        <button class="btn wipe-save-btn" onclick="closeMenuDrawer(); resetSave()">WIPE SAVE</button>
+        <button class="btn wipe-save-btn" onclick="closeMenuDrawer(); resetSave()">WIPE DEVICE SAVE</button>
       </div>
     </div>
     <div class="top-bar menu-stats">
@@ -205,6 +205,7 @@
           <input id="auth-email" class="auth-input" type="email" autocomplete="email" placeholder="you@example.com">
           <label id="auth-password-label" class="auth-field-label" for="auth-password">PASSWORD</label>
           <input id="auth-password" class="auth-input" type="password" autocomplete="new-password" placeholder="At least 8 characters">
+          <button id="auth-forgot" type="button" class="auth-text-button" onclick="sendPasswordReset()" style="display:none;">FORGOT PASSWORD?</button>
           <input id="auth-confirm-password" class="auth-input" type="password" autocomplete="new-password" placeholder="Confirm password">
           <div id="auth-reset-note" class="auth-reset-note" style="display:none;">Choose a new password for your account.</div>
           <input id="auth-new-password" class="auth-input" type="password" autocomplete="new-password" placeholder="New password (at least 8 characters)" style="display:none;">
@@ -216,6 +217,7 @@
       </section>
       <section id="leaderboard-content" class="leaderboard-panel" style="display:none;">
         <div class="leaderboard-heading"><span class="eyebrow">NEON TOWER // GLOBAL</span><h2>WORLD LEADERBOARD</h2><p>Compete with players around the world.</p></div>
+        <div id="leaderboard-account-email" class="leaderboard-account-email" aria-live="polite"></div>
         <div id="cloud-sync-status" class="cloud-sync-status" data-state="syncing" role="status" aria-live="polite"><span class="cloud-sync-indicator"></span><span>CHECKING CLOUD STATUS...</span></div>
         <div class="leaderboard-profile"><label for="leaderboard-name">PLAYER NAME</label><div class="leaderboard-name-row"><input id="leaderboard-name" maxlength="16" minlength="3" placeholder="Enter a player name" autocomplete="nickname"><button class="btn btn-gold" onclick="saveLeaderboardName()">SAVE</button></div><small>3–16 characters. Do not use your real name or personal information.</small></div>
         <div class="leaderboard-mode-tabs">
