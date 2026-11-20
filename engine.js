@@ -1241,7 +1241,7 @@
 
     for(let i = game.ents.p.length - 1; i >= 0; i--) {
       let p = game.ents.p[i]; p.update(game.dt); drawWorld(() => p.draw());
-      if(p.x<0||p.x>canvas.width||p.y<0||p.y>canvas.height || p.dead) { game.ents.p.splice(i,1); continue; }
+      if((!(p instanceof Projectile) && (p.x<0||p.x>canvas.width||p.y<0||p.y>canvas.height)) || p.dead) { game.ents.p.splice(i,1); continue; }
       
       let hitSomething = false;
       for(let j = game.ents.e.length - 1; j >= 0; j--) {
