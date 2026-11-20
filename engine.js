@@ -479,7 +479,17 @@
     player.freeUpgradeChances = {ATTACK:0,DEFENSE:0,UTILITY:0,...(player.freeUpgradeChances||{})};
     migrateFreeUpgradeChanceProgress();
     Object.keys(statDefs).forEach(k => { if(player.ws[k]===undefined) player.ws[k]=0; });
-    if (!Number(player.localSaveAt)) player.localSaveAt = Date.now();
+    const hasLocalProgress =
+      Number(player.coins) > 0 || Number(player.highestWave) > 1 ||
+      Number(player.totalKills) > 0 || Number(player.bossKills) > 0 ||
+      Number(player.runsPlayed) > 0 || Number(player.playTime) > 0 ||
+      Object.values(player.ws || {}).some(value => Number(value) > 0) ||
+      Object.values(player.freeUpgradeChances || {}).some(value => Number(value) > 0) ||
+      (Array.isArray(player.skills) && player.skills.length > 1) ||
+      (Array.isArray(player.achievements) && player.achievements.length > 0) ||
+      (Array.isArray(player.levelMode?.completed) && player.levelMode.completed.length > 0);
+    // A blank first-time save must not outrank an existing cloud account save.
+    if (!Number(player.localSaveAt) && hasLocalProgress) player.localSaveAt = Date.now();
     saveGame(false, false);
     updateMenuUI(); buildSkillTree();
   }
