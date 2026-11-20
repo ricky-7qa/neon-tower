@@ -8,7 +8,11 @@ const requiredFiles = [
   'style.css',
   'engine.js',
   'entidades.js',
-  'ui.js'
+  'ui.js',
+  'level-mode-config.js',
+  'manifest.webmanifest',
+  'neon-tower-icon.svg',
+  'sw.js'
 ];
 
 await rm(webDir, { recursive: true, force: true });
