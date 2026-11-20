@@ -1,4 +1,4 @@
-const CACHE_NAME = "neon-tower-pwa-v62";
+const CACHE_NAME = "neon-tower-pwa-v63";
 const APP_SHELL = [
   "./",
   "./index.html",
