@@ -6,6 +6,8 @@
   const LEVEL_RUN_CHECKPOINT_KEY = "NeonTowerApexLevelRunCheckpoint";
   const RUN_CHECKPOINT_BACKUP_KEY = "NeonTowerApexRunCheckpointHistory";
   const LEVEL_RUN_CHECKPOINT_BACKUP_KEY = "NeonTowerApexLevelRunCheckpointHistory";
+  const RUN_CHECKPOINT_REVISION_KEY = "NeonTowerApexRunCheckpointRevision";
+  const LEVEL_RUN_CHECKPOINT_REVISION_KEY = "NeonTowerApexLevelRunCheckpointRevision";
   function archiveLocalValue(key, historyKey, maxEntries = 20) {
     try {
       const value = localStorage.getItem(key);
@@ -30,7 +32,18 @@
     return null;
   }
   function getRunCheckpointBackupKey(mode) { return mode === "level" ? LEVEL_RUN_CHECKPOINT_BACKUP_KEY : RUN_CHECKPOINT_BACKUP_KEY; }
+  function getRunCheckpointRevisionKey(mode) { return mode === "level" ? LEVEL_RUN_CHECKPOINT_REVISION_KEY : RUN_CHECKPOINT_REVISION_KEY; }
   function getRunCheckpointKey(mode = null) { const selectedMode = mode || (pendingLevelModeId ? "level" : (run.mode || "infinite")); return selectedMode === "level" ? LEVEL_RUN_CHECKPOINT_KEY : RUN_CHECKPOINT_KEY; }
+  function getRunCheckpointRevision(mode) {
+    const storedRevision = Number(localStorage.getItem(getRunCheckpointRevisionKey(mode))) || 0;
+    const checkpoint = readRunCheckpoint(mode);
+    return Math.max(storedRevision, Number(checkpoint?.savedAt) || 0);
+  }
+  function setRunCheckpointRevision(mode, revision) {
+    const nextRevision = Math.max(0, Number(revision) || 0);
+    localStorage.setItem(getRunCheckpointRevisionKey(mode), String(nextRevision));
+    return nextRevision;
+  }
   function normalizeRunCheckpoint(candidate) {
     if (!candidate || typeof candidate !== 'object' || !candidate.run || ![1, 2].includes(Number(candidate.version))) return null;
     if (Number(candidate.version) === 1) return { ...candidate, version: 2, playerProgress: candidate.playerProgress || null };
@@ -406,12 +419,19 @@
       localStorage.setItem(SAVE_KEY, btoa(JSON.stringify(player)));
       archiveLocalValue(checkpointKey, getRunCheckpointBackupKey(run.mode));
       localStorage.setItem(checkpointKey, JSON.stringify(checkpoint));
+      setRunCheckpointRevision(run.mode, revision);
     } catch (err) { console.warn('Could not save run checkpoint', err); }
     refreshResumeUI();
     if (typeof window.scheduleNeonCloudSave === 'function') window.scheduleNeonCloudSave(true);
   }
   function clearRunCheckpoint(mode = null) {
-    localStorage.removeItem(getRunCheckpointKey(mode));
+    const selectedMode = mode || (pendingLevelModeId ? 'level' : (run.mode || 'infinite'));
+    const revision = Math.max(Date.now(), (Number(player.localSaveAt) || 0) + 1, getRunCheckpointRevision(selectedMode) + 1);
+    localStorage.removeItem(getRunCheckpointKey(selectedMode));
+    setRunCheckpointRevision(selectedMode, revision);
+    player.localSaveAt = revision;
+    archiveLocalValue(SAVE_KEY, SAVE_BACKUP_KEY);
+    localStorage.setItem(SAVE_KEY, btoa(JSON.stringify(player)));
     refreshResumeUI();
     if (typeof window.scheduleNeonCloudSave === 'function') window.scheduleNeonCloudSave();
   }
@@ -420,8 +440,13 @@
   window.isNeonTowerRunActive = function() { return typeof game !== 'undefined' && !!(game && game.running); };
   window.getNeonTowerCloudSave = function() {
     const checkpoints = { infinite: readRunCheckpoint('infinite'), level: readRunCheckpoint('level') };
+    const checkpointRevisions = {
+      infinite: getRunCheckpointRevision('infinite'),
+      level: getRunCheckpointRevision('level')
+    };
+    const cloudCheckpoints = { ...checkpoints, revisions: checkpointRevisions };
     const checkpoint = getLatestRunCheckpoint();
-    return { player: JSON.parse(JSON.stringify(player)), checkpoint, checkpoints };
+    return { player: JSON.parse(JSON.stringify(player)), checkpoint, checkpoints, checkpointRevisions, cloudCheckpoints };
   };
   window.applyNeonTowerCloudSave = function(snapshot) {
     if (!snapshot || !snapshot.player || typeof snapshot.player !== 'object') throw new Error('Invalid cloud save data.');
@@ -439,17 +464,24 @@
     if (snapshot.checkpoints && typeof snapshot.checkpoints === 'object') {
       const infinite = snapshot.checkpoints.infinite;
       const level = snapshot.checkpoints.level;
+      const revisions = snapshot.checkpoints.revisions || snapshot.checkpointRevisions || {};
       archiveLocalValue(RUN_CHECKPOINT_KEY, RUN_CHECKPOINT_BACKUP_KEY);
       archiveLocalValue(LEVEL_RUN_CHECKPOINT_KEY, LEVEL_RUN_CHECKPOINT_BACKUP_KEY);
       if (infinite && [1, 2].includes(Number(infinite.version)) && infinite.run) localStorage.setItem(RUN_CHECKPOINT_KEY, JSON.stringify(infinite)); else localStorage.removeItem(RUN_CHECKPOINT_KEY);
       if (level && [1, 2].includes(Number(level.version)) && level.run) localStorage.setItem(LEVEL_RUN_CHECKPOINT_KEY, JSON.stringify(level)); else localStorage.removeItem(LEVEL_RUN_CHECKPOINT_KEY);
+      setRunCheckpointRevision('infinite', Number(revisions.infinite) || Number(infinite?.savedAt) || Number(incoming.localSaveAt) || 0);
+      setRunCheckpointRevision('level', Number(revisions.level) || Number(level?.savedAt) || Number(incoming.localSaveAt) || 0);
     } else if (snapshot.checkpoint && [1, 2].includes(Number(snapshot.checkpoint.version)) && snapshot.checkpoint.run) {
       const key = snapshot.checkpoint.run.mode === 'level' ? LEVEL_RUN_CHECKPOINT_KEY : RUN_CHECKPOINT_KEY;
       archiveLocalValue(key, getRunCheckpointBackupKey(snapshot.checkpoint.run.mode));
       localStorage.setItem(key, JSON.stringify(snapshot.checkpoint));
+      setRunCheckpointRevision(snapshot.checkpoint.run.mode, Number(snapshot.checkpoint.savedAt) || Number(incoming.localSaveAt) || 0);
     } else {
       localStorage.removeItem(RUN_CHECKPOINT_KEY);
       localStorage.removeItem(LEVEL_RUN_CHECKPOINT_KEY);
+      const revisions = snapshot.checkpointRevisions || {};
+      setRunCheckpointRevision('infinite', Number(revisions.infinite) || Number(incoming.localSaveAt) || 0);
+      setRunCheckpointRevision('level', Number(revisions.level) || Number(incoming.localSaveAt) || 0);
     }
     updateMenuUI();
     buildSkillTree();
@@ -496,7 +528,9 @@
   function resetSave() {
     if (!confirm("WIPE THIS DEVICE'S LOCAL SAVE, RUN CHECKPOINTS AND LOCAL BACKUPS? Progress stored in a signed-in cloud account will remain and can be synced again.")) return;
     [SAVE_KEY, SAVE_BACKUP_KEY, RUN_CHECKPOINT_KEY, LEVEL_RUN_CHECKPOINT_KEY,
-      RUN_CHECKPOINT_BACKUP_KEY, LEVEL_RUN_CHECKPOINT_BACKUP_KEY, 'neonTowerGuestSaveV1'
+      RUN_CHECKPOINT_BACKUP_KEY, LEVEL_RUN_CHECKPOINT_BACKUP_KEY,
+      RUN_CHECKPOINT_REVISION_KEY, LEVEL_RUN_CHECKPOINT_REVISION_KEY,
+      'neonTowerGuestSaveV1'
     ].forEach(key => localStorage.removeItem(key));
     location.reload();
   }
