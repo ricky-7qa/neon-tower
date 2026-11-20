@@ -1501,11 +1501,11 @@
       leaderboardRunToken = '';
       leaderboardRunTokenUserId = '';
       leaderboardRunTokenPromise = Promise.resolve('');
-      setLeaderboardStatus('YOUR SCORE WAS VERIFIED AND SUBMITTED');
+      setLeaderboardStatus('YOUR SCORE PASSED SERVER VALIDATION');
       await Promise.all([loadLeaderboard(), loadWeeklyLeaderboard()]);
     } catch (error) {
       console.error('Leaderboard submit failed:', error);
-      setLeaderboardStatus('SCORE COULD NOT BE VERIFIED OR SUBMITTED — TRY AGAIN IN A NEW RUN');
+      setLeaderboardStatus('SCORE FAILED SERVER CHECKS — START A NEW RUN WHILE ONLINE');
     }
   }
 
