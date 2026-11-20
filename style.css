@@ -3873,3 +3873,12 @@
   }
   #app.device-mobile .topbar-right { gap:2px; }
 }
+
+
+/* Permanent upgrades remain visible but cannot be purchased before their wave unlock. */
+#app .upgrade-unlock-note {
+  color:#ffb45c;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:1px;
+}
