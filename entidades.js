@@ -66,8 +66,9 @@
       }
 
       this.invuln=Math.max(0,this.invuln-dt); this.dashCd=Math.max(0,this.dashCd-dt);
-      this.muzzleFlash=Math.max(0,this.muzzleFlash-dt);
-      this.cdBase-=dt;
+      this.muzzleFlash = targetEnemy ? Math.max(0, this.muzzleFlash - dt) : 0;
+      // The main weapon cooldown only advances while a valid enemy is inside targeting range.
+      if (targetEnemy) this.cdBase -= dt;
       
       if(this.cdBase<=0&&targetEnemy){
         AudioSys.shoot();
