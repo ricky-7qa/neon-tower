@@ -4297,3 +4297,29 @@
   min-width:0;
   margin:0;
 }
+
+
+/* Keep NEW LEVEL fully inside its desktop button. */
+#app.device-desktop #menu .level-mode-entry > #open-level-mode-button {
+  box-sizing:border-box !important;
+  min-width:0 !important;
+  padding:10px 48px 10px 13px !important;
+  overflow:hidden;
+}
+#app.device-desktop #menu .level-mode-entry-title {
+  display:block;
+  max-width:100%;
+  min-width:0;
+  font-size:clamp(12px,1.05vw,15px) !important;
+  line-height:1.15 !important;
+  letter-spacing:1px !important;
+  white-space:nowrap;
+}
+#app.device-desktop #menu .level-mode-entry-kicker {
+  font-size:7px !important;
+  letter-spacing:1.5px !important;
+}
+#app.device-desktop #menu .level-mode-entry-meta {
+  font-size:7px !important;
+  letter-spacing:1px !important;
+}
