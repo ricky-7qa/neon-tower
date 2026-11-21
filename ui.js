@@ -13,7 +13,7 @@
 
   function selectDeviceMode(mode) {
     if (mode !== 'desktop' && mode !== 'mobile') return;
-    localStorage.setItem(DEVICE_MODE_KEY, mode);
+    window.neonStorage.setItem(DEVICE_MODE_KEY, mode);
     applyDeviceMode(mode);
     document.getElementById('device-select').classList.remove('active-layer');
     document.getElementById('menu').classList.add('active-layer');
@@ -26,12 +26,20 @@
   }
 
   function initializeDeviceMode() {
-    const savedMode = localStorage.getItem(DEVICE_MODE_KEY);
-    if (savedMode === 'desktop' || savedMode === 'mobile') {
-      applyDeviceMode(savedMode);
-      document.getElementById('device-select').classList.remove('active-layer');
-      document.getElementById('menu').classList.add('active-layer');
-    }
+    const systemInfo = window.NEON_CRAZYGAMES_SYSTEM_INFO || {};
+    const deviceType = String(systemInfo.device?.type || '').toLowerCase();
+    const isPortrait = !!(window.matchMedia && window.matchMedia('(orientation: portrait)').matches);
+    const fallbackMobile = !!(window.matchMedia && window.matchMedia('(max-width: 700px) and (orientation: portrait)').matches);
+    const mode = deviceType === 'mobile' || (deviceType === 'tablet' && isPortrait)
+      ? 'mobile'
+      : deviceType === 'desktop'
+        ? 'desktop'
+        : (fallbackMobile ? 'mobile' : 'desktop');
+    applyDeviceMode(mode);
+    const deviceSelect = document.getElementById('device-select');
+    if (deviceSelect) deviceSelect.classList.remove('active-layer');
+    const menu = document.getElementById('menu');
+    if (menu) menu.classList.add('active-layer');
   }
 
   
@@ -244,6 +252,12 @@
     panel.setAttribute('aria-hidden', 'true');
   }
   function toggleGameSound() {
+    if (window.NEON_CRAZYGAMES_MUTE_AUDIO) {
+      AudioSys.setEnabled(false);
+      const mutedButton = document.getElementById('settings-sound-toggle');
+      if (mutedButton) mutedButton.textContent = 'SOUND · OFF';
+      return false;
+    }
     const enabled = AudioSys.setEnabled(!AudioSys.enabled);
     const soundButton = document.getElementById('settings-sound-toggle');
     if (soundButton) soundButton.textContent = enabled ? 'SOUND · ON' : 'SOUND · OFF';
@@ -260,6 +274,7 @@
       window.saveRunCheckpoint(pendingPerk, pendingDecision);
     }
     game.running = false;
+    window.NeonCrazyGamesBridge?.gameplayStop();
     closeGameSettings();
     if (choicePanel) choicePanel.classList.remove('visible');
     document.getElementById('gameover').classList.remove('active-layer');
@@ -420,10 +435,10 @@
   function saveGuestNeonCloudSnapshot(snapshot = null, onlyIfMissing = false) {
     if (leaderboardSession || (!guestModeConfirmed && !onlyIfMissing)) return false;
     try {
-      if (onlyIfMissing && localStorage.getItem(GUEST_SAVE_KEY)) return true;
+      if (onlyIfMissing && window.neonStorage.getItem(GUEST_SAVE_KEY)) return true;
       const value = snapshot || (window.getNeonTowerCloudSave && window.getNeonTowerCloudSave());
       if (!value) return false;
-      localStorage.setItem(GUEST_SAVE_KEY, JSON.stringify(value));
+      window.neonStorage.setItem(GUEST_SAVE_KEY, JSON.stringify(value));
       return true;
     } catch (error) {
       console.warn('Could not save guest progress separately:', error);
@@ -433,7 +448,7 @@
 
   function restoreGuestNeonCloudSnapshot() {
     try {
-      const raw = localStorage.getItem(GUEST_SAVE_KEY);
+      const raw = window.neonStorage.getItem(GUEST_SAVE_KEY);
       if (!raw || !window.applyNeonTowerCloudSave) return false;
       const snapshot = JSON.parse(raw);
       if (!snapshot || !snapshot.player) return false;
@@ -462,12 +477,12 @@
 
   function clearAccountBanNotice() {
     accountBanNotice = '';
-    localStorage.removeItem(ACCOUNT_BAN_NOTICE_KEY);
+    window.neonStorage.removeItem(ACCOUNT_BAN_NOTICE_KEY);
   }
 
   async function rejectBannedAccount(bannedUntil) {
     accountBanNotice = formatAccountBanNotice(bannedUntil);
-    localStorage.setItem(ACCOUNT_BAN_NOTICE_KEY, JSON.stringify({ banned_until: bannedUntil || null, message: accountBanNotice }));
+    window.neonStorage.setItem(ACCOUNT_BAN_NOTICE_KEY, JSON.stringify({ banned_until: bannedUntil || null, message: accountBanNotice }));
     banEnforcementInProgress = true;
     try { await leaderboardClient.auth.signOut({ scope: 'local' }); } catch (error) { console.warn('Could not clear banned local session:', error); }
     banEnforcementInProgress = false;
@@ -475,7 +490,7 @@
     guestModeConfirmed = true;
     if (!restoreGuestNeonCloudSnapshot()) {
       const blank = createBlankGuestSnapshot();
-      localStorage.setItem(GUEST_SAVE_KEY, JSON.stringify(blank));
+      window.neonStorage.setItem(GUEST_SAVE_KEY, JSON.stringify(blank));
       window.applyNeonTowerCloudSave({ ...blank, replacePlayer: true });
     }
     setAuthMode('login');
@@ -501,6 +516,7 @@
   }
 
   function initializeLeaderboard() {
+    if (window.NEON_CRAZYGAMES_BUILD) return;
     if (!window.supabase || !window.supabase.createClient) {
       setAuthStatus('ACCOUNT SERVICE UNAVAILABLE. PLEASE TRY AGAIN LATER.');
       return;
@@ -537,7 +553,7 @@
         guestModeConfirmed = true;
         if (!restoreGuestNeonCloudSnapshot()) {
           const blank = createBlankGuestSnapshot();
-          localStorage.setItem(GUEST_SAVE_KEY, JSON.stringify(blank));
+          window.neonStorage.setItem(GUEST_SAVE_KEY, JSON.stringify(blank));
           window.applyNeonTowerCloudSave({ ...blank, replacePlayer: true });
         }
         return;
@@ -559,8 +575,8 @@
       passwordRecoveryPending = window.location.hash.includes('type=recovery') || window.location.search.includes('auth=recovery');
       const session = data.session;
       if (session) {
-        if (!localStorage.getItem(GUEST_SAVE_KEY)) {
-          localStorage.setItem(GUEST_SAVE_KEY, JSON.stringify(createBlankGuestSnapshot()));
+        if (!window.neonStorage.getItem(GUEST_SAVE_KEY)) {
+          window.neonStorage.setItem(GUEST_SAVE_KEY, JSON.stringify(createBlankGuestSnapshot()));
         }
         try {
           const allowed = await verifyAccountIsNotBanned(session);
@@ -582,7 +598,7 @@
         setLeaderboardSession(null);
         guestModeConfirmed = true;
         if (!restoreGuestNeonCloudSnapshot()) saveGuestNeonCloudSnapshot(window.getNeonTowerCloudSave?.());
-        const storedNotice = (() => { try { return JSON.parse(localStorage.getItem(ACCOUNT_BAN_NOTICE_KEY) || 'null'); } catch (_) { return null; } })();
+        const storedNotice = (() => { try { return JSON.parse(window.neonStorage.getItem(ACCOUNT_BAN_NOTICE_KEY) || 'null'); } catch (_) { return null; } })();
         if (storedNotice?.banned_until && Date.parse(storedNotice.banned_until) <= Date.now()) clearAccountBanNotice();
         else if (storedNotice?.message) accountBanNotice = storedNotice.message;
       }
@@ -625,10 +641,10 @@
     const nameInput = document.getElementById('leaderboard-name');
     if (nameInput && leaderboardSession) {
       const accountName = String(leaderboardSession.user.user_metadata?.display_name || '').trim();
-      const savedName = localStorage.getItem(LEADERBOARD_NAME_KEY);
+      const savedName = window.neonStorage.getItem(LEADERBOARD_NAME_KEY);
       const currentName = accountName || savedName || ('Pilot-' + leaderboardPlayerId.slice(0,4).toUpperCase());
       nameInput.value = currentName;
-      if (accountName) localStorage.setItem(LEADERBOARD_NAME_KEY, accountName);
+      if (accountName) window.neonStorage.setItem(LEADERBOARD_NAME_KEY, accountName);
     }
     const tab = document.getElementById('tab-leaderboard');
     if (tab && tab.style.display !== 'none') showLeaderboardView();
@@ -983,7 +999,7 @@
       if (account) account.textContent = leaderboardSession.user.email || 'SIGNED IN';
       const nameInput = document.getElementById('leaderboard-name');
       if (nameInput && !nameInput.value) {
-        const savedName = localStorage.getItem(LEADERBOARD_NAME_KEY);
+        const savedName = window.neonStorage.getItem(LEADERBOARD_NAME_KEY);
         nameInput.value = savedName || ('Pilot-' + leaderboardPlayerId.slice(0,4).toUpperCase());
       }
       loadLeaderboard();
@@ -1017,7 +1033,7 @@
   }
   let lastPublicProfileSignature = '';
   function getPlayerName() {
-    return String(leaderboardSession?.user?.user_metadata?.display_name || localStorage.getItem(LEADERBOARD_NAME_KEY) || ('Pilot-' + String(leaderboardPlayerId || '0000').slice(0,4).toUpperCase())).trim();
+    return String(leaderboardSession?.user?.user_metadata?.display_name || window.neonStorage.getItem(LEADERBOARD_NAME_KEY) || ('Pilot-' + String(leaderboardPlayerId || '0000').slice(0,4).toUpperCase())).trim();
   }
   function renderProfileCard(profile, isOwn = false) {
     const host = document.getElementById('public-player-profile');
@@ -1250,7 +1266,7 @@
       const authMessage = authErrorMessage(error);
       if (authMessage.includes('YOUR ACCOUNT IS BANNED')) {
         accountBanNotice = 'YOUR ACCOUNT IS BANNED. ACCESS TO THIS ACCOUNT IS BLOCKED.';
-        localStorage.setItem(ACCOUNT_BAN_NOTICE_KEY, JSON.stringify({ banned_until: null, message: accountBanNotice }));
+        window.neonStorage.setItem(ACCOUNT_BAN_NOTICE_KEY, JSON.stringify({ banned_until: null, message: accountBanNotice }));
         setAuthStatus(accountBanNotice);
       } else setAuthStatus(authMessage);
     }
@@ -1310,7 +1326,7 @@
     guestModeConfirmed = true;
     if (!restoreGuestNeonCloudSnapshot()) {
       const blank = createBlankGuestSnapshot();
-      localStorage.setItem(GUEST_SAVE_KEY, JSON.stringify(blank));
+      window.neonStorage.setItem(GUEST_SAVE_KEY, JSON.stringify(blank));
       window.applyNeonTowerCloudSave({ ...blank, replacePlayer: true });
     }
     clearAccountBanNotice();
@@ -1332,7 +1348,7 @@
       });
       if (profileError) throw profileError;
       if (updatedUser?.user) leaderboardSession.user = updatedUser.user;
-      localStorage.setItem(LEADERBOARD_NAME_KEY, name);
+      window.neonStorage.setItem(LEADERBOARD_NAME_KEY, name);
       const { data: nameResult, error: nameError } = await leaderboardClient.functions.invoke('update-player-name', {
         body: { run_session_key: accountRunSessionKey, player_name: name }
       });
