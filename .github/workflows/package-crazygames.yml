@@ -57,3 +57,5 @@ jobs:
             dist/Neon-Tower-CrazyGames.zip.sha256
           if-no-files-found: error
           retention-days: 7
+
+# Rebuild artifact for the latest CrazyGames CSS fix.
