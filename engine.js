@@ -10,18 +10,18 @@
   const LEVEL_RUN_CHECKPOINT_REVISION_KEY = "NeonTowerApexLevelRunCheckpointRevision";
   function archiveLocalValue(key, historyKey, maxEntries = 20) {
     try {
-      const value = localStorage.getItem(key);
+      const value = window.neonStorage.getItem(key);
       if (!value) return;
-      const history = JSON.parse(localStorage.getItem(historyKey) || "[]");
+      const history = JSON.parse(window.neonStorage.getItem(historyKey) || "[]");
       const entries = Array.isArray(history) ? history : [];
       if (entries[0]?.value === value) return;
       entries.unshift({ archivedAt: Date.now(), value });
-      localStorage.setItem(historyKey, JSON.stringify(entries.slice(0, maxEntries)));
+      window.neonStorage.setItem(historyKey, JSON.stringify(entries.slice(0, maxEntries)));
     } catch (err) { console.warn("Could not archive local save", err); }
   }
   function getLatestValidPlayerBackup() {
     try {
-      const history = JSON.parse(localStorage.getItem(SAVE_BACKUP_KEY) || "[]");
+      const history = JSON.parse(window.neonStorage.getItem(SAVE_BACKUP_KEY) || "[]");
       for (const entry of Array.isArray(history) ? history : []) {
         try {
           const candidate = JSON.parse(atob(entry.value));
@@ -35,13 +35,13 @@
   function getRunCheckpointRevisionKey(mode) { return mode === "level" ? LEVEL_RUN_CHECKPOINT_REVISION_KEY : RUN_CHECKPOINT_REVISION_KEY; }
   function getRunCheckpointKey(mode = null) { const selectedMode = mode || (pendingLevelModeId ? "level" : (run.mode || "infinite")); return selectedMode === "level" ? LEVEL_RUN_CHECKPOINT_KEY : RUN_CHECKPOINT_KEY; }
   function getRunCheckpointRevision(mode) {
-    const storedRevision = Number(localStorage.getItem(getRunCheckpointRevisionKey(mode))) || 0;
+    const storedRevision = Number(window.neonStorage.getItem(getRunCheckpointRevisionKey(mode))) || 0;
     const checkpoint = readRunCheckpoint(mode);
     return Math.max(storedRevision, Number(checkpoint?.savedAt) || 0);
   }
   function setRunCheckpointRevision(mode, revision) {
     const nextRevision = Math.max(0, Number(revision) || 0);
-    localStorage.setItem(getRunCheckpointRevisionKey(mode), String(nextRevision));
+    window.neonStorage.setItem(getRunCheckpointRevisionKey(mode), String(nextRevision));
     return nextRevision;
   }
   function normalizeRunCheckpoint(candidate) {
@@ -51,16 +51,16 @@
   }
   function readRunCheckpoint(mode) {
     const key = getRunCheckpointKey(mode);
-    const raw = localStorage.getItem(key);
+    const raw = window.neonStorage.getItem(key);
     try { return normalizeRunCheckpoint(JSON.parse(raw || "null")); }
     catch (err) {
       try {
-        const history = JSON.parse(localStorage.getItem(getRunCheckpointBackupKey(mode || (key === LEVEL_RUN_CHECKPOINT_KEY ? "level" : "infinite"))) || "[]");
+        const history = JSON.parse(window.neonStorage.getItem(getRunCheckpointBackupKey(mode || (key === LEVEL_RUN_CHECKPOINT_KEY ? "level" : "infinite"))) || "[]");
         for (const entry of Array.isArray(history) ? history : []) {
           try {
             const candidate = normalizeRunCheckpoint(JSON.parse(entry.value));
             if (candidate) {
-              localStorage.setItem(key, JSON.stringify(candidate));
+              window.neonStorage.setItem(key, JSON.stringify(candidate));
               return candidate;
             }
           } catch (backupError) {}
@@ -149,7 +149,7 @@
   /** AUDIO SYSTEM **/
   const AudioSys = {
     ctx: null, master: null,
-    enabled: localStorage.getItem('neonTowerSoundEnabled') !== 'false',
+    enabled: window.neonStorage.getItem('neonTowerSoundEnabled') !== 'false',
     init() {
       if(this.ctx) return;
       this.ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -157,7 +157,7 @@
     },
     setEnabled(enabled) {
       this.enabled = !!enabled;
-      localStorage.setItem('neonTowerSoundEnabled', this.enabled ? 'true' : 'false');
+      window.neonStorage.setItem('neonTowerSoundEnabled', this.enabled ? 'true' : 'false');
       if(this.master) this.master.gain.setTargetAtTime(this.enabled ? 0.3 : 0, this.ctx.currentTime, 0.02);
       return this.enabled;
     },
@@ -176,6 +176,12 @@
     hit() { this.play('hit', 150, 40, 'triangle', 0.2, 0.4); },
     explosion() { this.play('exp', 100, 20, 'sawtooth', 0.5, 0.5); },
     coin() { this.play('coin', 1000, 1500, 'sine', 0.1, 0.1); }
+  };
+
+  window.applyCrazyGamesAudioSettings = function (settings) {
+    const muted = !!(settings && settings.muteAudio);
+    window.NEON_CRAZYGAMES_MUTE_AUDIO = muted;
+    if (muted && AudioSys.enabled) AudioSys.setEnabled(false);
   };
 
   /** DATABASE EN **/
@@ -367,7 +373,7 @@
   function saveGame(immediateCloud = false, markProgress = true) {
     if (markProgress) player.localSaveAt = Math.max(Date.now(), (Number(player.localSaveAt) || 0) + 1);
     archiveLocalValue(SAVE_KEY, SAVE_BACKUP_KEY);
-    localStorage.setItem(SAVE_KEY, btoa(JSON.stringify(player)));
+    window.neonStorage.setItem(SAVE_KEY, btoa(JSON.stringify(player)));
     updateMenuUI();
     if (typeof window.scheduleNeonCloudSave === 'function') window.scheduleNeonCloudSave(immediateCloud);
   }
@@ -430,9 +436,9 @@
         pendingFreeUpgrades: Array.isArray(pendingFreeUpgrades) ? pendingFreeUpgrades : []
       };
       archiveLocalValue(SAVE_KEY, SAVE_BACKUP_KEY);
-      localStorage.setItem(SAVE_KEY, btoa(JSON.stringify(player)));
+      window.neonStorage.setItem(SAVE_KEY, btoa(JSON.stringify(player)));
       archiveLocalValue(checkpointKey, getRunCheckpointBackupKey(run.mode));
-      localStorage.setItem(checkpointKey, JSON.stringify(checkpoint));
+      window.neonStorage.setItem(checkpointKey, JSON.stringify(checkpoint));
       setRunCheckpointRevision(run.mode, revision);
     } catch (err) { console.warn('Could not save run checkpoint', err); }
     refreshResumeUI();
@@ -441,11 +447,11 @@
   function clearRunCheckpoint(mode = null) {
     const selectedMode = mode || (pendingLevelModeId ? 'level' : (run.mode || 'infinite'));
     const revision = Math.max(Date.now(), (Number(player.localSaveAt) || 0) + 1, getRunCheckpointRevision(selectedMode) + 1);
-    localStorage.removeItem(getRunCheckpointKey(selectedMode));
+    window.neonStorage.removeItem(getRunCheckpointKey(selectedMode));
     setRunCheckpointRevision(selectedMode, revision);
     player.localSaveAt = revision;
     archiveLocalValue(SAVE_KEY, SAVE_BACKUP_KEY);
-    localStorage.setItem(SAVE_KEY, btoa(JSON.stringify(player)));
+    window.neonStorage.setItem(SAVE_KEY, btoa(JSON.stringify(player)));
     refreshResumeUI();
     if (typeof window.scheduleNeonCloudSave === 'function') window.scheduleNeonCloudSave();
   }
@@ -474,25 +480,25 @@
     player.achievements = Array.isArray(incoming.achievements) ? incoming.achievements : [];
     Object.keys(statDefs).forEach(k => { if (player.ws[k] === undefined) player.ws[k] = 0; });
     archiveLocalValue(SAVE_KEY, SAVE_BACKUP_KEY);
-    localStorage.setItem(SAVE_KEY, btoa(JSON.stringify(player)));
+    window.neonStorage.setItem(SAVE_KEY, btoa(JSON.stringify(player)));
     if (snapshot.checkpoints && typeof snapshot.checkpoints === 'object') {
       const infinite = snapshot.checkpoints.infinite;
       const level = snapshot.checkpoints.level;
       const revisions = snapshot.checkpoints.revisions || snapshot.checkpointRevisions || {};
       archiveLocalValue(RUN_CHECKPOINT_KEY, RUN_CHECKPOINT_BACKUP_KEY);
       archiveLocalValue(LEVEL_RUN_CHECKPOINT_KEY, LEVEL_RUN_CHECKPOINT_BACKUP_KEY);
-      if (infinite && [1, 2].includes(Number(infinite.version)) && infinite.run) localStorage.setItem(RUN_CHECKPOINT_KEY, JSON.stringify(infinite)); else localStorage.removeItem(RUN_CHECKPOINT_KEY);
-      if (level && [1, 2].includes(Number(level.version)) && level.run) localStorage.setItem(LEVEL_RUN_CHECKPOINT_KEY, JSON.stringify(level)); else localStorage.removeItem(LEVEL_RUN_CHECKPOINT_KEY);
+      if (infinite && [1, 2].includes(Number(infinite.version)) && infinite.run) window.neonStorage.setItem(RUN_CHECKPOINT_KEY, JSON.stringify(infinite)); else window.neonStorage.removeItem(RUN_CHECKPOINT_KEY);
+      if (level && [1, 2].includes(Number(level.version)) && level.run) window.neonStorage.setItem(LEVEL_RUN_CHECKPOINT_KEY, JSON.stringify(level)); else window.neonStorage.removeItem(LEVEL_RUN_CHECKPOINT_KEY);
       setRunCheckpointRevision('infinite', Number(revisions.infinite) || Number(infinite?.savedAt) || Number(incoming.localSaveAt) || 0);
       setRunCheckpointRevision('level', Number(revisions.level) || Number(level?.savedAt) || Number(incoming.localSaveAt) || 0);
     } else if (snapshot.checkpoint && [1, 2].includes(Number(snapshot.checkpoint.version)) && snapshot.checkpoint.run) {
       const key = snapshot.checkpoint.run.mode === 'level' ? LEVEL_RUN_CHECKPOINT_KEY : RUN_CHECKPOINT_KEY;
       archiveLocalValue(key, getRunCheckpointBackupKey(snapshot.checkpoint.run.mode));
-      localStorage.setItem(key, JSON.stringify(snapshot.checkpoint));
+      window.neonStorage.setItem(key, JSON.stringify(snapshot.checkpoint));
       setRunCheckpointRevision(snapshot.checkpoint.run.mode, Number(snapshot.checkpoint.savedAt) || Number(incoming.localSaveAt) || 0);
     } else {
-      localStorage.removeItem(RUN_CHECKPOINT_KEY);
-      localStorage.removeItem(LEVEL_RUN_CHECKPOINT_KEY);
+      window.neonStorage.removeItem(RUN_CHECKPOINT_KEY);
+      window.neonStorage.removeItem(LEVEL_RUN_CHECKPOINT_KEY);
       const revisions = snapshot.checkpointRevisions || {};
       setRunCheckpointRevision('infinite', Number(revisions.infinite) || Number(incoming.localSaveAt) || 0);
       setRunCheckpointRevision('level', Number(revisions.level) || Number(incoming.localSaveAt) || 0);
@@ -502,7 +508,7 @@
     refreshResumeUI();
   };
   function loadGame() { 
-    const s = localStorage.getItem(SAVE_KEY); 
+    const s = window.neonStorage.getItem(SAVE_KEY); 
     if(s) {
       try {
         let p=JSON.parse(atob(s));
@@ -516,9 +522,9 @@
           player={...player,...backup};
           player.ws={...player.ws,...(backup.ws||{})};
           player.freeUpgradeChances={ATTACK:0,DEFENSE:0,UTILITY:0,...(backup.freeUpgradeChances||{})};
-          localStorage.setItem(SAVE_KEY, btoa(JSON.stringify(player)));
+          window.neonStorage.setItem(SAVE_KEY, btoa(JSON.stringify(player)));
         } else {
-          localStorage.removeItem(SAVE_KEY);
+          window.neonStorage.removeItem(SAVE_KEY);
         }
       }
     }
@@ -545,7 +551,7 @@
       RUN_CHECKPOINT_BACKUP_KEY, LEVEL_RUN_CHECKPOINT_BACKUP_KEY,
       RUN_CHECKPOINT_REVISION_KEY, LEVEL_RUN_CHECKPOINT_REVISION_KEY,
       'neonTowerGuestSaveV1'
-    ].forEach(key => localStorage.removeItem(key));
+    ].forEach(key => window.neonStorage.removeItem(key));
     location.reload();
   }
 
@@ -573,6 +579,7 @@
     const available = perkDefs.filter(p => getPerkStacks(p.id) < p.maxStacks);
     if (!available.length) { showWaveDecisionChoice(); return; }
     game.paused = true;
+    window.NeonCrazyGamesBridge?.gameplayStop();
     const panel = document.getElementById('perk-choice');
     const picks = rollPerkOptions(available,3);
     panel.innerHTML = '<div class="perk-dialog"><span class="perk-eyebrow">MILESTONE REACHED</span><h2>CHOOSE A PERK</h2><p>Each perk can appear in four rarities. Higher rarities have stronger effects.</p><div class="perk-options">'+picks.map(p=>{
@@ -629,7 +636,7 @@
     return d.desc.replace(/\d+(?:\.\d+)?%/g,v=>Math.round(parseFloat(v)*d.multiplier*10)/10+'%');
   }
   function showWaveDecisionChoice(){
-    if(!game||!game.running)return;game.paused=true;const panel=document.getElementById('perk-choice'),picks=rollWaveDecisionOptions();run.lastDecisionOptions=picks.map(d=>d.id);
+    if(!game||!game.running)return;game.paused=true;window.NeonCrazyGamesBridge?.gameplayStop();const panel=document.getElementById('perk-choice'),picks=rollWaveDecisionOptions();run.lastDecisionOptions=picks.map(d=>d.id);
     panel.innerHTML='<div class="perk-dialog decision-dialog"><span class="perk-eyebrow">WAVE '+(run.wave-1)+' COMPLETED</span><h2>SELECT YOUR ADVANTAGE</h2><p>Choose one upgrade for your next wave. Higher rarities have stronger effects.</p><div class="decision-wallet"><span>CASH <strong>$'+formatMoney(run.cash||0)+'</strong></span><span>COINS <strong>'+formatMoney(run.coins||0)+'</strong></span></div><div class="perk-options decision-options">'+picks.map(d=>'<button class="perk-option decision-option rarity-'+d.rarity+'" onclick="chooseWaveDecision(\''+d.id+'\',\''+d.rarity+'\')"><span>'+d.icon+'</span><strong>'+d.name+'</strong><small class="decision-category">'+d.category+'</small><small class="perk-rarity-label">'+waveDecisionRarities[d.rarity].label+'</small><small>'+getWaveDecisionDescription(d)+'</small></button>').join('')+'</div></div>';
     panel.classList.add('visible');
   }
@@ -656,7 +663,7 @@
       case'boss_gamble':effect(id,pct(.3),5);effect('boss_gamble_reward',pct(1),5);break;
       case'last_stand':if(tower)tower.hp=Math.max(1,tower.hp*.5);effect(id,pct(.5),1);break;
     }
-    const panel=document.getElementById('perk-choice');panel.classList.remove('visible');panel.innerHTML='';game.paused=false;game.last=performance.now();updateHUD();saveRunCheckpoint(false,false,null,true);
+    const panel=document.getElementById('perk-choice');panel.classList.remove('visible');panel.innerHTML='';game.paused=false;game.last=performance.now();window.NeonCrazyGamesBridge?.gameplayStart();updateHUD();saveRunCheckpoint(false,false,null,true);
   }
 
   function renderRunPerks() {
@@ -690,7 +697,7 @@
     const panel=document.getElementById('perk-choice');
     panel.classList.remove('visible'); panel.innerHTML='';
     if(id==='repair' && tower) { const baseRegen=parseFloat(getVal('regen'))+parseFloat(getVal('nanoMatrix')); tower.hp=Math.min(tower.maxHp,tower.hp+baseRegen*selectedPerk.values[rarity]*4/100); }
-    game.paused=false; game.last=performance.now(); updateHUD();
+    game.paused=false; game.last=performance.now(); window.NeonCrazyGamesBridge?.gameplayStart(); updateHUD();
     saveRunCheckpoint(false, false, null, true);
     notify('PERK UNLOCKED',selectedPerk.name+' · '+perkRarities[rarity].label);
   }
@@ -889,7 +896,7 @@
   function startGame(levelId = null) {
     if (Number.isInteger(Number(levelId)) && Number(levelId) > 0) pendingLevelModeId = Number(levelId);
     const selectedLevelId = pendingLevelModeId;
-    if (!player.tutorialSeen) {
+    if (!player.tutorialSeen && !window.NEON_CRAZYGAMES_BUILD) {
       document.getElementById('tutorial').classList.add('visible');
       return;
     }
@@ -943,6 +950,7 @@
     saveRunCheckpoint(false);
     updateHUD();
     requestAnimationFrame(loop);
+    window.NeonCrazyGamesBridge?.gameplayStart();
     if (typeof window.startNeonLeaderboardRun === 'function') window.startNeonLeaderboardRun();
     if (typeof window.neonTrack === 'function') {
       window.neonTrack({ path: 'game-start', title: 'Game started', event: true, no_session: true });
@@ -955,6 +963,7 @@
     if(!game || !game.running) return;
     if (run.mode === 'level') { finishLevelMode(false); return; }
     game.running = false;
+    window.NeonCrazyGamesBridge?.gameplayStop();
     clearRunCheckpoint();
     trackGameDuration('completed');
     if (typeof window.neonTrack === 'function') {
@@ -992,7 +1001,7 @@
       refreshResumeUI();
       return;
     }
-    if (!player.tutorialSeen) {
+    if (!player.tutorialSeen && !window.NEON_CRAZYGAMES_BUILD) {
       document.getElementById('tutorial').classList.add('visible');
       return;
     }
@@ -1066,6 +1075,7 @@
     if (checkpoint.pendingPerk) showPerkChoice();
     else if (checkpoint.pendingDecision) showWaveDecisionChoice();
     requestAnimationFrame(loop);
+    if (!checkpoint.pendingPerk && !checkpoint.pendingDecision) window.NeonCrazyGamesBridge?.gameplayStart();
     if (typeof window.startNeonLeaderboardRun === 'function') window.startNeonLeaderboardRun();
   }
   window.resumeRun = resumeRun;
@@ -1073,6 +1083,7 @@
   function finishLevelMode(completed) {
     if (!game || !game.running || run.mode !== 'level') return;
     game.running = false;
+    window.NeonCrazyGamesBridge?.gameplayStop();
     clearRunCheckpoint();
     trackGameDuration('completed');
     const level = window.NEON_LEVEL_MODE_CONFIG?.levels?.find(item => item.id === run.levelId);
@@ -1150,13 +1161,13 @@
     const level = window.NEON_LEVEL_MODE_CONFIG?.levels?.find(item => item.id === Number(levelId));
     const progress = player.levelMode || { highestUnlocked: 1 };
     if (!level || level.id > (Number(progress.highestUnlocked) || 1)) return;
-    if (!player.tutorialSeen) { pendingLevelModeId = level.id; document.getElementById('tutorial').classList.add('visible'); return; }
+    if (!player.tutorialSeen && !window.NEON_CRAZYGAMES_BUILD) { pendingLevelModeId = level.id; document.getElementById('tutorial').classList.add('visible'); return; }
     startGame(level.id);
   };
 
   function requestEndRun() {
     if (!game || !game.running) return;
-    const confirmed = window.confirm('END THIS RUN? Your current score will be saved and submitted if it qualifies for the leaderboard.');
+    const confirmed = window.confirm('END THIS RUN? Your current progress will be saved.');
     if (confirmed) processGameOver('voluntary');
   }
   window.requestEndRun = requestEndRun;
