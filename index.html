@@ -30,73 +30,10 @@
       });
     };
   </script>
-  <script>
-    (function () {
-      var measurementId = 'G-B70RSHD9K3';
-      var storageKey = 'neonTowerAnalyticsConsent';
-      function loadAnalytics() {
-        if (window.neonGA4Loaded) return;
-        window.neonGA4Loaded = true;
-        window.dataLayer = window.dataLayer || [];
-        window.gtag = function () { window.dataLayer.push(arguments); };
-        window.gtag('consent', 'default', {
-          analytics_storage: 'denied',
-          ad_storage: 'denied',
-          ad_user_data: 'denied',
-          ad_personalization: 'denied'
-        });
-        window.gtag('consent', 'update', {
-          analytics_storage: 'granted',
-          ad_storage: 'denied',
-          ad_user_data: 'denied',
-          ad_personalization: 'denied'
-        });
-        window.gtag('js', new Date());
-        window.gtag('config', measurementId, {
-          send_page_view: true,
-          allow_google_signals: false,
-          allow_ad_personalization_signals: false
-        });
-        var script = document.createElement('script');
-        script.async = true;
-        script.src = 'https://www.googletagmanager.com/gtag/js?id=' + measurementId;
-        document.head.appendChild(script);
-      }
-      function setConsent(value) {
-        try { localStorage.setItem(storageKey, value); } catch (error) {}
-        var notice = document.getElementById('neon-analytics-consent');
-        if (notice) notice.hidden = true;
-        if (value === 'granted') loadAnalytics();
-      }
-      window.neonOpenAnalyticsSettings = function () {
-        var notice = document.getElementById('neon-analytics-consent');
-        if (notice) notice.hidden = false;
-      };
-      window.neonSetAnalyticsConsent = setConsent;
-      document.addEventListener('DOMContentLoaded', function () {
-        var notice = document.getElementById('neon-analytics-consent');
-        var choice = null;
-        try { choice = localStorage.getItem(storageKey); } catch (error) {}
-        if (choice === 'granted') loadAnalytics();
-        if (notice) notice.hidden = !!choice;
-      });
-    })();
-  </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0/dist/umd/supabase.js"></script>
   <script data-goatcounter="https://ricky7.goatcounter.com/count" async src="//gc.zgo.at/count.js" onload="window.neonFlushAnalytics()"></script>
 </head>
 <body>
-
-<div id="neon-analytics-consent" role="dialog" aria-live="polite" aria-label="Analytics preferences" hidden style="position:fixed;z-index:10000;left:16px;right:16px;bottom:16px;max-width:560px;margin:0 auto;padding:16px;background:rgba(5,10,24,.97);border:1px solid rgba(0,238,255,.55);border-radius:12px;box-shadow:0 10px 35px rgba(0,0,0,.55);color:#eafcff;font:14px/1.5 Arial,sans-serif;">
-  <strong style="display:block;color:#5ff5ff;letter-spacing:1px;margin-bottom:6px;">NEON TOWER · ANALYTICS</strong>
-  <span>With your permission, Google Analytics will collect usage information such as page visits and interactions to help improve the game. No advertising personalisation is enabled. You can decline and still play normally.</span>
-  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
-    <button type="button" onclick="neonSetAnalyticsConsent('granted')" style="flex:1;min-width:120px;padding:10px 14px;border:1px solid #00eaff;border-radius:7px;background:#063c4a;color:#fff;font-weight:700;cursor:pointer;">ALLOW ANALYTICS</button>
-    <button type="button" onclick="neonSetAnalyticsConsent('denied')" style="flex:1;min-width:120px;padding:10px 14px;border:1px solid #64748b;border-radius:7px;background:#172033;color:#eafcff;font-weight:700;cursor:pointer;">DECLINE</button>
-  </div>
-</div>
-<button type="button" onclick="neonOpenAnalyticsSettings()" aria-label="Privacy and analytics settings" style="position:fixed;z-index:9998;left:8px;bottom:8px;padding:5px 8px;border:1px solid rgba(120,150,170,.45);border-radius:6px;background:rgba(5,10,24,.8);color:#cbd5e1;font:11px Arial,sans-serif;opacity:.75;">PRIVACY</button>
-
 
 <div id="app">
   <canvas id="gameCanvas"></canvas>
@@ -404,7 +341,7 @@
 <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", function () {
-      navigator.serviceWorker.register("./sw.js?v=20261121-ga4-consent-v1", { updateViaCache: "none" }).catch(function (error) {
+      navigator.serviceWorker.register("./sw.js?v=20261121-menu-mode-grid-v2", { updateViaCache: "none" }).catch(function (error) {
         console.warn("Neon Tower offline support could not be enabled:", error);
       });
     });
