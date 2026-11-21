@@ -404,7 +404,9 @@
       }
     }
     if (primaryAction) primaryAction.classList.toggle('has-resume', infiniteExists);
-    if (startButton) startButton.textContent = infiniteExists ? 'NEW RUN' : 'START INFINITE MODE';
+    if (startButton) startButton.textContent = 'NEW RUN';
+    const levelTitle = document.querySelector('#open-level-mode-button .level-mode-entry-title');
+    if (levelTitle) levelTitle.textContent = levelExists ? 'NEW LEVEL' : 'LEVEL MODE';
   }
   function saveRunCheckpoint(pendingPerk = false, pendingDecision = false, pendingFreeUpgrades = null, forceWaveSnapshot = false) {
     if (!game || !game.running || !tower) return;
