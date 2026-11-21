@@ -4403,3 +4403,24 @@
   background:linear-gradient(105deg,#087e91,#06405b) !important;
   box-shadow:0 0 28px rgba(0,220,255,.3) !important;
 }
+
+/* Keep LEVEL MODE lettering centered at every viewport size. */
+
+#app #menu .menu-mode-actions .level-mode-entry > #open-level-mode-button {
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  text-align:center !important;
+  padding-left:12px !important;
+  padding-right:12px !important;
+}
+#app #menu .menu-mode-actions .level-mode-entry > #open-level-mode-button .level-mode-entry-title {
+  display:block !important;
+  width:100% !important;
+  max-width:100% !important;
+  margin:0 auto !important;
+  text-align:center !important;
+  text-indent:0 !important;
+  transform:none !important;
+  white-space:nowrap !important;
+}
