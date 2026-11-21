@@ -14,6 +14,8 @@ This branch is an isolated CrazyGames adaptation of the game.
 ## Changes in this branch
 
 - Removed the manual device chooser; device layout is selected from CrazyGames System Info, with a responsive fallback for local preview.
+- Added `crazygames.css` to fill the CrazyGames iframe and use the platform safe-area CSS variables on supported mobile app layouts.
+- Kept the tutorial available as an optional **HOW TO PLAY** item in the menu while allowing direct one-click entry into a run.
 - Removed GoatCounter and the Supabase CDN script from this build.
 - Removed email/password account, public-profile and third-party leaderboard screens. The game is playable by guests and has no external sign-in options.
 - Added a branch-only storage adapter. It routes existing save keys through the CrazyGames SDK Data module when the SDK is enabled, and falls back to browser storage outside CrazyGames.
