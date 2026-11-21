@@ -838,57 +838,57 @@
     const w = Math.max(1, Math.floor(Number(wave) || 1));
     if (run.mode === 'level') {
       const cfg = window.NEON_LEVEL_MODE_CONFIG?.difficulty?.enemyCount || {};
-      if (w <= 20) return Math.max(6, Math.round((cfg.earlyBase || 8) + w * (cfg.earlyPerWave || 0.9)));
-      if (w <= 50) return Math.max(8, Math.round((cfg.middleBase || 26) + (w - 20) * (cfg.middlePerWave || 0.5)));
-      return Math.max(10, Math.round((cfg.lateBase || 41) + (w - 50) * (cfg.latePerWave || 0.25)));
+      // Level Mode also uses smaller waves so its fixed objectives stay readable.
+      if (w <= 20) return Math.max(5, Math.round(((cfg.earlyBase || 8) + w * (cfg.earlyPerWave || 0.9)) * 0.58));
+      if (w <= 50) return Math.max(7, Math.round(((cfg.middleBase || 26) + (w - 20) * (cfg.middlePerWave || 0.5)) * 0.58));
+      return Math.max(9, Math.round(((cfg.lateBase || 41) + (w - 50) * (cfg.latePerWave || 0.25)) * 0.58));
     }
-    if (w <= 20) return 9 + Math.floor(w * 1.25);
-    if (w <= 50) return 34 + Math.floor((w - 20) * 0.6);
-    if (w <= 100) return 52 + Math.floor((w - 50) * 0.36);
-    if (w <= 150) return 70 + Math.floor((w - 100) * 0.46);
-    if (w <= 200) return 93 + Math.floor((w - 150) * 0.54);
-    return 120 + Math.floor((w - 200) * 0.56);
+
+    // Smaller total wave sizes, with slower growth at high waves.
+    if (w <= 25) return 6 + Math.floor(w * 0.45);
+    if (w <= 50) return 17 + Math.floor((w - 25) * 0.22);
+    if (w <= 100) return 22 + Math.floor((w - 50) * 0.15);
+    if (w <= 150) return 29 + Math.floor((w - 100) * 0.16);
+    if (w <= 200) return 37 + Math.floor((w - 150) * 0.18);
+    return 46 + Math.floor((w - 200) * 0.20);
   }
 
   function getWaveActiveEnemyCap(wave) {
-    if (run.mode === 'level') return Infinity;
     const w = Math.max(1, Math.floor(Number(wave) || 1));
-    if (w <= 30) return 12;
-    if (w <= 80) return 15;
-    if (w < 120) return 18;
-    return 20;
+    if (run.mode === 'level') return w <= 20 ? 4 : 5;
+    if (w <= 30) return 4;
+    if (w <= 80) return 5;
+    if (w < 120) return 6;
+    return 7;
   }
 
   function getWaveSpawnInterval(wave) {
     const w = Math.max(1, Math.floor(Number(wave) || 1));
     if (run.mode === 'level') {
-      return Math.max(0.85, 1.0 - (Math.min(w, 100) * 0.003));
+      return Math.max(1.15, 1.65 - (Math.min(w, 30) * 0.015));
     }
+
+    // Values are seconds between spawns (not spawns per second).
     const anchors = [
-      [1, 1.67],
-      [10, 1.88],
-      [20, 2.03],
-      [30, 2.17],
-      [50, 2.39],
-      [100, 2.61],
-      [150, 3.50],
-      [200, 4.20],
-      [250, 4.80],
-      [300, 5.40]
+      [1, 1.55],
+      [10, 1.50],
+      [25, 1.45],
+      [50, 1.30],
+      [100, 1.20],
+      [150, 1.12],
+      [200, 1.05],
+      [300, 1.00]
     ];
-    let rate = anchors[anchors.length - 1][1];
-    if (w < anchors[anchors.length - 1][0]) {
-      for (let i = 0; i < anchors.length - 1; i++) {
-        const [startWave, startRate] = anchors[i];
-        const [endWave, endRate] = anchors[i + 1];
-        if (w <= endWave) {
-          const progress = (w - startWave) / (endWave - startWave);
-          rate = startRate + (endRate - startRate) * progress;
-          break;
-        }
+    if (w <= anchors[0][0]) return anchors[0][1];
+    for (let i = 0; i < anchors.length - 1; i++) {
+      const [startWave, startInterval] = anchors[i];
+      const [endWave, endInterval] = anchors[i + 1];
+      if (w <= endWave) {
+        const progress = (w - startWave) / (endWave - startWave);
+        return startInterval + (endInterval - startInterval) * progress;
       }
     }
-    return 1 / rate;
+    return anchors[anchors.length - 1][1];
   }
 
   /** MAIN LOOP & RENDERING **/
