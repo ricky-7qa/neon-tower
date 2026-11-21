@@ -55,3 +55,5 @@ jobs:
             dist/Neon-Tower-CrazyGames.zip.sha256
           if-no-files-found: error
           retention-days: 7
+
+# Packaging workflow runs only from the isolated CrazyGames branch.
