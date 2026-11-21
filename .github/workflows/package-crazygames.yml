@@ -45,3 +45,5 @@ jobs:
             dist/Neon-Tower-CrazyGames-Upgrades-Layout-Fix.zip.sha256
           if-no-files-found: error
           retention-days: 7
+
+# Trigger package for the latest CrazyGames upgrade panel layout fix.
