@@ -4152,3 +4152,15 @@
   #app.device-desktop #ws-grid { grid-template-columns:1fr; }
   #app.device-desktop #ws-grid > .workshop-section { padding:13px; }
 }
+
+#app.device-desktop .free-upgrade-chance-grid::before {
+  content:"ADDITIONAL SYSTEMS";
+  display:block;
+  grid-column:1/-1;
+  margin:7px 0 1px;
+  padding:10px 0 2px;
+  border-top:1px solid rgba(150,180,200,.14);
+  color:#8297aa;
+  font:700 8px/1.3 Orbitron,sans-serif;
+  letter-spacing:1.6px;
+}
