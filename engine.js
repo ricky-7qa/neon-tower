@@ -214,6 +214,18 @@
     coinCache: { n:"COIN CACHE", d:"Gain extra permanent coins when clearing waves.", category:"UTILITY", b:0, i:1, c:1500, cm:1.7, isD:false, col:"#ffe66d", unlockWave:150, max:10 }
   };
 
+  // The single source of truth for upgrades available in both Workshop and Run.
+  const visibleUpgradeKeys = Object.freeze({
+    ATTACK: Object.freeze(['damage', 'speed', 'critC', 'critD', 'multishot']),
+    DEFENSE: Object.freeze(['hp', 'regen', 'armor', 'defensePercent']),
+    UTILITY: Object.freeze(['range', 'cashBonus', 'waveBonus', 'bossBounty'])
+  });
+  window.isNeonUpgradeVisible = function (key) {
+    const def = statDefs[key];
+    const allowed = def && visibleUpgradeKeys[def.category];
+    return !!(allowed && allowed.includes(key));
+  };
+
   const skillDefs = {
     start:{id:'start',req:null,cost:0,n:'Core Systems',d:'Unlocks the tower progression network.'},
     multishot:{id:'multishot',req:'start',cost:70,n:'Multi-Shot Core',d:'Improves Multi-Shot projectile guidance and homing speed.'},
@@ -797,7 +809,7 @@
     const eligible = Object.keys(statDefs).filter(key => {
       const def = statDefs[key];
       const totalLevel = (player.ws[key] || 0) + (run.stats[key] || 0);
-      return def.category === category && run.wave >= (def.unlockWave || 1) && (!def.max || totalLevel < def.max) && isVisibleUpgrade(key);
+      return def.category === category && run.wave >= (def.unlockWave || 1) && (!def.max || totalLevel < def.max) && window.isNeonUpgradeVisible(key);
     });
     if (!eligible.length) return null;
     const key = eligible[Math.floor(Math.random() * eligible.length)];
