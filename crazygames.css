@@ -60,3 +60,24 @@ body {
 #app.device-mobile #menu .menu-footer-actions {
   padding-bottom:calc(7px + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
 }
+
+/* CrazyGames-only: let the full Customization collection scroll inside the menu.
+   The shared menu footer selector also matches the final tab div, so restore
+   the flexible scroll slot specifically for this tab. */
+#menu > #tab-customization.scroll-area {
+  flex:1 1 0 !important;
+  min-height:0 !important;
+  height:auto !important;
+  width:100%;
+  overflow-x:hidden !important;
+  overflow-y:auto !important;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  align-items:stretch;
+  padding-bottom:max(22px, env(safe-area-inset-bottom, 0px));
+}
+#menu > #tab-customization.scroll-area > .customization-panel {
+  flex:0 0 auto;
+  width:min(900px, 100%);
+  margin:0 auto;
+}
