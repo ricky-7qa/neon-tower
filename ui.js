@@ -1,12 +1,7 @@
   /** MENUS & HUD **/
   const DEVICE_MODE_KEY = 'neonTowerDeviceMode';
 
-  const visibleUpgradeKeys = {
-    ATTACK: ['damage', 'speed', 'critC', 'critD', 'multishot'],
-    DEFENSE: ['hp', 'regen', 'armor', 'defensePercent'],
-    UTILITY: ['range', 'cashBonus', 'waveBonus', 'bossBounty']
-  };
-  const isVisibleUpgrade = key => Object.values(visibleUpgradeKeys).some(keys => keys.includes(key));
+  const isVisibleUpgrade = key => !!(window.isNeonUpgradeVisible && window.isNeonUpgradeVisible(key));
 
   function applyDeviceMode(mode) {
     const app = document.getElementById('app');
@@ -73,7 +68,7 @@
     
     let ws = document.getElementById('ws-grid'); ws.innerHTML = "";
     ['ATTACK','DEFENSE','UTILITY'].forEach(category=>{
-      const section=document.createElement('section'); section.className='workshop-section';
+      const section=document.createElement('section'); section.className='workshop-section'; section.dataset.category=category;
       section.innerHTML='<h2 class="workshop-heading">'+category+'</h2><div class="grid workshop-grid"></div>';
       const grid=section.querySelector('.grid');
       Object.keys(statDefs).filter(k=>isVisibleUpgrade(k) && statDefs[k].category===category).forEach(k=>{
