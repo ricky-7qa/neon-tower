@@ -2,9 +2,9 @@
   const DEVICE_MODE_KEY = 'neonTowerDeviceMode';
 
   const visibleUpgradeKeys = {
-    ATTACK: ['damage', 'speed', 'critC', 'critD', 'multishot', 'projectileSpeed', 'bossDamage', 'plasmaCore', 'precisionArray', 'executionProtocol', 'overclockDrive'],
-    DEFENSE: ['hp', 'regen', 'armor', 'defensePercent', 'dodge', 'shieldRecharge', 'bulletGuard', 'waveRepair', 'nanoMatrix', 'adaptiveArmor', 'bossWard', 'repairBurst'],
-    UTILITY: ['range', 'cashBonus', 'waveBonus', 'bossBounty', 'salvage', 'waveDividend', 'killContract', 'bossContract', 'coinCache']
+    ATTACK: ['damage', 'speed', 'critC', 'critD', 'multishot'],
+    DEFENSE: ['hp', 'regen', 'armor', 'defensePercent'],
+    UTILITY: ['range', 'cashBonus', 'waveBonus', 'bossBounty']
   };
   const isVisibleUpgrade = key => Object.values(visibleUpgradeKeys).some(keys => keys.includes(key));
 
