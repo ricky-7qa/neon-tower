@@ -4128,7 +4128,8 @@
 #app.device-desktop #upg-content {
   grid-template-columns:repeat(2,minmax(0,1fr));
   gap:9px;
-  padding:72px 13px 16px;
+  /* Keep the first row fully below the fixed tabs + category header overlay. */
+  padding:98px 13px 16px;
 }
 #app.device-desktop #upg-content .upg-btn {
   min-height:58px;
