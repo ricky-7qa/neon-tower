@@ -237,9 +237,15 @@
     AudioSys.coin();
   }
 
+  let settingsPausedGame = false;
   function openGameSettings() {
     const panel = document.getElementById('game-settings-panel');
     if (!panel) return;
+    if (window.NEON_CRAZYGAMES_BUILD && game && game.running && !game.paused) {
+      settingsPausedGame = true;
+      game.paused = true;
+      window.NeonCrazyGamesBridge?.gameplayStop();
+    }
     const soundButton = document.getElementById('settings-sound-toggle');
     if (soundButton) soundButton.textContent = AudioSys.enabled ? 'SOUND · ON' : 'SOUND · OFF';
     panel.classList.add('open');
@@ -247,9 +253,18 @@
   }
   function closeGameSettings() {
     const panel = document.getElementById('game-settings-panel');
-    if (!panel) return;
-    panel.classList.remove('open');
-    panel.setAttribute('aria-hidden', 'true');
+    if (panel) {
+      panel.classList.remove('open');
+      panel.setAttribute('aria-hidden', 'true');
+    }
+    if (settingsPausedGame) {
+      settingsPausedGame = false;
+      if (game && game.running) {
+        game.paused = false;
+        game.last = performance.now();
+        window.NeonCrazyGamesBridge?.gameplayStart();
+      }
+    }
   }
   function toggleGameSound() {
     if (window.NEON_CRAZYGAMES_MUTE_AUDIO) {
