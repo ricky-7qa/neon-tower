@@ -314,7 +314,21 @@
         this.y += Math.sin(a + weave) * this.spd * dt;
       }
 
-      this.fireCd -= dt; this.phase += dt;
+      // CrazyGames early game: keep the first 25 waves free of enemy projectiles.
+      // From Wave 26 onward, enemies may only fire while inside the tower's real targeting radius.
+      this.phase += dt;
+      if (run.wave <= 25) {
+        this.fireCd = 0;
+        return;
+      }
+      const towerRange = Math.max(0, parseFloat(getVal("range")) * (1 + getPerkValue('radar') / 100));
+      const firingDistance = MathUtils.dist(this.x, this.y, tower.x, tower.y);
+      if (firingDistance >= towerRange) {
+        // Keep the weapon ready; its cooldown begins only after entering range.
+        this.fireCd = 0;
+        return;
+      }
+      this.fireCd -= dt;
       if (this.fireCd > 0) return;
       const aim = MathUtils.angle(this.x, this.y, tower.x, tower.y);
       // Enemy projectiles deal half the current contact-damage value.
