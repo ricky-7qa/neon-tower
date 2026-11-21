@@ -5,35 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>Neon Tower: Apex - Idle Tower Defense</title>
   <meta name="theme-color" content="#050711">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="apple-touch-icon" href="neon-tower-icon.svg">
   
   <!-- Game favicon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' stroke='%230ff' stroke-width='10' fill='none'/><circle cx='50' cy='50' r='15' fill='%23ff3366'/></svg>">
   
-  <link rel="stylesheet" href="style.css?v=20261121-new-level-hard-centered">
-  <script>
-    window.neonAnalyticsQueue = window.neonAnalyticsQueue || [];
-    window.neonTrack = function(eventData) {
-      if (window.goatcounter && typeof window.goatcounter.count === 'function') {
-        window.goatcounter.count(eventData);
-      } else {
-        window.neonAnalyticsQueue.push(eventData);
-      }
-    };
-    window.neonFlushAnalytics = function() {
-      if (!window.goatcounter || typeof window.goatcounter.count !== 'function') return;
-      window.neonAnalyticsQueue.splice(0).forEach(function(eventData) {
-        window.goatcounter.count(eventData);
-      });
-    };
-  </script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0/dist/umd/supabase.js"></script>
-  <script data-goatcounter="https://ricky7.goatcounter.com/count" async src="//gc.zgo.at/count.js" onload="window.neonFlushAnalytics()"></script>
+  <link rel="stylesheet" href="style.css?v=crazygames-basic-v1">
+  <style>
+    body.cg-booting #app { visibility:hidden; }
+    #cg-loading-screen {
+      position:fixed; inset:0; z-index:99999; display:grid; place-items:center;
+      padding:24px; background:radial-gradient(circle at 50% 35%,#0b1e33 0%,#030711 58%,#010207 100%);
+      color:#eafcff; font-family:Arial,sans-serif; text-align:center;
+    }
+    #cg-loading-screen .cg-loader-title {
+      margin:0 0 12px; color:#39eaff; font-size:clamp(24px,5vw,42px);
+      font-weight:900; letter-spacing:.16em; text-shadow:0 0 24px rgba(0,220,255,.5);
+    }
+    #cg-loading-screen .cg-loader-status { color:#9ab7c8; font-size:13px; letter-spacing:.08em; }
+    body:not(.cg-booting) #cg-loading-screen { display:none; }
+  </style>
 </head>
-<body>
+<body class="cg-booting">
+<div id="cg-loading-screen" role="status" aria-live="polite"><div><h1 class="cg-loader-title">NEON TOWER</h1><p class="cg-loader-status" id="cg-loader-status">INITIALIZING GAME...</p></div></div>
 
 <div id="app">
   <canvas id="gameCanvas"></canvas>
@@ -109,30 +102,7 @@
     </div>
   </div>
 
-  <div id="device-select" class="layer active-layer">
-    <div class="device-select-panel">
-      <span class="device-eyebrow">NEON TOWER // SYSTEM SETUP</span>
-      <h1>CHOOSE YOUR PLATFORM</h1>
-      <p class="device-select-intro">Select how you want to play. You can change this later.</p>
-      <div class="device-choice-grid">
-        <button class="device-choice-card" onclick="selectDeviceMode('desktop')">
-          <span class="device-choice-icon" aria-hidden="true">▣</span>
-          <strong>DESKTOP</strong>
-          <small>Wide layout · Mouse and keyboard</small>
-          <span class="device-choice-action">SELECT DESKTOP</span>
-        </button>
-        <button class="device-choice-card" onclick="selectDeviceMode('mobile')">
-          <span class="device-choice-icon" aria-hidden="true">▯</span>
-          <strong>MOBILE</strong>
-          <small>Compact layout · Touch controls</small>
-          <span class="device-choice-action">SELECT MOBILE</span>
-        </button>
-      </div>
-      <span class="device-select-footnote">YOUR GAME PROGRESS WILL STAY THE SAME</span>
-    </div>
-  </div>
-
-  <div id="menu" class="layer">
+  <div id="menu" class="layer active-layer">
     <div class="menu-header">
       <h1>NEON TOWER</h1>
       <p style="color:#0ff; letter-spacing: 5px; font-weight: bold;">3D APEX EDITION</p>
@@ -143,7 +113,7 @@
     </button>
     <div class="menu-mode-actions">
       <div class="menu-primary-action">
-        <button id="start-new-run-button" class="btn start-game-button" onclick="startGame()" data-goatcounter-click="deploy-click" data-goatcounter-title="Start Game button clicked">NEW RUN</button>
+        <button id="start-new-run-button" class="btn start-game-button" onclick="startGame()">NEW RUN</button>
         <div id="resume-run-panel" class="resume-run-panel" style="display:none;">
           <div class="resume-run-label">RUN IN PROGRESS · <strong id="resume-run-wave">WAVE</strong></div>
           <button class="btn resume-run-button" onclick="resumeRun()">RESUME RUN</button>
@@ -156,14 +126,11 @@
         <button class="btn btn-gold" onclick="switchTab('workshop'); closeMenuDrawer()">WORKSHOP</button>
         <button class="btn btn-gold" onclick="switchTab('skills'); closeMenuDrawer()">SKILL TREE</button>
         <button class="btn btn-gold" onclick="switchTab('achievements'); closeMenuDrawer()">ACHIEVEMENTS</button>
-        <button class="btn btn-gold" onclick="switchTab('profile'); closeMenuDrawer()">PLAYER PROFILE</button>
         <button class="btn btn-gold" onclick="switchTab('customization'); closeMenuDrawer()">CUSTOMIZATION</button>
-        <button class="btn btn-gold" onclick="switchTab('leaderboard'); closeMenuDrawer()">LEADERBOARD</button>
       </div>
       <div class="menu-footer-actions">
         <span class="menu-footer-label">SYSTEM</span>
         <button class="btn page-refresh-btn" onclick="window.location.reload()">REFRESH PAGE</button>
-        <button class="btn change-device-btn" onclick="closeMenuDrawer(); changeDeviceMode()">CHANGE DEVICE</button>
         <button class="btn wipe-save-btn" onclick="closeMenuDrawer(); resetSave()">WIPE DEVICE SAVE</button>
       </div>
     </div>
@@ -183,73 +150,13 @@
         <p class="player-stats-footnote">Your statistics are saved with your game progress.</p>
       </section>
     </div>
-    <div id="tab-profile" class="scroll-area public-profile-area" style="display:none;">
-      <section class="public-profile-panel">
-        <div class="public-profile-heading"><span class="eyebrow">NEON TOWER // PILOT DATABASE</span><h2>PLAYER PROFILE</h2><p>View your public records and campaign progress.</p></div>
-        <div id="public-player-profile" class="public-player-profile"><div class="leaderboard-empty">LOG IN TO CREATE YOUR PUBLIC PROFILE.</div></div>
-      </section>
-    </div>
     <div id="tab-customization" class="scroll-area customization-area" style="display:none;">
       <section class="customization-panel">
         <div class="public-profile-heading"><span class="eyebrow">NEON TOWER // IDENTITY</span><h2>CUSTOMIZATION</h2><p>Unlock banners and titles by completing campaign levels. Cosmetic items do not affect gameplay.</p></div>
         <div id="customization-content"></div>
       </section>
     </div>
-    <div id="tab-leaderboard" class="scroll-area leaderboard-area" style="display:none;">
-      <section id="leaderboard-auth" class="leaderboard-panel leaderboard-auth-panel">
-        <div class="leaderboard-heading"><span class="eyebrow">NEON TOWER // ACCOUNT</span><h2>JOIN THE GLOBAL LEADERBOARD</h2><p>Create a free account to compete with players around the world.</p></div>
-        <div class="leaderboard-auth-card">
-          <div id="auth-mode-tabs" class="auth-mode-tabs">
-            <button type="button" class="btn btn-gold" onclick="setAuthMode('signup')">CREATE ACCOUNT</button>
-            <button type="button" class="btn" onclick="setAuthMode('login')">LOG IN</button>
-          </div>
-          <label class="auth-field-label" for="auth-email">EMAIL ADDRESS</label>
-          <input id="auth-email" class="auth-input" type="email" autocomplete="email" placeholder="you@example.com">
-          <label id="auth-password-label" class="auth-field-label" for="auth-password">PASSWORD</label>
-          <input id="auth-password" class="auth-input" type="password" autocomplete="new-password" placeholder="At least 8 characters">
-          <button id="auth-forgot" type="button" class="auth-text-button" onclick="sendPasswordReset()" style="display:none;">FORGOT PASSWORD?</button>
-          <input id="auth-confirm-password" class="auth-input" type="password" autocomplete="new-password" placeholder="Confirm password">
-          <div id="auth-reset-note" class="auth-reset-note" style="display:none;">Choose a new password for your account.</div>
-          <input id="auth-new-password" class="auth-input" type="password" autocomplete="new-password" placeholder="New password (at least 8 characters)" style="display:none;">
-          <button id="auth-submit" type="button" class="btn btn-gold auth-submit" onclick="submitLeaderboardAuth()">CREATE ACCOUNT</button>
-          <p id="leaderboard-auth-status" class="leaderboard-auth-status" role="status">CREATE AN ACCOUNT TO ENTER THE GLOBAL LEADERBOARD.</p>
-        </div>
-        <p class="leaderboard-auth-footnote">You can still play the game without an account. Only verified accounts can appear on the leaderboard.</p>
-        <button type="button" class="btn auth-back-button" onclick="switchTab('workshop')">BACK TO GAME</button>
-      </section>
-      <section id="leaderboard-content" class="leaderboard-panel" style="display:none;">
-        <div class="leaderboard-heading"><span class="eyebrow">NEON TOWER // GLOBAL</span><h2>WORLD LEADERBOARD</h2><p>Compete with players around the world.</p></div>
-        <div id="leaderboard-account-email" class="leaderboard-account-email" aria-live="polite"></div>
-        <div id="cloud-sync-status" class="cloud-sync-status" data-state="syncing" role="status" aria-live="polite"><span class="cloud-sync-indicator"></span><span>CHECKING CLOUD STATUS...</span></div>
-        <div class="leaderboard-profile"><label for="leaderboard-name">PLAYER NAME</label><div class="leaderboard-name-row"><input id="leaderboard-name" maxlength="16" minlength="3" placeholder="Enter a player name" autocomplete="nickname"><button class="btn btn-gold" onclick="saveLeaderboardName()">SAVE</button></div><small>3–16 characters. Do not use your real name or personal information.</small></div>
-        <div class="leaderboard-mode-tabs">
-          <button id="leaderboard-global-tab" type="button" class="btn btn-gold" onclick="showLeaderboardMode('global')">GLOBAL</button>
-          <button id="leaderboard-weekly-tab" type="button" class="btn" onclick="showLeaderboardMode('weekly')">WEEKLY</button>
-        </div>
-        <div id="global-leaderboard-view">
-          <div class="leaderboard-toolbar"><span id="leaderboard-status" role="status">CONNECTING...</span><button class="btn" onclick="refreshLeaderboards()">REFRESH</button></div>
-          <div id="leaderboard-list" class="leaderboard-list"><div class="leaderboard-empty">LOADING GLOBAL RANKINGS...</div></div>
-        </div>
-        <div id="weekly-leaderboard-view" style="display:none;">
-          <div class="weekly-competition-card">
-            <span class="weekly-competition-kicker">NEON TOWER // WEEKLY CHAMPIONSHIP</span>
-            <h3>WEEKLY LEADERBOARD</h3>
-            <p>Reach your highest wave and claim a place in the weekly top three.</p>
-            <div class="weekly-schedule">WEDNESDAY 00:00 – TUESDAY 23:59 · PORTUGAL TIME</div>
-            <div class="weekly-prizes">
-              <div class="weekly-prize"><strong>🥇 1ST</strong><b>500</b><small>COINS</small></div>
-              <div class="weekly-prize"><strong>🥈 2ND</strong><b>300</b><small>COINS</small></div>
-              <div class="weekly-prize"><strong>🥉 3RD</strong><b>150</b><small>COINS</small></div>
-            </div>
-          </div>
-          <div class="leaderboard-toolbar"><span id="weekly-leaderboard-status" role="status">CONNECTING...</span><button class="btn" onclick="loadWeeklyLeaderboard()">REFRESH</button></div>
-          <div id="weekly-leaderboard-list" class="leaderboard-list"><div class="leaderboard-empty">LOADING WEEKLY RANKINGS...</div></div>
-          <p id="weekly-reward-status" class="weekly-reward-status" role="status">REWARDS ARE AUTOMATICALLY ADDED WHEN YOU NEXT OPEN THE GAME AFTER THE WEEK ENDS.</p>
-        </div>
-        <div class="leaderboard-footer-actions"><button type="button" class="btn" onclick="signOutLeaderboard()">LOG OUT</button></div>
-      </section>
-    </div>
-    
+
   </div>
 
   <div id="gameover" class="layer" style="justify-content: center; align-items: center;">
@@ -334,18 +241,6 @@
     button.setAttribute('aria-label', 'Open menu');
   };
 </script>
-<script src="entidades.js?v=20261121-desktop-core-upgrades-v1"></script>
-<script src="engine.js?v=20261121-menu-mode-grid-v1"></script>
-<script src="level-mode-config.js?v=20261121-desktop-core-upgrades-v1"></script>
-<script src="ui.js?v=20261121-desktop-core-upgrades-v1"></script>
-<script>
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", function () {
-      navigator.serviceWorker.register("./sw.js?v=20261121-menu-mode-grid-v2", { updateViaCache: "none" }).catch(function (error) {
-        console.warn("Neon Tower offline support could not be enabled:", error);
-      });
-    });
-  }
-</script>
+<script src="crazygames-bootstrap.js?v=1"></script>
 </body>
 </html>
