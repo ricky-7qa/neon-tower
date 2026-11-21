@@ -1174,6 +1174,7 @@
   function switchTab(t, skipProfileLoad = false) {
     ['workshop', 'skills', 'achievements', 'player-stats', 'profile', 'customization', 'leaderboard', 'levels'].forEach(x => {
       const tab = document.getElementById('tab-'+x);
+      if (!tab) return; // Some tabs (account/profile/leaderboard) are intentionally absent in the CrazyGames Basic build.
       tab.style.display = (x===t?'flex':'none');
       if (x===t) tab.scrollTop = 0;
     });
