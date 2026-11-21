@@ -427,6 +427,7 @@
       player.localSaveAt = revision;
       const checkpoint = {
         version: 2,
+        enemyPacingVersion: 2,
         savedAt: revision,
         run: JSON.parse(JSON.stringify(run)),
         tower: { hp: tower.hp, shield: tower.shield, tempShieldCharges: tower.tempShieldCharges || 0 },
@@ -853,6 +854,23 @@
     return 46 + Math.floor((w - 200) * 0.20);
   }
 
+  // Preserve correct resume calculations for checkpoints created before the wave-size rebalance.
+  function getLegacyWaveEnemyCount(wave, mode = run.mode) {
+    const w = Math.max(1, Math.floor(Number(wave) || 1));
+    if (mode === 'level') {
+      const cfg = window.NEON_LEVEL_MODE_CONFIG?.difficulty?.enemyCount || {};
+      if (w <= 20) return Math.max(6, Math.round((cfg.earlyBase || 8) + w * (cfg.earlyPerWave || 0.9)));
+      if (w <= 50) return Math.max(8, Math.round((cfg.middleBase || 26) + (w - 20) * (cfg.middlePerWave || 0.5)));
+      return Math.max(10, Math.round((cfg.lateBase || 41) + (w - 50) * (cfg.latePerWave || 0.25)));
+    }
+    if (w <= 20) return 9 + Math.floor(w * 1.25);
+    if (w <= 50) return 34 + Math.floor((w - 20) * 0.6);
+    if (w <= 100) return 52 + Math.floor((w - 50) * 0.36);
+    if (w <= 150) return 70 + Math.floor((w - 100) * 0.46);
+    if (w <= 200) return 93 + Math.floor((w - 150) * 0.54);
+    return 120 + Math.floor((w - 200) * 0.56);
+  }
+
   function getWaveActiveEnemyCap(wave) {
     const w = Math.max(1, Math.floor(Number(wave) || 1));
     if (run.mode === 'level') return w <= 20 ? 4 : 5;
@@ -1018,8 +1036,11 @@
     // Recreate only enemies that had not already been defeated. New version-2
     // checkpoints are wave-start snapshots, so this normally equals the full count.
     let defeatedBeforeCurrentWave = 0;
+    const usesRebalancedWaveCounts = Number(checkpoint.enemyPacingVersion) >= 2;
     for (let previousWave = 1; previousWave < run.wave; previousWave++) {
-      defeatedBeforeCurrentWave += getWaveEnemyCount(previousWave);
+      defeatedBeforeCurrentWave += usesRebalancedWaveCounts
+        ? getWaveEnemyCount(previousWave)
+        : getLegacyWaveEnemyCount(previousWave, run.mode);
     }
     const currentWaveEnemyCount = getWaveEnemyCount(run.wave);
     const alreadyDefeatedThisWave = Math.max(0, Math.min(
