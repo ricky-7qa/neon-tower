@@ -35,7 +35,7 @@ jobs:
           node --check ui.js
           grep -Fq 'return 6 + Math.floor(w * 0.45)' engine.js
           grep -Fq 'if (w <= 30) return 4' engine.js
-          grep -Fq 'return 1.55' engine.js
+          grep -Fq '[1, 1.55]' engine.js
           grep -Fq 'enemyPacingVersion: 2' engine.js
           grep -Fq 'getLegacyWaveEnemyCount(previousWave, run.mode)' engine.js
           grep -Fq 'run.wave <= 25' entidades.js
@@ -65,3 +65,5 @@ jobs:
           retention-days: 7
 
 # Build artifact for the latest CrazyGames wave pacing changes.
+
+# Re-run after correcting the interval assertion.
