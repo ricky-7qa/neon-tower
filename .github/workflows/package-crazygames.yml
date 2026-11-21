@@ -1,0 +1,47 @@
+name: Build CrazyGames upload ZIP
+
+on:
+  push:
+    branches:
+      - crazygames-basic
+    paths:
+      - .github/workflows/package-crazygames.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: crazygames-basic
+      - name: Validate and package
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          for file in index.html style.css crazygames.css crazygames-bootstrap.js engine.js entidades.js level-mode-config.js ui.js; do test -s "$file"; done
+          node --check crazygames-bootstrap.js
+          node --check engine.js
+          node --check entidades.js
+          node --check level-mode-config.js
+          node --check ui.js
+          grep -Fq 'padding:98px 13px 16px' style.css
+          grep -Fq 'if (run.wave <= 25)' entidades.js
+          grep -Fq 'firingDistance >= towerRange' entidades.js
+          grep -Fq 'return 6 + Math.floor(w * 0.45)' engine.js
+          zip -q -X dist/Neon-Tower-CrazyGames-Upgrades-Layout-Fix.zip index.html style.css crazygames.css crazygames-bootstrap.js engine.js entidades.js level-mode-config.js ui.js
+          unzip -tq dist/Neon-Tower-CrazyGames-Upgrades-Layout-Fix.zip
+          unzip -Z1 dist/Neon-Tower-CrazyGames-Upgrades-Layout-Fix.zip | grep -qx index.html
+          sha256sum dist/Neon-Tower-CrazyGames-Upgrades-Layout-Fix.zip > dist/Neon-Tower-CrazyGames-Upgrades-Layout-Fix.zip.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Neon-Tower-CrazyGames-Upgrades-Layout-Fix
+          path: |
+            dist/Neon-Tower-CrazyGames-Upgrades-Layout-Fix.zip
+            dist/Neon-Tower-CrazyGames-Upgrades-Layout-Fix.zip.sha256
+          if-no-files-found: error
+          retention-days: 7
