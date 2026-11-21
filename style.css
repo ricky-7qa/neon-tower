@@ -4468,3 +4468,29 @@
   letter-spacing:clamp(1px,0.12vw,2.5px) !important;
   font-size:clamp(15px,1.65vw,22px) !important;
 }
+
+
+/* Hard-center the NEW LEVEL label in the button, independent of padding. */
+#app.device-desktop #menu .menu-mode-actions .level-mode-entry > #open-level-mode-button {
+  position:relative !important;
+  display:grid !important;
+  place-items:center !important;
+  padding:10px !important;
+  overflow:hidden !important;
+}
+#app.device-desktop #menu .menu-mode-actions .level-mode-entry > #open-level-mode-button > .level-mode-entry-title {
+  position:absolute !important;
+  left:50% !important;
+  top:50% !important;
+  transform:translate(-50%,-50%) !important;
+  display:block !important;
+  width:max-content !important;
+  max-width:calc(100% - 24px) !important;
+  margin:0 !important;
+  padding:0 !important;
+  text-align:center !important;
+  text-indent:0 !important;
+  white-space:nowrap !important;
+  font-size:clamp(14px,1.45vw,20px) !important;
+  letter-spacing:clamp(.5px,.1vw,1.5px) !important;
+}
