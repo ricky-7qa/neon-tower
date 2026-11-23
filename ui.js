@@ -2,6 +2,93 @@
   const DEVICE_MODE_KEY = 'neonTowerDeviceMode';
 
   const isVisibleUpgrade = key => !!(window.isNeonUpgradeVisible && window.isNeonUpgradeVisible(key));
+  let runInfoPreviousPaused = null;
+  let runInfoPreviousFocus = null;
+
+  function showRunInfoDialog(options) {
+    const settings = options || {};
+    const modal = document.getElementById('run-info-modal');
+    const card = modal && modal.querySelector('.run-info-card');
+    const titleNode = document.getElementById('run-info-title');
+    const eyebrowNode = document.getElementById('run-info-eyebrow');
+    const descriptionNode = document.getElementById('run-info-description');
+    const statsNode = document.getElementById('run-info-stats');
+    if (!modal || !card || !titleNode || !eyebrowNode || !descriptionNode || !statsNode) return;
+    runInfoPreviousFocus = document.activeElement;
+    runInfoPreviousPaused = (typeof game !== 'undefined' && game && game.running) ? !!game.paused : null;
+    if (runInfoPreviousPaused === false) game.paused = true;
+    eyebrowNode.textContent = settings.eyebrow || 'DETAILS';
+    titleNode.textContent = settings.title || '';
+    descriptionNode.textContent = settings.description || '';
+    card.style.setProperty('--run-info-accent', settings.accent || '#24dfff');
+    statsNode.replaceChildren();
+    (Array.isArray(settings.rows) ? settings.rows : []).forEach(row => {
+      const item = document.createElement('div');
+      item.className = 'run-info-stat';
+      const label = document.createElement('span');
+      label.className = 'run-info-stat-label';
+      label.textContent = row.label || '';
+      const value = document.createElement('strong');
+      value.className = 'run-info-stat-value';
+      value.textContent = row.value == null ? '—' : String(row.value);
+      item.append(label, value);
+      statsNode.appendChild(item);
+    });
+    modal.classList.add('visible');
+    modal.setAttribute('aria-hidden', 'false');
+    const closeButton = document.getElementById('run-info-close');
+    if (closeButton) closeButton.focus();
+  }
+
+  function closeRunInfoDialog() {
+    const modal = document.getElementById('run-info-modal');
+    if (!modal || !modal.classList.contains('visible')) return;
+    modal.classList.remove('visible');
+    modal.setAttribute('aria-hidden', 'true');
+    if (runInfoPreviousPaused === false && typeof game !== 'undefined' && game && game.running) {
+      game.paused = false;
+      game.last = performance.now();
+    }
+    runInfoPreviousPaused = null;
+    if (runInfoPreviousFocus && typeof runInfoPreviousFocus.focus === 'function' && runInfoPreviousFocus.isConnected) runInfoPreviousFocus.focus();
+    runInfoPreviousFocus = null;
+  }
+
+  window.showRunInfoDialog = showRunInfoDialog;
+  window.closeRunInfoDialog = closeRunInfoDialog;
+  document.getElementById('run-info-close')?.addEventListener('click', closeRunInfoDialog);
+  document.getElementById('run-info-confirm')?.addEventListener('click', closeRunInfoDialog);
+  document.getElementById('run-info-modal')?.addEventListener('click', event => {
+    if (event.target === event.currentTarget) closeRunInfoDialog();
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') closeRunInfoDialog();
+  });
+
+  function showUpgradeInfo(key) {
+    const definition = statDefs[key];
+    if (!definition || !isVisibleUpgrade(key) || typeof window.showRunInfoDialog !== 'function') return;
+    const permanentLevel = run.mode === 'level' ? 0 : (Number((player.ws || {})[key]) || 0);
+    const runLevel = Number((run.stats || {})[key]) || 0;
+    const maxLevel = key === 'speed' && run.wave > 100 ? 35 : definition.max;
+    const currentLevel = permanentLevel + runLevel;
+    const unlockWave = definition.unlockWave || 1;
+    const locked = run.wave < unlockWave;
+    const isMax = !!(maxLevel && currentLevel >= maxLevel);
+    const nextCost = getCost(key, false);
+    window.showRunInfoDialog({
+      eyebrow: definition.category + ' UPGRADE',
+      title: definition.n,
+      description: definition.d,
+      accent: definition.col || '#24dfff',
+      rows: [
+        {label:'CURRENT LEVEL', value:String(maxLevel ? Math.min(maxLevel, currentLevel) : currentLevel)},
+        {label:'MAX LEVEL', value:maxLevel ? String(maxLevel) : 'NO FIXED CAP'},
+        {label:'UNLOCKS AT', value:'WAVE ' + unlockWave},
+        {label:'NEXT COST', value:locked ? 'LOCKED' : isMax ? 'MAX LEVEL' : '$' + formatMoney(nextCost)}
+      ]
+    });
+  }
 
   function applyDeviceMode(mode) {
     const app = document.getElementById('app');
@@ -291,14 +378,25 @@
   }
 
   function initUpgBar() {
-    let ub = document.getElementById('upg-content'); ub.innerHTML = "";
+    const container = document.getElementById('upg-content');
+    container.innerHTML = '';
     Object.keys(statDefs).filter(isVisibleUpgrade).forEach(k => {
-      let btn = document.createElement("button");
-      btn.className = "btn upg-btn";
-      btn.id = "btn-upg-" + k;
-      btn.dataset.stat = k;
-      btn.onclick = () => buyRunUpg(k);
-      ub.appendChild(btn);
+      const card = document.createElement('div');
+      card.className = 'btn upg-btn';
+      card.id = 'btn-upg-' + k;
+      card.dataset.stat = k;
+      card.setAttribute('role', 'group');
+      const infoButton = document.createElement('button');
+      infoButton.type = 'button';
+      infoButton.className = 'upg-info-trigger';
+      infoButton.setAttribute('aria-label', 'Show details for ' + statDefs[k].n);
+      infoButton.addEventListener('click', () => showUpgradeInfo(k));
+      const buyButton = document.createElement('button');
+      buyButton.type = 'button';
+      buyButton.className = 'upg-buy-action';
+      buyButton.addEventListener('click', () => buyRunUpg(k));
+      card.append(infoButton, buyButton);
+      container.appendChild(card);
     });
     switchUpgCategory('ATTACK');
   }
@@ -343,7 +441,12 @@
       if(btn) {
         const unlockWave=d.unlockWave||1;
         const waveLocked=run.wave<unlockWave;
-        btn.disabled=waveLocked || (run.cash<c) || m;
+        const buyButton = btn.querySelector('.upg-buy-action');
+        const infoButton = btn.querySelector('.upg-info-trigger');
+        if (!buyButton || !infoButton) return;
+        buyButton.disabled = waveLocked || (run.cash<c) || m;
+        buyButton.classList.toggle('is-locked', waveLocked);
+        buyButton.classList.toggle('is-max', m);
         btn.classList.toggle('is-max-level', m);
         if (m) {
           btn.style.setProperty('border', '2px solid #ffd700', 'important');
@@ -354,7 +457,8 @@
         }
         const label=waveLocked ? 'LOCKED · WAVE '+unlockWave : m ? 'MAX' : '$'+formatMoney(c);
         const currentEffect=k==='defensePercent'?' · '+getVal(k)+'%':'';
-        btn.innerHTML=`<span style="color:${d.col}">${d.n} · LVL ${Math.min(maxLevel||999,permanentLevel+l)}${currentEffect}</span><span style="color:${waveLocked?'#ffb45c':'#0f0'}">${label}</span>`;
+        infoButton.innerHTML = '<span style="color:' + d.col + '">' + d.n + ' · LVL ' + Math.min(maxLevel||999,permanentLevel+l) + currentEffect + '</span><small>VIEW DETAILS</small>';
+        buyButton.textContent = label;
       }
     });
   }
