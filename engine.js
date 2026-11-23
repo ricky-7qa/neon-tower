@@ -568,6 +568,32 @@
     if(changed) saveGame();
   }
 
+  function getPerkEffectLabel(perk, rarity) {
+    const amount = perk.values[rarity];
+    const speed = perk.speedValues ? perk.speedValues[rarity] : null;
+    return perk.id === 'overload' ? '+' + amount + '% DAMAGE · +' + speed + '% FIRE RATE' : '+' + amount + perk.unit;
+  }
+
+  function showPerkInfo(id, rarity='common') {
+    const perk = perkDefs.find(item => item.id === id);
+    const tier = perkRarities[rarity];
+    if (!perk || !tier || typeof window.showRunInfoDialog !== 'function') return;
+    const rarityColors = {common:'#aab4c0',rare:'#45a8ff',epic:'#b56cff',legendary:'#ffbd45'};
+    window.showRunInfoDialog({
+      eyebrow: 'PERK DETAILS · ' + tier.label,
+      title: perk.name,
+      description: perk.desc,
+      accent: rarityColors[rarity] || '#24dfff',
+      rows: [
+        {label:'RARITY',value:tier.label},
+        {label:'EFFECT',value:getPerkEffectLabel(perk,rarity)},
+        {label:'CURRENT STACKS',value:String(getPerkStacks(id))},
+        {label:'MAX STACKS',value:String(perk.maxStacks)}
+      ]
+    });
+  }
+  window.showPerkInfo = showPerkInfo;
+
   function showPerkChoice() {
     if(!game || !game.running) return;
     const available = perkDefs.filter(p => getPerkStacks(p.id) < p.maxStacks);
@@ -576,9 +602,9 @@
     const panel = document.getElementById('perk-choice');
     const picks = rollPerkOptions(available,3);
     panel.innerHTML = '<div class="perk-dialog"><span class="perk-eyebrow">MILESTONE REACHED</span><h2>CHOOSE A PERK</h2><p>Each perk can appear in four rarities. Higher rarities have stronger effects.</p><div class="perk-options">'+picks.map(p=>{
-      const amount=p.values[p.rarity], speed=p.speedValues?.[p.rarity];
-      const effect=p.id==='overload' ? '+'+amount+'% DAMAGE · +'+speed+'% FIRE RATE' : '+'+amount+(Number.isInteger(amount)?'': '')+p.unit;
-      return '<button class="perk-option rarity-'+p.rarity+'" onclick="choosePerk(\''+p.id+'\',\''+p.rarity+'\')"><span>'+p.icon+'</span><strong>'+p.name+'</strong><small class="perk-rarity-label">'+perkRarities[p.rarity].label+'</small><small>'+p.desc+'</small><small class="perk-stack-limit">'+effect+'</small><span class="perk-stars" aria-label="'+getPerkStacks(p.id)+' of '+p.maxStacks+' perk stars">'+'★'.repeat(getPerkStacks(p.id))+'<span class="perk-star-empty">'+'☆'.repeat(p.maxStacks-getPerkStacks(p.id))+'</span></span></button>';
+      const effect = getPerkEffectLabel(p,p.rarity);
+      const stacks = getPerkStacks(p.id);
+      return '<article class="perk-option rarity-'+p.rarity+'"><button type="button" class="perk-info-trigger" aria-label="Show details for '+p.name+'" onclick="showPerkInfo(\''+p.id+'\',\''+p.rarity+'\')"><span>'+p.icon+'</span><strong>'+p.name+'</strong><small class="perk-rarity-label">'+perkRarities[p.rarity].label+'</small><small>'+p.desc+'</small><small class="perk-stack-limit">'+effect+'</small><span class="perk-stars" aria-label="'+stacks+' of '+p.maxStacks+' perk stars">'+'★'.repeat(stacks)+'<span class="perk-star-empty">'+'☆'.repeat(p.maxStacks-stacks)+'</span></span><small class="perk-info-hint">VIEW DETAILS</small></button><button type="button" class="perk-select-action" onclick="choosePerk(\''+p.id+'\',\''+p.rarity+'\')">CHOOSE PERK</button></article>';
     }).join('')+'</div></div>';
     panel.classList.add('visible');
   }
@@ -628,9 +654,28 @@
     if(d.id==='investment')return 'Invest 15% of your run coins and receive '+Math.round(30*d.multiplier)+'% extra after 3 waves.';
     return d.desc.replace(/\d+(?:\.\d+)?%/g,v=>Math.round(parseFloat(v)*d.multiplier*10)/10+'%');
   }
+
+  function showWaveDecisionInfo(id, rarity='common') {
+    const decision = waveDecisionDefs.find(item => item.id === id);
+    const tier = waveDecisionRarities[rarity];
+    if (!decision || !tier || typeof window.showRunInfoDialog !== 'function') return;
+    const rarityColors = {common:'#aab4c0',rare:'#45a8ff',epic:'#b56cff',legendary:'#ffbd45'};
+    window.showRunInfoDialog({
+      eyebrow: decision.category + ' · ' + tier.label,
+      title: decision.name,
+      description: getWaveDecisionDescription({...decision,multiplier:tier.multiplier}),
+      accent: rarityColors[rarity] || '#ffc36b',
+      rows: [
+        {label:'CATEGORY',value:decision.category},
+        {label:'RARITY',value:tier.label},
+        {label:'DURATION',value:decision.duration > 0 ? decision.duration + ' WAVES' : 'INSTANT EFFECT'}
+      ]
+    });
+  }
+  window.showWaveDecisionInfo = showWaveDecisionInfo;
   function showWaveDecisionChoice(){
     if(!game||!game.running)return;game.paused=true;const panel=document.getElementById('perk-choice'),picks=rollWaveDecisionOptions();run.lastDecisionOptions=picks.map(d=>d.id);
-    panel.innerHTML='<div class="perk-dialog decision-dialog"><span class="perk-eyebrow">WAVE '+(run.wave-1)+' COMPLETED</span><h2>SELECT YOUR ADVANTAGE</h2><p>Choose one upgrade for your next wave. Higher rarities have stronger effects.</p><div class="decision-wallet"><span>CASH <strong>$'+formatMoney(run.cash||0)+'</strong></span><span>COINS <strong>'+formatMoney(run.coins||0)+'</strong></span></div><div class="perk-options decision-options">'+picks.map(d=>'<button class="perk-option decision-option rarity-'+d.rarity+'" onclick="chooseWaveDecision(\''+d.id+'\',\''+d.rarity+'\')"><span>'+d.icon+'</span><strong>'+d.name+'</strong><small class="decision-category">'+d.category+'</small><small class="perk-rarity-label">'+waveDecisionRarities[d.rarity].label+'</small><small>'+getWaveDecisionDescription(d)+'</small></button>').join('')+'</div></div>';
+    panel.innerHTML='<div class="perk-dialog decision-dialog"><span class="perk-eyebrow">WAVE '+(run.wave-1)+' COMPLETED</span><h2>SELECT YOUR ADVANTAGE</h2><p>Choose one upgrade for your next wave. Higher rarities have stronger effects.</p><div class="decision-wallet"><span>CASH <strong>$'+formatMoney(run.cash||0)+'</strong></span><span>COINS <strong>'+formatMoney(run.coins||0)+'</strong></span></div><div class="perk-options decision-options">'+picks.map(d=>'<article class="perk-option decision-option rarity-'+d.rarity+'"><button type="button" class="perk-info-trigger" aria-label="Show details for '+d.name+'" onclick="showWaveDecisionInfo(\''+d.id+'\',\''+d.rarity+'\')"><span>'+d.icon+'</span><strong>'+d.name+'</strong><small class="decision-category">'+d.category+'</small><small class="perk-rarity-label">'+waveDecisionRarities[d.rarity].label+'</small><small>'+getWaveDecisionDescription(d)+'</small><small class="perk-info-hint">VIEW DETAILS</small></button><button type="button" class="perk-select-action" onclick="chooseWaveDecision(\''+d.id+'\',\''+d.rarity+'\')">SELECT ADVANTAGE</button></article>').join('')+'</div></div>';
     panel.classList.add('visible');
   }
   function chooseWaveDecision(id,rarity='common'){
