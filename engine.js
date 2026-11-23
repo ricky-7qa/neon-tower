@@ -568,6 +568,34 @@
     if(changed) saveGame();
   }
 
+  function getPerkEffectLabel(perk, rarity) {
+    const amount = perk.values[rarity];
+    const speed = perk.speedValues?.[rarity];
+    return perk.id === 'overload'
+      ? '+' + amount + '% DAMAGE · +' + speed + '% FIRE RATE'
+      : '+' + amount + perk.unit;
+  }
+
+  function showPerkInfo(id, rarity='common') {
+    const perk = perkDefs.find(item => item.id === id);
+    const tier = perkRarities[rarity];
+    if (!perk || !tier || typeof window.showRunInfoDialog !== 'function') return;
+    const rarityColors = {common:'#aab4c0',rare:'#45a8ff',epic:'#b56cff',legendary:'#ffbd45'};
+    window.showRunInfoDialog({
+      eyebrow: 'PERK DETAILS · ' + tier.label,
+      title: perk.name,
+      description: perk.desc,
+      accent: rarityColors[rarity] || '#24dfff',
+      rows: [
+        {label:'RARITY',value:tier.label},
+        {label:'EFFECT',value:getPerkEffectLabel(perk,rarity)},
+        {label:'CURRENT STACKS',value:String(getPerkStacks(id))},
+        {label:'MAX STACKS',value:String(perk.maxStacks)}
+      ]
+    });
+  }
+  window.showPerkInfo = showPerkInfo;
+
   function showPerkChoice() {
     if(!game || !game.running) return;
     const available = perkDefs.filter(p => getPerkStacks(p.id) < p.maxStacks);
@@ -576,9 +604,9 @@
     const panel = document.getElementById('perk-choice');
     const picks = rollPerkOptions(available,3);
     panel.innerHTML = '<div class="perk-dialog"><span class="perk-eyebrow">MILESTONE REACHED</span><h2>CHOOSE A PERK</h2><p>Each perk can appear in four rarities. Higher rarities have stronger effects.</p><div class="perk-options">'+picks.map(p=>{
-      const amount=p.values[p.rarity], speed=p.speedValues?.[p.rarity];
-      const effect=p.id==='overload' ? '+'+amount+'% DAMAGE · +'+speed+'% FIRE RATE' : '+'+amount+(Number.isInteger(amount)?'': '')+p.unit;
-      return '<button class="perk-option rarity-'+p.rarity+'" onclick="choosePerk(\''+p.id+'\',\''+p.rarity+'\')"><span>'+p.icon+'</span><strong>'+p.name+'</strong><small class="perk-rarity-label">'+perkRarities[p.rarity].label+'</small><small>'+p.desc+'</small><small class="perk-stack-limit">'+effect+'</small><span class="perk-stars" aria-label="'+getPerkStacks(p.id)+' of '+p.maxStacks+' perk stars">'+'★'.repeat(getPerkStacks(p.id))+'<span class="perk-star-empty">'+'☆'.repeat(p.maxStacks-getPerkStacks(p.id))+'</span></span></button>';
+      const effect = getPerkEffectLabel(p,p.rarity);
+      const stacks = getPerkStacks(p.id);
+      return '<article class="perk-option rarity-'+p.rarity+'"><button type="button" class="perk-info-trigger" aria-label="Show details for '+p.name+'" onclick="showPerkInfo(\''+p.id+'\',\''+p.rarity+'\')"><span>'+p.icon+'</span><strong>'+p.name+'</strong><small class="perk-rarity-label">'+perkRarities[p.rarity].label+'</small><small>'+p.desc+'</small><small class="perk-stack-limit">'+effect+'</small><span class="perk-stars" aria-label="'+stacks+' of '+p.maxStacks+' perk stars">'+'★'.repeat(stacks)+'<span class="perk-star-empty">'+'☆'.repeat(p.maxStacks-stacks)+'</span></span><small class="perk-info-hint">VIEW DETAILS</small></button><button type="button" class="perk-select-action" onclick="choosePerk(\''+p.id+'\',\''+p.rarity+'\')">CHOOSE PERK</button></article>';
     }).join('')+'</div></div>';
     panel.classList.add('visible');
   }
@@ -628,9 +656,846 @@
     if(d.id==='investment')return 'Invest 15% of your run coins and receive '+Math.round(30*d.multiplier)+'% extra after 3 waves.';
     return d.desc.replace(/\d+(?:\.\d+)?%/g,v=>Math.round(parseFloat(v)*d.multiplier*10)/10+'%');
   }
+
+  function showWaveDecisionInfo(id, rarity='common') {
+    const decision = waveDecisionDefs.find(item => item.id === id);
+    const tier = waveDecisionRarities[rarity];
+    if (!decision || !tier || typeof window.showRunInfoDialog !== 'function') return;
+    const rarityColors = {common:'#aab4c0',rare:'#45a8ff',epic:'#b56cff',legendary:'#ffbd45'};
+    window.showRunInfoDialog({
+      eyebrow: decision.category + ' · ' + tier.label,
+      title: decision.name,
+      description: getWaveDecisionDescription({...decision,multiplier:tier.multiplier}),
+      accent: rarityColors[rarity] || '#ffc36b',
+      rows: [
+        {label:'CATEGORY',value:decision.category},
+        {label:'RARITY',value:tier.label},
+        {label:'DURATION',value:decision.duration > 0 ? decision.duration + ' WAVES' : 'INSTANT EFFECT'}
+      ]
+    });
+  }
+  window.showWaveDecisionInfo = showWaveDecisionInfo;
   function showWaveDecisionChoice(){
     if(!game||!game.running)return;game.paused=true;const panel=document.getElementById('perk-choice'),picks=rollWaveDecisionOptions();run.lastDecisionOptions=picks.map(d=>d.id);
-    panel.innerHTML='<div class="perk-dialog decision-dialog"><span class="perk-eyebrow">WAVE '+(run.wave-1)+' COMPLETED</span><h2>SELECT YOUR ADVANTAGE</h2><p>Choose one upgrade for your next wave. Higher rarities have stronger effects.</p><div class="decision-wallet"><span>CASH <strong>$'+formatMoney(run.cash||0)+'</strong></span><span>COINS <strong>'+formatMoney(run.coins||0)+'</strong></span></div><div class="perk-options decision-options">'+picks.map(d=>'<button class="perk-option decision-option rarity-'+d.rarity+'" onclick="chooseWaveDecision(\''+d.id+'\',\''+d.rarity+'\')"><span>'+d.icon+'</span><strong>'+d.name+'</strong><small class="decision-category">'+d.category+'</small><small class="perk-rarity-label">'+waveDecisionRarities[d.rarity].label+'</small><small>'+getWaveDecisionDescription(d)+'</small></button>').join('')+'</div></div>';
+    panel.innerHTML='<div class="perk-dialog decision-dialog"><span class="perk-eyebrow">WAVE '+(run.wave-1)+' COMPLETED</span><h2>SELECT YOUR ADVANTAGE</h2><p>Choose one upgrade for your next wave. Higher rarities have stronger effects.</p><div class="decision-wallet"><span>CASH <strong>
+    panel.classList.add('visible');
+  }
+  function chooseWaveDecision(id,rarity='common'){
+    const d=waveDecisionDefs.find(v=>v.id===id),r=waveDecisionRarities[rarity];if(!d||!r||!game||!game.running)return;
+    const scale=r.multiplier,pct=n=>n*scale;run.decisionEffects=run.decisionEffects||[];
+    const effect=(key,value,duration=d.duration)=>run.decisionEffects.push({id:key,value,remaining:Math.max(1,duration),rarity});
+    switch(id){
+      case'overdrive':effect(id,pct(.25),3);break;case'heavy_impact':effect(id,pct(.35),2);break;case'critical_focus':effect(id,pct(15),3);break;
+      case'double_trouble':effect(id,pct(.2),3);break;case'executioner':effect(id,pct(.3),3);break;case'piercing_shots':effect(id,Math.max(1,Math.round(scale)),3);break;
+      case'rapid_fire':effect(id,pct(.2),2);break;case'boss_hunter':effect(id,pct(.3),5);break;
+      case'emergency_repair':if(tower)tower.hp=Math.min(tower.maxHp,tower.hp+tower.maxHp*pct(.15));break;
+      case'energy_shield':if(tower)tower.tempShieldCharges=(tower.tempShieldCharges||0)+Math.max(1,Math.round(scale));effect(id,Math.max(1,Math.round(scale)),1);break;
+      case'reinforced_core':effect(id,pct(.2),3);break;case'nano_repair':effect(id,pct(.015),3);break;
+      case'second_chance':run.secondChanceCharges=(run.secondChanceCharges||0)+1;run.secondChanceHeal=Math.max(Number(run.secondChanceHeal)||0,pct(.01));break;case'defensive_matrix':effect(id,pct(.25),3);break;
+      case'gold_rush':run.coins=(run.coins||0)+Math.floor(75*scale);break;case'double_reward':effect(id,scale,1);break;
+      case'bounty_hunter':effect(id,pct(.5),3);break;
+      case'investment':{const invested=Math.floor((run.coins||0)*.15);if(invested>0){run.coins-=invested;run.decisionEffects.push({id,value:invested*(1+.3*scale),remaining:3,payout:Math.floor(invested*(1+.3*scale)),paid:false,rarity});}break;}
+      case'treasure_hunt':effect(id,pct(.15),3);break;case'boss_contract':effect(id,pct(.5),5);break;
+      case'blood_money':effect(id,pct(.25),1);effect('blood_money_cash',pct(.5),1);break;
+      case'chaos_mode':effect(id,pct(.2),1);effect('chaos_cash',pct(.5),1);break;
+      case'elite_invasion':effect(id,pct(.25),1);effect('elite_cash',pct(.5),1);break;
+      case'glass_cannon':effect(id,pct(.5),2);effect('glass_cannon_damage_taken',pct(.35),2);break;
+      case'boss_gamble':effect(id,pct(.3),5);effect('boss_gamble_reward',pct(1),5);break;
+      case'last_stand':if(tower)tower.hp=Math.max(1,tower.hp*.5);effect(id,pct(.5),1);break;
+    }
+    const panel=document.getElementById('perk-choice');panel.classList.remove('visible');panel.innerHTML='';game.paused=false;game.last=performance.now();updateHUD();saveRunCheckpoint(false,false,null,true);
+  }
+
+  function renderRunPerks() {
+    const container = document.getElementById('run-perks-content');
+    if (!container) return;
+    const owned = perkDefs.filter(perk => getPerkStacks(perk.id) > 0);
+    if (!owned.length) {
+      container.innerHTML = '<div class="perks-empty"><span>◇</span><strong>NO PERKS YET</strong><small>Reach milestone waves and choose perks to build your run.</small></div>';
+      return;
+    }
+    container.innerHTML = owned.map(perk => {
+      const stacks=run.perks[perk.id];
+      const total=getPerkStacks(perk.id);
+      const rarityLines=typeof stacks==='number' ? '<small class="perk-rarity-label rarity-common">COMMON ×'+stacks+'</small>' : Object.entries(stacks).filter(([,count])=>count>0).map(([rarity,count])=>'<small class="perk-rarity-label rarity-'+rarity+'">'+perkRarities[rarity].label+' ×'+count+'</small>').join('');
+      const effect=perk.id==='overload'
+        ? '+'+getPerkValue('overload')+'% DAMAGE · +'+Object.entries(stacks||{}).reduce((sum,[rarity,count])=>sum+(perk.speedValues[rarity]||0)*count,0)+'% FIRE RATE'
+        : '+'+getPerkValue(perk.id)+perk.unit;
+      const stars='<span class="perk-stars" aria-label="'+total+' of '+perk.maxStacks+' perk stars">'+'★'.repeat(total)+'<span class="perk-star-empty">'+'☆'.repeat(perk.maxStacks-total)+'</span></span>';
+      return '<div class="run-perk-card"><span class="run-perk-icon">' + perk.icon + '</span><div class="run-perk-info"><strong>' + perk.name + '</strong>' + stars + rarityLines + '<small>' + effect + '</small></div></div>';
+    }).join('');
+  }
+
+  function choosePerk(id, rarity='common') {
+    const selectedPerk = perkDefs.find(p=>p.id===id);
+    if(!selectedPerk || !perkRarities[rarity]) return;
+    run.perks=run.perks||{};
+    if(getPerkStacks(id) >= selectedPerk.maxStacks) return;
+    if(typeof run.perks[id] !== 'object') run.perks[id] = {};
+    run.perks[id][rarity]=(run.perks[id][rarity]||0)+1;
+    renderRunPerks();
+    const panel=document.getElementById('perk-choice');
+    panel.classList.remove('visible'); panel.innerHTML='';
+    if(id==='repair' && tower) { const baseRegen=parseFloat(getVal('regen'))+parseFloat(getVal('nanoMatrix')); tower.hp=Math.min(tower.maxHp,tower.hp+baseRegen*selectedPerk.values[rarity]*4/100); }
+    game.paused=false; game.last=performance.now(); updateHUD();
+    saveRunCheckpoint(false, false, null, true);
+    notify('PERK UNLOCKED',selectedPerk.name+' · '+perkRarities[rarity].label);
+  }
+
+  // Notifications are disabled globally; keep this function as a no-op
+  // so existing game events continue working without showing pop-ups.
+  function notify(title, msg) { return; }
+
+  function getTieredMultiplier(level, rates) {
+    let remaining = Math.max(0, Math.floor(Number(level) || 0));
+    let multiplier = 1;
+    const tierSizes = [30, 30, 40, 100, 100, 100, 100, 100, 100, 100, Infinity];
+    for (let i = 0; i < tierSizes.length && remaining > 0; i++) {
+      const count = Math.min(remaining, tierSizes[i]);
+      multiplier *= Math.pow(1 + rates[i], count);
+      remaining -= count;
+    }
+    return multiplier;
+  }
+
+  function getVal(k, wsO=false) {
+    const d=statDefs[k];
+    const l=(run.mode === 'level' ? 0 : (player.ws[k]||0))+(wsO?0:(run.stats[k]||0));
+    let v;
+    if(k==='regen'){
+      if (l > 0) {
+        v = 0.5;
+        let increase = 0.5;
+        const tiers = [
+          { end: 10, rate: 0.15 },
+          { end: 25, rate: 0.10 },
+          { end: 50, rate: 0.07 },
+          { end: 100, rate: 0.04 },
+          { end: 200, rate: 0.02 },
+          { end: 300, rate: 0.01 },
+          { end: 500, rate: 0.005 },
+          { end: Infinity, rate: 0.0025 }
+        ];
+        for (let level = 2; level <= l; level++) {
+          const tier = tiers.find(t => level <= t.end);
+          increase *= 1 + tier.rate;
+          v += increase;
+        }
+      } else {
+        v = 0;
+      }
+    } else if(k==='damage') {
+      v=getCumulativeTieredValue(d.b,d.i,l,[0.07,0.05,0.03,0.02,0.015,0.011,0.008,0.006,0.0045,0.003,0.002]);
+    } else if(k==='speed') {
+      v=getCumulativeTieredValue(d.b,d.i,l,[0.03,0.025,0.015,0.0125,0.009,0.007,0.005,0.0035,0.0025,0.002,0.001],run.wave>100?35:20);
+    } else if(k==='hp') {
+      v=getCumulativeTieredValue(d.b,d.i,l,[0.04,0.03,0.02,0.015,0.011,0.0085,0.0065,0.0045,0.003,0.002,0.0015]);
+    } else if (k === 'armor') {
+      // Clamp legacy saves too, not just future purchases.
+      v = d.b + Math.min(l, d.max || 20) * d.i;
+    } else {
+      v=d.b+(l*d.i);
+    }
+    return (d.isD||k==='damage')?v.toFixed(2):Math.floor(v);
+  }
+  function getCumulativeTieredValue(base, initialIncrease, level, rates, maxLevel = Infinity) {
+    const effectiveLevel = Math.min(Math.max(0, Math.floor(Number(level) || 0)), maxLevel);
+    let total = base;
+    let increase = initialIncrease;
+    const tierSizes = [30, 30, 40, 100, 100, 100, 100, 100, 100, 100, Infinity];
+    for (let currentLevel = 1; currentLevel <= effectiveLevel; currentLevel++) {
+      if (currentLevel > 1) {
+        let remaining = currentLevel - 1;
+        let tierIndex = 0;
+        while (tierIndex < tierSizes.length - 1 && remaining > tierSizes[tierIndex]) {
+          remaining -= tierSizes[tierIndex];
+          tierIndex++;
+        }
+        increase *= 1 + rates[tierIndex];
+      }
+      total += increase;
+    }
+    return total;
+  }
+
+  function getCost(k, isW) { const d=statDefs[k]; let l=isW?player.ws[k]:(run.stats[k]||0); return Math.floor(d.c*Math.pow(d.cm, l)); }
+  const FREE_UPGRADE_CATEGORIES = ['ATTACK','DEFENSE','UTILITY'];
+  function migrateFreeUpgradeChanceProgress() {
+    if (player.freeUpgradeChanceRefundV2) return false;
+    const previousLevels = player.freeUpgradeChances || {};
+    let refund = 0;
+    FREE_UPGRADE_CATEGORIES.forEach(category => {
+      const level = Math.max(0, Math.min(50, Number(previousLevels[category]) || 0));
+      for (let boughtLevel = 0; boughtLevel < level; boughtLevel++) {
+        refund += Math.round(100 * Math.pow(20000, boughtLevel / 49));
+      }
+    });
+    player.coins = Math.max(0, Number(player.coins) || 0) + refund;
+    player.freeUpgradeChances = {ATTACK:0,DEFENSE:0,UTILITY:0};
+    player.freeUpgradeChanceRefundV2 = true;
+    return refund > 0;
+  }
+  function getFreeUpgradeChanceCost(category) {
+    const level = Math.max(0, Math.min(50, Number(player.freeUpgradeChances?.[category]) || 0));
+    return Math.round(100 * Math.pow(500, level / 49));
+  }
+  function buyFreeUpgradeChance(category) {
+    if (!FREE_UPGRADE_CATEGORIES.includes(category)) return;
+    player.freeUpgradeChances = {ATTACK:0,DEFENSE:0,UTILITY:0,...(player.freeUpgradeChances||{})};
+    const level = Math.max(0, Math.min(50, Number(player.freeUpgradeChances[category]) || 0));
+    if (level >= 50) return;
+    const cost = getFreeUpgradeChanceCost(category);
+    if (player.coins < cost) return;
+    player.coins -= cost;
+    player.freeUpgradeChances[category] = level + 1;
+    saveGame();
+    AudioSys.coin();
+  }
+  function applyFreeUpgradeChance(category) {
+    if (run.mode === 'level') return null;
+    const chance = Math.max(0, Math.min(50, Number(player.freeUpgradeChances?.[category]) || 0));
+    if (!chance || Math.random() * 100 >= chance) return null;
+    const eligible = Object.keys(statDefs).filter(key => {
+      const def = statDefs[key];
+      const totalLevel = (player.ws[key] || 0) + (run.stats[key] || 0);
+      return def.category === category && run.wave >= (def.unlockWave || 1) && (!def.max || totalLevel < def.max) && window.isNeonUpgradeVisible(key);
+    });
+    if (!eligible.length) return null;
+    const key = eligible[Math.floor(Math.random() * eligible.length)];
+    run.stats[key] = (run.stats[key] || 0) + 1;
+    if (key === 'hp' && tower) {
+      const oldMax = tower.maxHp;
+      tower.maxHp = parseFloat(getVal('hp'));
+      tower.hp += tower.maxHp - oldMax;
+    }
+    updateHUD();
+    return key;
+  }
+  window.buyFreeUpgradeChance = buyFreeUpgradeChance;
+  function hasSkill(id) { return run.mode === 'level' ? false : player.skills.includes(id); }
+
+  function getWaveEnemyCount(wave) {
+    const w = Math.max(1, Math.floor(Number(wave) || 1));
+    if (run.mode === 'level') {
+      const cfg = window.NEON_LEVEL_MODE_CONFIG?.difficulty?.enemyCount || {};
+      if (w <= 20) return Math.max(6, Math.round((cfg.earlyBase || 8) + w * (cfg.earlyPerWave || 0.9)));
+      if (w <= 50) return Math.max(8, Math.round((cfg.middleBase || 26) + (w - 20) * (cfg.middlePerWave || 0.5)));
+      return Math.max(10, Math.round((cfg.lateBase || 41) + (w - 50) * (cfg.latePerWave || 0.25)));
+    }
+    if (w <= 20) return 9 + Math.floor(w * 1.25);
+    if (w <= 50) return 34 + Math.floor((w - 20) * 0.6);
+    if (w <= 100) return 52 + Math.floor((w - 50) * 0.36);
+    if (w <= 150) return 70 + Math.floor((w - 100) * 0.46);
+    if (w <= 200) return 93 + Math.floor((w - 150) * 0.54);
+    return 120 + Math.floor((w - 200) * 0.56);
+  }
+
+  function getWaveActiveEnemyCap(wave) {
+    if (run.mode === 'level') return Infinity;
+    const w = Math.max(1, Math.floor(Number(wave) || 1));
+    if (w <= 30) return 12;
+    if (w <= 80) return 15;
+    if (w < 120) return 18;
+    return 20;
+  }
+
+  function getWaveSpawnInterval(wave) {
+    const w = Math.max(1, Math.floor(Number(wave) || 1));
+    if (run.mode === 'level') {
+      return Math.max(0.85, 1.0 - (Math.min(w, 100) * 0.003));
+    }
+    const anchors = [
+      [1, 1.67],
+      [10, 1.88],
+      [20, 2.03],
+      [30, 2.17],
+      [50, 2.39],
+      [100, 2.61],
+      [150, 3.50],
+      [200, 4.20],
+      [250, 4.80],
+      [300, 5.40]
+    ];
+    let rate = anchors[anchors.length - 1][1];
+    if (w < anchors[anchors.length - 1][0]) {
+      for (let i = 0; i < anchors.length - 1; i++) {
+        const [startWave, startRate] = anchors[i];
+        const [endWave, endRate] = anchors[i + 1];
+        if (w <= endWave) {
+          const progress = (w - startWave) / (endWave - startWave);
+          rate = startRate + (endRate - startRate) * progress;
+          break;
+        }
+      }
+    }
+    return 1 / rate;
+  }
+
+  /** MAIN LOOP & RENDERING **/
+  let pendingLevelModeId = null;
+  function startGame(levelId = null) {
+    if (Number.isInteger(Number(levelId)) && Number(levelId) > 0) pendingLevelModeId = Number(levelId);
+    const selectedLevelId = pendingLevelModeId;
+    if (!player.tutorialSeen) {
+      document.getElementById('tutorial').classList.add('visible');
+      return;
+    }
+    clearRunCheckpoint(selectedLevelId ? 'level' : 'infinite');
+    pendingLevelModeId = null;
+    AudioSys.init();
+    resize(); // Recalculate the canvas after the device/layout selection and before starting the run.
+    gameSessionStartedAt = Date.now();
+    gameDurationTracked = false;
+    gameSessionSource = 'site';
+    document.getElementById('menu').classList.remove('active-layer'); document.getElementById('hud').classList.add('active-hud');
+    const levelConfig = selectedLevelId && window.NEON_LEVEL_MODE_CONFIG?.levels?.find(level => level.id === selectedLevelId);
+    run = { stats: {}, cash: 0, coins: 0, wave: 1, kills: 0, bossKills: 0, elapsed: 0, perks: {}, mode: levelConfig ? 'level' : 'infinite', levelId: levelConfig ? levelConfig.id : null };
+    if (levelConfig) run.levelObjectives = levelConfig.objectives.map(objective => ({ ...objective, progress: 0, complete: false }));
+    selectedGameSpeed = 1;
+    const missionOptions = [
+      {id:'waves', title:'REACH WAVE 5', description:'Clear waves until you reach wave 5.', target:5, reward:25},
+      {id:'kills', title:'ELIMINATE 30 ENEMIES', description:'Defeat 30 enemies during this run.', target:30, reward:25},
+      {id:'survive', title:'SURVIVE 2 MINUTES', description:'Stay alive for 120 seconds.', target:120, reward:25}
+    ];
+    const missionUI = document.getElementById('mission-ui');
+    missionUI?.classList.remove('mission-complete', 'mission-hidden-on-resume');
+    if (levelConfig && missionUI) {
+      // Level objectives must always be visible during active Level Mode gameplay.
+      missionUI.style.display = 'block';
+      missionUI.style.visibility = 'visible';
+      missionUI.style.opacity = '1';
+    }
+    if (levelConfig) {
+      run.mission = null;
+      document.getElementById('mission-title').textContent = 'LEVEL ' + levelConfig.id + ' OBJECTIVES';
+      document.getElementById('mission-desc').textContent = 'Complete every objective to finish this level.';
+      document.getElementById('mission-reward').textContent = '+' + formatMoney(levelConfig.reward) + ' COINS';
+      document.getElementById('mission-progress').textContent = '0 / ' + run.levelObjectives.length + ' OBJECTIVES';
+      document.getElementById('mission-fill').style.width = '0%';
+    } else {
+      run.mission = {...missionOptions[Math.floor(Math.random()*missionOptions.length)], progress:0, complete:false};
+      document.getElementById('mission-title').textContent = run.mission.title;
+      document.getElementById('mission-desc').textContent = run.mission.description;
+      document.getElementById('mission-reward').textContent = '+' + formatMoney(run.mission.reward) + ' COINS';
+      document.getElementById('mission-progress').textContent = '0 / ' + run.mission.target;
+      document.getElementById('mission-fill').style.width = '0%';
+    }
+    Object.keys(statDefs).forEach(k => run.stats[k]=0);
+    
+    game = { running: true, paused:false, dt: 0, last: performance.now(), shake: 0, playSaveT: 0, achievementCheckT: 0, spawnT: 0.25, toSpawn: getWaveEnemyCount(1), ents: { e:[], p:[], b:[], part:[], txt:[] }, cx: canvas.width/2, cy: canvas.height/2 };
+    
+    tower = new Tower(); 
+    initUpgBar();
+    updateGameSpeedButton();
+    saveRunCheckpoint(false);
+    updateHUD();
+    requestAnimationFrame(loop);
+    if (typeof window.startNeonLeaderboardRun === 'function') window.startNeonLeaderboardRun();
+    if (typeof window.neonTrack === 'function') {
+      window.neonTrack({ path: 'game-start', title: 'Game started', event: true, no_session: true });
+    } else if (window.goatcounter && typeof window.goatcounter.count === 'function') {
+      window.goatcounter.count({ path: 'game-start', title: 'Game started', event: true, no_session: true });
+    }
+  }
+
+  function processGameOver(reason = 'defeat') {
+    if(!game || !game.running) return;
+    if (run.mode === 'level') { finishLevelMode(false); return; }
+    game.running = false;
+    clearRunCheckpoint();
+    trackGameDuration('completed');
+    if (typeof window.neonTrack === 'function') {
+      window.neonTrack({ path: 'game-end', title: reason === 'voluntary' ? 'Game ended voluntarily' : 'Game ended normally', event: true, no_session: true });
+    } else if (window.goatcounter && typeof window.goatcounter.count === 'function') {
+      window.goatcounter.count({ path: 'game-end', title: reason === 'voluntary' ? 'Game ended voluntarily' : 'Game ended normally', event: true, no_session: true });
+    } document.getElementById('hud').classList.remove('active-hud'); document.getElementById('gameover').classList.remove('level-mode-success');
+    document.getElementById('gameover').classList.add('active-layer');
+    document.getElementById('go-wave').innerText = run.wave;
+    document.getElementById('go-kills').innerText = run.kills;
+    document.getElementById('go-bosses').innerText = run.bossKills || 0;
+    document.getElementById('go-time').innerText = formatRunTime(run.elapsed || 0);
+    player.coins += run.coins;
+    if(run.mode !== 'level' && run.wave > player.highestWave) player.highestWave = run.wave;
+    player.runsPlayed = (player.runsPlayed || 0) + 1;
+    player.bestKills = Math.max(player.bestKills || 0, run.kills);
+    player.bestBosses = Math.max(player.bestBosses || 0, run.bossKills || 0);
+    player.bestDuration = Math.max(player.bestDuration || 0, run.elapsed || 0);
+    document.getElementById('go-best').innerText = player.highestWave;
+    document.getElementById('go-record-kills').innerText = player.bestKills;
+    document.getElementById('go-record-time').innerText = formatRunTime(player.bestDuration);
+    document.getElementById('go-runs').innerText = player.runsPlayed;
+    document.getElementById('go-coins').innerText = '+' + formatMoney(run.coins) + ' COINS';
+    checkAchievements(); saveGame();
+    if (typeof window.scheduleNeonCloudSave === 'function') window.scheduleNeonCloudSave();
+    if (typeof window.syncPublicPlayerProfile === 'function') window.syncPublicPlayerProfile();
+    const returnButton = document.getElementById('gameover-return-button');
+    if (returnButton) returnButton.setAttribute('onclick', 'returnToMenu()');
+    if (run.mode !== 'level' && typeof submitLeaderboardResult === 'function') submitLeaderboardResult(run);
+  }
+  function resumeRun(mode = 'infinite') {
+    const checkpoint = readRunCheckpoint(mode === 'level' ? 'level' : 'infinite');
+    if (!checkpoint || ![1, 2].includes(Number(checkpoint.version)) || !checkpoint.run || !Number.isFinite(Number(checkpoint.run.wave))) {
+      // A missing Level Mode checkpoint must never clear the separate Infinite Mode run.
+      refreshResumeUI();
+      return;
+    }
+    if (!player.tutorialSeen) {
+      document.getElementById('tutorial').classList.add('visible');
+      return;
+    }
+    AudioSys.init();
+    resize(); // Recalculate the canvas after the device/layout selection and before restoring the run.
+    gameSessionStartedAt = Date.now();
+    gameDurationTracked = false;
+    gameSessionSource = 'resume';
+    document.getElementById('menu').classList.remove('active-layer');
+    document.getElementById('gameover').classList.remove('active-layer');
+    document.getElementById('hud').classList.add('active-hud');
+    run = checkpoint.run;
+    // Older checkpoints were saved mid-wave and did not preserve active enemies.
+    // Recreate only enemies that had not already been defeated. New version-2
+    // checkpoints are wave-start snapshots, so this normally equals the full count.
+    let defeatedBeforeCurrentWave = 0;
+    for (let previousWave = 1; previousWave < run.wave; previousWave++) {
+      defeatedBeforeCurrentWave += getWaveEnemyCount(previousWave);
+    }
+    const currentWaveEnemyCount = getWaveEnemyCount(run.wave);
+    const alreadyDefeatedThisWave = Math.max(0, Math.min(
+      currentWaveEnemyCount,
+      (Number(run.kills) || 0) - defeatedBeforeCurrentWave
+    ));
+    const remainingWaveEnemies = Math.max(0, currentWaveEnemyCount - alreadyDefeatedThisWave);
+    const bossInterval = run.mode === 'level'
+      ? (Number(window.NEON_LEVEL_MODE_CONFIG?.difficulty?.bossEveryWaves) || 5)
+      : 5;
+    run.bossAlreadyKilledInWave = run.wave % bossInterval === 0 &&
+      (Number(run.bossKills) || 0) > Math.floor((run.wave - 1) / bossInterval);
+    // Revert lifetime kills and achievement rewards earned inside the interrupted
+    // wave, because the checkpoint restarts that wave from its beginning.
+    if (restoreCheckpointPlayerProgress(checkpoint.playerProgress)) saveGame(true);
+    const pendingFreeUpgrades = Array.isArray(checkpoint.pendingFreeUpgrades) ? checkpoint.pendingFreeUpgrades : [];
+    selectedGameSpeed = 1;
+    // Infinite Mode hides its optional mission tracker on resume; Level Mode must keep its objectives visible.
+    const missionUI = document.getElementById('mission-ui');
+    if (run.mode === 'level' && Array.isArray(run.levelObjectives)) {
+      missionUI?.classList.remove('mission-hidden-on-resume', 'mission-complete');
+      if (missionUI) {
+        missionUI.style.display = 'block';
+        missionUI.style.visibility = 'visible';
+        missionUI.style.opacity = '1';
+      }
+      const levelConfig = window.NEON_LEVEL_MODE_CONFIG?.levels?.find(level => level.id === Number(run.levelId));
+      const title = document.getElementById('mission-title');
+      const reward = document.getElementById('mission-reward');
+      if (title) title.textContent = 'LEVEL ' + run.levelId + ' OBJECTIVES';
+      if (reward && levelConfig) reward.textContent = '+' + formatMoney(levelConfig.reward) + ' COINS';
+      updateLevelModeProgress();
+    } else {
+      missionUI?.classList.add('mission-hidden-on-resume');
+    }
+    game = {
+      running:true, paused:!!checkpoint.pendingPerk, dt:0, last:performance.now(),
+      shake:0, playSaveT:0, achievementCheckT:0, spawnT:0.25,
+      toSpawn:remainingWaveEnemies,
+      ents:{e:[],p:[],b:[],part:[],txt:[]},
+      cx:canvas.width/2, cy:canvas.height/2
+    };
+    tower = new Tower();
+    if (checkpoint.tower) {
+      tower.hp = Math.max(0, Math.min(tower.maxHp, Number(checkpoint.tower.hp) || tower.maxHp));
+      tower.shield = !!checkpoint.tower.shield && hasSkill('shield');
+      tower.tempShieldCharges = Math.max(0, Number(checkpoint.tower.tempShieldCharges) || 0);
+    }
+    initUpgBar();
+    updateGameSpeedButton();
+    updateHUD();
+    refreshResumeUI();
+    if (checkpoint.pendingPerk) showPerkChoice();
+    else if (checkpoint.pendingDecision) showWaveDecisionChoice();
+    requestAnimationFrame(loop);
+    if (typeof window.startNeonLeaderboardRun === 'function') window.startNeonLeaderboardRun();
+  }
+  window.resumeRun = resumeRun;
+
+  function finishLevelMode(completed) {
+    if (!game || !game.running || run.mode !== 'level') return;
+    game.running = false;
+    clearRunCheckpoint();
+    trackGameDuration('completed');
+    const level = window.NEON_LEVEL_MODE_CONFIG?.levels?.find(item => item.id === run.levelId);
+    const progress = player.levelMode || (player.levelMode = { highestUnlocked: 1, completed: [], claimedRewards: [] });
+    progress.completed = Array.isArray(progress.completed) ? progress.completed : [];
+    progress.claimedRewards = Array.isArray(progress.claimedRewards) ? progress.claimedRewards : [];
+    let reward = 0;
+    if (completed && level) {
+      if (!progress.completed.includes(level.id)) progress.completed.push(level.id);
+      progress.highestUnlocked = Math.max(Number(progress.highestUnlocked) || 1, Math.min(30, level.id + 1));
+      if (!progress.claimedRewards.includes(level.id)) { reward = Math.max(0, Number(level.reward) || 0); progress.claimedRewards.push(level.id); }
+      player.coins += Math.max(0, Number(run.coins) || 0) + reward;
+    }
+    player.runsPlayed = (player.runsPlayed || 0) + 1;
+    player.bestKills = Math.max(player.bestKills || 0, run.kills || 0);
+    player.bestBosses = Math.max(player.bestBosses || 0, run.bossKills || 0);
+    player.bestDuration = Math.max(player.bestDuration || 0, run.elapsed || 0);
+    document.getElementById('hud').classList.remove('active-hud');
+    const gameover = document.getElementById('gameover');
+    gameover.classList.toggle('level-mode-success', !!completed);
+    gameover.classList.add('active-layer');
+    const title = document.getElementById('gameover-title');
+    if (title) { title.textContent = completed ? 'LEVEL ' + run.levelId + ' COMPLETE!' : 'LEVEL ' + run.levelId + ' FAILED'; title.style.color = completed ? '#55ffb0' : '#ff3366'; title.style.textShadow = completed ? '0 0 40px rgba(85,255,176,.75)' : '0 0 40px #ff3366'; }
+    const reportTitle = document.getElementById('gameover-report-title');
+    if (reportTitle) reportTitle.textContent = completed ? 'REWARDS' : 'LEVEL ' + run.levelId + ' REPORT';
+    document.getElementById('go-wave').innerText = run.wave;
+    document.getElementById('go-kills').innerText = run.kills;
+    document.getElementById('go-bosses').innerText = run.bossKills || 0;
+    document.getElementById('go-time').innerText = formatRunTime(run.elapsed || 0);
+    document.getElementById('go-best').innerText = player.highestWave;
+    document.getElementById('go-record-kills').innerText = player.bestKills;
+    document.getElementById('go-record-time').innerText = formatRunTime(player.bestDuration);
+    document.getElementById('go-runs').innerText = player.runsPlayed;
+    document.getElementById('go-coins').innerText = completed ? '+' + formatMoney(reward + (Number(run.coins) || 0)) + ' COINS' : '+0 COINS';
+    const profitLabel = document.querySelector('#gameover .mission-profit');
+    if (profitLabel) profitLabel.firstChild.textContent = completed ? 'REWARDS: ' : 'PROFIT: ';
+    const returnButton = document.getElementById('gameover-return-button');
+    if (returnButton) { returnButton.textContent = 'MENU'; returnButton.setAttribute('onclick', 'returnToMenu()'); }
+    const nextButton = document.getElementById('gameover-next-level-button');
+    if (nextButton) {
+      const hasNext = !!completed && Number(run.levelId) < 30;
+      nextButton.style.display = hasNext ? '' : 'none';
+      nextButton.onclick = hasNext ? function(){ document.getElementById('gameover').classList.remove('active-layer','level-mode-success'); startLevelMode(Number(run.levelId) + 1); } : null;
+    }
+    run.mode = 'infinite';
+    saveGame();
+    if (typeof window.scheduleNeonCloudSave === 'function') window.scheduleNeonCloudSave();
+    if (typeof window.syncPublicPlayerProfile === 'function') window.syncPublicPlayerProfile();
+  }
+
+  function updateLevelModeProgress() {
+    if (run.mode !== 'level' || !Array.isArray(run.levelObjectives)) return;
+    const objectives = run.levelObjectives;
+    objectives.forEach(objective => {
+      const value = objective.type === 'wave' ? run.wave : objective.type === 'kills' ? run.kills : objective.type === 'bosses' ? (run.bossKills || 0) : Math.floor(run.elapsed || 0);
+      objective.progress = Math.min(objective.target, Math.max(0, value));
+      objective.complete = objective.progress >= objective.target;
+    });
+    const completed = objectives.filter(objective => objective.complete).length;
+    const total = objectives.length;
+    const label = document.getElementById('mission-progress');
+    if (label) label.textContent = completed + ' / ' + total + ' OBJECTIVES';
+    const fill = document.getElementById('mission-fill');
+    if (fill) fill.style.width = (total ? completed / total * 100 : 0) + '%';
+    const description = document.getElementById('mission-desc');
+    if (description) description.textContent = objectives.map(objective => {
+      const prefix = objective.type === 'wave' ? 'REACH WAVE ' : objective.type === 'kills' ? 'ELIMINATE ' : objective.type === 'bosses' ? 'DEFEAT ' : 'SURVIVE ';
+      const suffix = objective.type === 'survive' ? 's' : objective.type === 'kills' ? ' ENEMIES' : objective.type === 'bosses' ? ' BOSSES' : '';
+      return (objective.complete ? '✓ ' : '○ ') + prefix + objective.target + suffix + ' (' + Math.floor(objective.progress) + '/' + objective.target + ')';
+    }).join(' · ');
+    if (completed === total && total > 0) finishLevelMode(true);
+  }
+
+  window.startLevelMode = function(levelId) {
+    const level = window.NEON_LEVEL_MODE_CONFIG?.levels?.find(item => item.id === Number(levelId));
+    const progress = player.levelMode || { highestUnlocked: 1 };
+    if (!level || level.id > (Number(progress.highestUnlocked) || 1)) return;
+    if (!player.tutorialSeen) { pendingLevelModeId = level.id; document.getElementById('tutorial').classList.add('visible'); return; }
+    startGame(level.id);
+  };
+
+  function requestEndRun() {
+    if (!game || !game.running) return;
+    const confirmed = window.confirm('END THIS RUN? Your current score will be saved and submitted if it qualifies for the leaderboard.');
+    if (confirmed) processGameOver('voluntary');
+  }
+  window.requestEndRun = requestEndRun;
+
+  function updateMissionProgress() {
+    if (!run.mission || run.mission.complete) return;
+    const mission = run.mission;
+    mission.progress = mission.id === 'waves' ? run.wave : mission.id === 'kills' ? run.kills : Math.floor(run.elapsed);
+    const current = Math.min(mission.target, mission.progress);
+    const value = mission.id === 'survive' ? current + ' / ' + mission.target + 's' : current + ' / ' + mission.target;
+    const label = document.getElementById('mission-progress');
+    if (label) label.textContent = value;
+    const fill = document.getElementById('mission-fill');
+    if (fill) fill.style.width = (current / mission.target * 100) + '%';
+    if (mission.progress >= mission.target) {
+      mission.complete = true;
+      document.getElementById('mission-ui')?.classList.add('mission-complete');
+      run.coins += mission.reward;
+      notify('MISSION COMPLETE', '+' + formatMoney(mission.reward) + ' COINS');
+      const title = document.getElementById('mission-title');
+      if (title) title.textContent = 'MISSION COMPLETE';
+      const reward = document.getElementById('mission-reward');
+      if (reward) reward.textContent = '+' + formatMoney(mission.reward) + ' COINS';
+    }
+  }
+
+  function confirmTutorialStart() {
+    const tutorial = document.getElementById('tutorial');
+    tutorial.classList.remove('visible');
+    player.tutorialSeen = true;
+    saveGame();
+    startGame(pendingLevelModeId);
+  }
+
+  function formatRunTime(seconds) {
+    const total = Math.max(0, Math.floor(seconds));
+    const minutes = Math.floor(total / 60);
+    return minutes + ':' + String(total % 60).padStart(2, '0');
+  }
+  function returnToMenu(tab = 'workshop') { document.getElementById('gameover').classList.remove('active-layer','level-mode-success'); document.getElementById('menu').classList.add('active-layer'); if (typeof switchTab === 'function') switchTab(tab); updateMenuUI(); }
+
+  let bgOffset = 0;
+  // Fit the live targeting boundary inside the visible portrait viewport.
+  // Use viewport CSS dimensions rather than canvas backing dimensions to avoid device-pixel scaling errors.
+  function getMobileWorldVisualScale() {
+    const safeRadius = Math.max(1, Math.min(window.innerWidth, window.innerHeight) * 0.5 - 16);
+    const liveTargetingRadius = Math.max(1, parseFloat(getVal('range')) * (1 + getPerkValue('radar') / 100));
+    return Math.min(0.78, safeRadius / liveTargetingRadius);
+  }
+  function drawWorld(callback) {
+    const isPortraitMobile = window.matchMedia('(orientation: portrait)').matches &&
+      (window.innerWidth <= 700 || document.getElementById('app')?.classList.contains('device-mobile'));
+    if (!isPortraitMobile) { callback(); return; }
+    ctx.save();
+    ctx.translate(game.cx, game.cy);
+    ctx.scale(getMobileWorldVisualScale(), getMobileWorldVisualScale());
+    ctx.translate(-game.cx, -game.cy);
+    try { callback(); } finally { ctx.restore(); }
+  }
+
+  function drawGrid(dt) {
+    bgOffset = (bgOffset + 20 * dt) % 40;
+    ctx.lineWidth = 1;
+    let camOffsetX = (canvas.width/2 - game.cx) % 40;
+
+    for(let y = 0; y < canvas.height; y+=40) {
+      let alpha = y/canvas.height; ctx.strokeStyle = `rgba(0, 255, 255, ${0.1 * alpha})`;
+      ctx.beginPath(); ctx.moveTo(0, (y + bgOffset)); ctx.lineTo(canvas.width, (y + bgOffset)); ctx.stroke();
+    }
+    for(let x = -40; x < canvas.width + 40; x+=40) {
+      ctx.strokeStyle = `rgba(0, 255, 255, 0.05)`;
+      ctx.beginPath(); ctx.moveTo(x + camOffsetX, 0); ctx.lineTo(x + camOffsetX, canvas.height); ctx.stroke();
+    }
+  }
+
+  function loop(ts) {
+    if(!game.running) return; requestAnimationFrame(loop);
+    if(game.paused) { game.last = ts; return; }
+    const realDt = Math.min(0.075, Math.max(0, (ts - game.last) / 1000));
+    game.last = ts;
+    game.dt = realDt * getEffectiveGameSpeed();
+    player.playTime = (player.playTime || 0) + realDt;
+    game.achievementCheckT += game.dt; game.playSaveT += game.dt;
+    run.elapsed = (run.elapsed || 0) + realDt;
+    if (run.mode === 'level') updateLevelModeProgress(); else updateMissionProgress();
+    if (!game.running) return;
+    if(game.achievementCheckT >= 1) { game.achievementCheckT = 0; checkAchievements(); }
+    if(game.playSaveT >= 15) { game.playSaveT = 0; saveGame(); }
+
+    // Keep the tower and the action centered. Opening a UI panel must not move gameplay sideways.
+    game.cx = canvas.width / 2;
+    game.cy = canvas.height / 2;
+    tower.x = game.cx;
+    tower.y = game.cy;
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    drawGrid(game.dt);
+    
+    if(game.shake > 0) {
+      game.shake -= game.dt;
+      canvas.style.setProperty('--shake-x', `${(Math.random()-0.5)*4}px`);
+      canvas.style.setProperty('--shake-y', `${(Math.random()-0.5)*4}px`);
+    } else {
+      canvas.style.setProperty('--shake-x', '0px');
+      canvas.style.setProperty('--shake-y', '0px');
+    }
+
+    if(game.toSpawn <= 0 && game.ents.e.length === 0) {
+      run.wave++;
+      run.bossAlreadyKilledInWave = false;
+      if(tower) { const repairPct=parseFloat(getVal('waveRepair'))+parseFloat(getVal('repairBurst')); if(repairPct>0) tower.hp=Math.min(tower.maxHp,tower.hp+tower.maxHp*repairPct/100); }
+      game.toSpawn = getWaveEnemyCount(run.wave);
+      run.coins += Math.max(1,Math.floor((Math.floor(run.wave/2)+2+Math.floor(parseFloat(getVal('coinCache'))))*0.4));
+      const waveCashReward=Math.floor(parseFloat(getVal('waveBonus'))+Math.floor(run.wave*parseFloat(getVal('waveDividend'))/100));
+      run.cash+=Math.floor(waveCashReward*(1+getWaveDecisionValue('double_reward'))*(1+getWaveDecisionValue('chaos_cash')));
+      updateHUD(); AudioSys.coin(); checkAchievements();
+      const completedWave = run.wave - 1;
+      const freeUpgrades = FREE_UPGRADE_CATEGORIES.map(category => ({category,key:applyFreeUpgradeChance(category)})).filter(item => item.key);
+      // Free upgrades are applied silently; game notifications are disabled.
+      tickWaveDecisionEffects();
+      const perkMilestone = completedWave % 10 === 5;
+      const decisionMilestone = completedWave % 10 === 0;
+      const perksAvailable = perkDefs.some(p => getPerkStacks(p.id) < p.maxStacks);
+      const showPerk = perkMilestone && perksAvailable;
+      const showDecision = decisionMilestone || (perkMilestone && !perksAvailable);
+      if (showPerk) showPerkChoice();
+      else if (showDecision) showWaveDecisionChoice();
+      saveRunCheckpoint(showPerk, showDecision, freeUpgrades, true); 
+    }
+    game.spawnT -= game.dt;
+    if(game.spawnT <= 0 && game.toSpawn > 0 && game.ents.e.length < getWaveActiveEnemyCap(run.wave)) { game.ents.e.push(new Enemy(run.wave)); game.toSpawn--; game.spawnT = getWaveSpawnInterval(run.wave); updateHUD(); }
+
+    // Show the exact targeting boundary, including the Extended Radar perk.
+    drawWorld(() => {
+      const targetingRadius = parseFloat(getVal('range')) * (1 + getPerkValue('radar') / 100);
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(game.cx, game.cy, targetingRadius, 0, Math.PI * 2);
+      // A subtle dark under-stroke keeps the exact range boundary readable over the grid.
+      ctx.strokeStyle = 'rgba(8, 13, 22, 0.72)';
+      ctx.lineWidth = 4;
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(195, 205, 215, 0.88)';
+      ctx.lineWidth = 2.4;
+      ctx.stroke();
+      ctx.restore();
+    });
+
+    tower.update(game.dt); drawWorld(() => tower.draw());run.comboTimer=Math.max(0,run.comboTimer-game.dt);if(!run.comboTimer)run.combo=0;
+
+    for(let i = game.ents.p.length - 1; i >= 0; i--) {
+      let p = game.ents.p[i]; p.update(game.dt); drawWorld(() => p.draw());
+      if((!(p instanceof Projectile) && (p.x<0||p.x>canvas.width||p.y<0||p.y>canvas.height)) || p.dead) { game.ents.p.splice(i,1); continue; }
+      
+      let hitSomething = false;
+      for(let j = game.ents.e.length - 1; j >= 0; j--) {
+        let e = game.ents.e[j];
+        if(p instanceof Missile) {
+            if(p.collide(e, game.ents.e)) { hitSomething = true; break; }
+        } 
+        else if(p.collide(e)) {
+          let dmg = p instanceof Laser ? p.d * game.dt : p.d;
+          if(e.type === 'Boss') dmg *= 1 + parseFloat(getVal('bossDamage'))/100 + getWaveDecisionValue('boss_hunter');
+          if(e.hp <= e.maxHp*0.3) dmg *= 1 + parseFloat(getVal('executionProtocol'))/100 + getWaveDecisionValue('executioner');
+          if(!(p instanceof Laser)) {
+             game.ents.txt.push(new FText(e.x, e.y-e.r, Math.floor(dmg), p.crit ? "#ff3366" : "#fff", p.crit ? 24 : 14));
+             createParts(p.x, p.y, p.crit ? "#ff3366" : "#0ff", p.crit?10:3, 3);
+          }
+          if(e.hit(dmg)) {
+            const defeatedBoss = e.type === 'Boss';
+            game.ents.e.splice(j,1);
+            updateHUD();
+            // The next wave transition creates the next stable checkpoint. Saving here
+            // would replay this Boss if the player resumed before that transition.
+          }
+          
+          if(p instanceof Laser) { /* Laser pierces all targets. */ }
+          else if((p.pierceRemaining||0)>0){p.pierceRemaining--;p.dead=false;}
+          else {hitSomething=true;break;}
+        }
+      }
+      if(hitSomething) game.ents.p.splice(i,1);
+    }
+
+    // Remove any Boss volleys left on screen as soon as the Boss is defeated.
+    // These bullets belong to the Boss and must not keep damaging the tower after its defeat.
+    if(!game.ents.e.some(enemy => enemy.type === 'Boss' && enemy.hp > 0)) {
+      for(let i=game.ents.b.length-1;i>=0;i--) {
+        const bullet=game.ents.b[i];
+        if(bullet.kind==='boss') { bulletPool.release(bullet); game.ents.b.splice(i,1); }
+      }
+    }
+    for (let i = game.ents.b.length - 1; i >= 0; i--) {
+      const bullet = game.ents.b[i];
+      bullet.update(game.dt);
+      if (bullet.dead) {
+        bulletPool.release(bullet);
+        game.ents.b.splice(i, 1);
+        continue;
+      }
+      drawWorld(() => bullet.draw());
+      const distance = MathUtils.dist(bullet.x, bullet.y, tower.x, tower.y);
+      if (distance < tower.r + bullet.r) {
+        if (tower.invuln <= 0) tower.hit(bullet.damage, { type: bullet.kind === 'boss' ? 'Boss' : 'Projectile', isProjectile: true });
+        if (!game.running) return;
+        bulletPool.release(bullet);
+        game.ents.b.splice(i, 1);
+        continue;
+      }
+      if (!bullet.grazed && distance < tower.r + bullet.r + 18) {
+        bullet.grazed = true;
+        run.graze++;
+        AudioSys.play('graze', 1500, 900, 'sine', .08, .08);
+      }
+      // Enemies can spawn outside the viewport on portrait phones. Keep their
+      // bullets alive long enough to travel into the visible play area.
+      const maxBulletDistance = Math.max(canvas.width, canvas.height) * 2.2;
+      if (distance > maxBulletDistance) {
+        bulletPool.release(bullet);
+        game.ents.b.splice(i, 1);
+      }
+    }
+    for(let i = game.ents.e.length - 1; i >= 0; i--) {
+      let e = game.ents.e[i];
+      if(e.hp <= 0) { game.ents.e.splice(i,1); continue; } 
+      e.update(game.dt);
+      const dx = e.x - tower.x;
+      const dy = e.y - tower.y;
+      const distance = Math.hypot(dx, dy) || 1;
+      const contactDistance = tower.r + e.r + 2;
+      if(e.isAttackingTower) {
+        // Keep the enemy at its arrival position; only gently separate overlapping attackers.
+        let pushX = 0, pushY = 0;
+        for(let j = 0; j < game.ents.e.length; j++) {
+          const other = game.ents.e[j];
+          if(other === e || !other.isAttackingTower || other.hp <= 0) continue;
+          let sx = e.x - other.x, sy = e.y - other.y;
+          let spacing = Math.hypot(sx, sy);
+          const minSpacing = e.r + other.r + 5;
+          if(spacing < minSpacing) {
+            if(spacing < 0.001) {
+              const angle = (i + 1) * 2.399963229728653;
+              sx = Math.cos(angle);
+              sy = Math.sin(angle);
+              spacing = 1;
+            }
+            const force = (minSpacing - spacing) * 0.45;
+            pushX += (sx / spacing) * force;
+            pushY += (sy / spacing) * force;
+          }
+        }
+        // Only separate along the tower's circumference, never toward its center.
+        const radialX = e.x - tower.x;
+        const radialY = e.y - tower.y;
+        const radialLength = Math.hypot(radialX, radialY) || 1;
+        const radialUnitX = radialX / radialLength;
+        const radialUnitY = radialY / radialLength;
+        const inwardOutwardPush = pushX * radialUnitX + pushY * radialUnitY;
+        pushX -= inwardOutwardPush * radialUnitX;
+        pushY -= inwardOutwardPush * radialUnitY;
+        const separationStep = Math.min(1, game.dt * 6);
+        e.x += pushX * separationStep;
+        e.y += pushY * separationStep;
+        const safeDx = e.x - tower.x;
+        const safeDy = e.y - tower.y;
+        const safeDistance = Math.hypot(safeDx, safeDy) || 1;
+        const minTowerDistance = tower.r + e.r + 2;
+        if(safeDistance < minTowerDistance) {
+          e.x = tower.x + (safeDx / safeDistance) * minTowerDistance;
+          e.y = tower.y + (safeDy / safeDistance) * minTowerDistance;
+        }
+        e.contactDamageTimer -= game.dt;
+        if(e.contactDamageTimer <= 0) {
+          tower.hit(e.dmg, e);
+          if(!game.running)return;
+          e.contactDamageTimer = 1;
+        }
+      } else if(distance < contactDistance) {
+        // Lock the enemy exactly where it reached the tower; do not reposition it.
+        e.isAttackingTower = true;
+        e.contactDamageTimer = 0.35 + (Math.abs(Math.sin(e.phase)) * 0.65);
+      }
+      drawWorld(() => e.draw());
+    }
+    
+    for(let i = game.ents.part.length - 1; i >= 0; i--) { let p = game.ents.part[i]; p.update(game.dt); drawWorld(() => p.draw()); if(p.l<=0) game.ents.part.splice(i,1); }
+    for(let i = game.ents.txt.length - 1; i >= 0; i--) { let t = game.ents.txt[i]; t.update(game.dt); drawWorld(() => t.draw()); if(t.l<=0) game.ents.txt.splice(i,1); }
+    
+    updateHUD();
+    updateGameSpeedButton();
+  }
++formatMoney(run.cash||0)+'</strong></span><span>COINS <strong>'+formatMoney(run.coins||0)+'</strong></span></div><div class="perk-options decision-options">'+picks.map(d=>'<article class="perk-option decision-option rarity-'+d.rarity+'"><button type="button" class="perk-info-trigger" aria-label="Show details for '+d.name+'" onclick="showWaveDecisionInfo(\''+d.id+'\',\''+d.rarity+'\')"><span>'+d.icon+'</span><strong>'+d.name+'</strong><small class="decision-category">'+d.category+'</small><small class="perk-rarity-label">'+waveDecisionRarities[d.rarity].label+'</small><small>'+getWaveDecisionDescription(d)+'</small><small class="perk-info-hint">VIEW DETAILS</small></button><button type="button" class="perk-select-action" onclick="chooseWaveDecision(\''+d.id+'\',\''+d.rarity+'\')">SELECT ADVANTAGE</button></article>').join('')+'</div></div>';
     panel.classList.add('visible');
   }
   function chooseWaveDecision(id,rarity='common'){
