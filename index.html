@@ -39,6 +39,18 @@
   <canvas id="gameCanvas"></canvas>
   <div id="notif-box"></div>
   <div id="perk-choice" aria-live="polite"></div>
+  <div id="run-info-modal" class="run-info-modal" aria-hidden="true">
+    <section class="run-info-card" role="dialog" aria-modal="true" aria-labelledby="run-info-title" aria-describedby="run-info-description">
+      <div class="run-info-heading">
+        <span id="run-info-eyebrow">UPGRADE DETAILS</span>
+        <button id="run-info-close" class="run-info-close" type="button" aria-label="Close details">×</button>
+      </div>
+      <h2 id="run-info-title">UPGRADE</h2>
+      <p id="run-info-description"></p>
+      <div id="run-info-stats" class="run-info-stats"></div>
+      <button id="run-info-confirm" class="btn run-info-confirm" type="button">GOT IT</button>
+    </section>
+  </div>
   
   <div id="hud" class="hud">
     <div class="top-bar game-topbar">
