@@ -373,7 +373,7 @@
     });
     document.getElementById('upg-category-title').innerText = category + ' UPGRADES';
     document.querySelectorAll('.upg-btn').forEach(btn => {
-      btn.style.display = isVisibleUpgrade(btn.dataset.stat) && statDefs[btn.dataset.stat].category === category ? 'flex' : 'none';
+      btn.style.display = isVisibleUpgrade(btn.dataset.stat) && statDefs[btn.dataset.stat].category === category ? 'grid' : 'none';
     });
   }
 
