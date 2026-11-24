@@ -760,9 +760,40 @@
     notify('PERK UNLOCKED',selectedPerk.name+' · '+perkRarities[rarity].label);
   }
 
-  // Notifications are disabled globally; keep this function as a no-op
-  // so existing game events continue working without showing pop-ups.
+  // General notifications stay disabled. Free Upgrade rewards are the one
+  // exception because players need visible confirmation when a chance is triggered.
   function notify(title, msg) { return; }
+
+  function showFreeUpgradeNotifications(upgrades) {
+    const box = document.getElementById('notif-box');
+    if (!box || !Array.isArray(upgrades) || !upgrades.length) return;
+
+    upgrades.forEach((item, index) => {
+      const upgradeName = statDefs[item?.key]?.n;
+      if (!upgradeName) return;
+
+      const notification = document.createElement('div');
+      notification.className = 'notif free-upgrade-notif';
+      notification.setAttribute('role', 'status');
+      notification.setAttribute('aria-live', 'polite');
+
+      const heading = document.createElement('h4');
+      heading.textContent = 'FREE UPGRADE';
+      const message = document.createElement('p');
+      message.textContent = upgradeName + ' · +1 LEVEL';
+
+      notification.append(heading, message);
+      box.appendChild(notification);
+
+      window.setTimeout(() => {
+        if (!notification.isConnected) return;
+        notification.style.transition = 'opacity .28s ease, transform .28s ease';
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateY(-6px)';
+        window.setTimeout(() => notification.remove(), 300);
+      }, 4200 + index * 250);
+    });
+  }
 
   function getTieredMultiplier(level, rates) {
     let remaining = Math.max(0, Math.floor(Number(level) || 0));
@@ -1130,6 +1161,12 @@
     refreshResumeUI();
     if (checkpoint.pendingPerk) showPerkChoice();
     else if (checkpoint.pendingDecision) showWaveDecisionChoice();
+    if (pendingFreeUpgrades.length) {
+      showFreeUpgradeNotifications(pendingFreeUpgrades);
+      // These upgrades are already part of checkpoint.run. Clear only the
+      // notification queue so reopening the same run does not show them twice.
+      saveRunCheckpoint(!!checkpoint.pendingPerk, !!checkpoint.pendingDecision, [], true);
+    }
     requestAnimationFrame(loop);
     if (typeof window.startNeonLeaderboardRun === 'function') window.startNeonLeaderboardRun();
   }
@@ -1349,7 +1386,8 @@
       const showDecision = decisionMilestone || (perkMilestone && !perksAvailable);
       if (showPerk) showPerkChoice();
       else if (showDecision) showWaveDecisionChoice();
-      saveRunCheckpoint(showPerk, showDecision, freeUpgrades, true); 
+      saveRunCheckpoint(showPerk, showDecision, freeUpgrades, true);
+      showFreeUpgradeNotifications(freeUpgrades);
     }
     game.spawnT -= game.dt;
     if(game.spawnT <= 0 && game.toSpawn > 0 && game.ents.e.length < getWaveActiveEnemyCap(run.wave)) { game.ents.e.push(new Enemy(run.wave)); game.toSpawn--; game.spawnT = getWaveSpawnInterval(run.wave); updateHUD(); }
