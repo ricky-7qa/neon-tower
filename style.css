@@ -4775,6 +4775,7 @@
 @media (min-width:701px) {
   #app.device-desktop #upg-content {
     grid-template-columns:minmax(0,1fr) !important;
+    padding-top:96px !important;
   }
   #app.device-desktop #upg-content .upg-info-trigger {
     font-size:clamp(10px,.9vw,13px);
