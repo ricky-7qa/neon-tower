@@ -84,10 +84,30 @@
   }
   function restoreCheckpointPlayerProgress(snapshot) {
     if (!snapshot || typeof snapshot !== 'object') return false;
-    player.coins = Math.max(0, Number(snapshot.coins) || 0);
+
+    // The checkpoint restarts the interrupted wave, but the permanent wallet may
+    // have changed since that checkpoint (for example, level or weekly rewards,
+    // or purchases made elsewhere). Never replace that newer balance with the
+    // older checkpoint balance. Roll back only achievement payouts from this
+    // interrupted wave so they cannot be claimed twice after the wave restarts.
+    const savedAchievements = Array.isArray(snapshot.achievements) ? snapshot.achievements : [];
+    const savedAchievementSet = new Set(savedAchievements);
+    const currentAchievements = Array.isArray(player.achievements) ? player.achievements : [];
+    let achievementCoinsToRollBack = 0;
+
+    for (const key of new Set(currentAchievements)) {
+      if (savedAchievementSet.has(key)) continue;
+      const match = /^([a-z]+)_(\d+)$/.exec(String(key));
+      if (!match) continue;
+      const definition = achvDefs.find(item => item.id === match[1]);
+      const tier = definition?.tiers?.[Number(match[2]) - 1];
+      if (tier) achievementCoinsToRollBack += Math.max(0, Number(tier.reward) || 0);
+    }
+
+    player.coins = Math.max(0, (Number(player.coins) || 0) - achievementCoinsToRollBack);
     player.totalKills = Math.max(0, Number(snapshot.totalKills) || 0);
     player.bossKills = Math.max(0, Number(snapshot.bossKills) || 0);
-    player.achievements = Array.isArray(snapshot.achievements) ? [...snapshot.achievements] : [];
+    player.achievements = [...savedAchievements];
     return true;
   }
   function formatMoney(value) {
