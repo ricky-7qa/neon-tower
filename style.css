@@ -4693,7 +4693,7 @@
 /* Upgrade cards: equal 50/50 columns, with a full-size details area and a compact purchase control. */
 #app #upg-content .upg-btn {
   box-sizing:border-box !important;
-  display:grid !important;
+  display:grid;
   grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
   grid-auto-rows:minmax(44px,auto);
   align-items:stretch;
