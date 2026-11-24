@@ -4769,3 +4769,22 @@
     letter-spacing:0;
   }
 }
+
+
+/* Desktop upgrade panel: one full-width card per row so its 50/50 controls remain readable. */
+@media (min-width:701px) {
+  #app.device-desktop #upg-content {
+    grid-template-columns:minmax(0,1fr) !important;
+  }
+  #app.device-desktop #upg-content .upg-info-trigger {
+    font-size:clamp(10px,.9vw,13px);
+    letter-spacing:.55px;
+    overflow-wrap:normal;
+    word-break:normal;
+    hyphens:none;
+  }
+  #app.device-desktop #upg-content .upg-buy-action {
+    font-size:clamp(9px,.85vw,11px);
+    letter-spacing:.45px;
+  }
+}
