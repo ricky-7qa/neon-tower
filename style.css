@@ -4810,3 +4810,84 @@
   #perk-choice .perk-info-trigger .perk-info-hint { font-size:7px; }
   #perk-choice .perk-select-action { min-height:31px; font-size:8px; }
 }
+
+
+/* Upgrade cards: equal 50/50 columns, with a full-size details area and a compact purchase control. */
+#app #upg-content .upg-btn {
+  box-sizing:border-box !important;
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+  grid-auto-rows:minmax(44px,auto);
+  align-items:stretch;
+  gap:6px;
+  width:100%;
+  min-width:0;
+  min-height:58px;
+  padding:6px;
+}
+#app #upg-content .upg-info-trigger {
+  grid-column:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  min-width:0;
+  min-height:44px;
+  box-sizing:border-box;
+  padding:5px 4px;
+  border:1px solid rgba(0,220,255,.42);
+  border-radius:6px;
+  background:linear-gradient(160deg,rgba(0,70,90,.34),rgba(0,18,30,.82));
+  color:inherit;
+  font:900 clamp(8px,1vw,11px)/1.25 Orbitron,sans-serif;
+  letter-spacing:.45px;
+  text-align:center;
+  text-transform:uppercase;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  cursor:pointer;
+}
+#app #upg-content .upg-info-trigger:hover {
+  border-color:rgba(0,235,255,.8);
+  background:linear-gradient(160deg,rgba(0,95,120,.48),rgba(0,25,40,.9));
+  box-shadow:inset 0 0 12px rgba(0,220,255,.09);
+}
+#app #upg-content .upg-buy-action {
+  grid-column:2;
+  align-self:center;
+  justify-self:stretch;
+  width:100%;
+  min-width:0;
+  min-height:34px;
+  height:34px;
+  box-sizing:border-box;
+  padding:5px 4px;
+  font-size:clamp(8px,.9vw,10px);
+  letter-spacing:.35px;
+}
+@media (max-width:700px) {
+  #app #upg-content .upg-btn {
+    min-height:56px;
+    padding:5px;
+    gap:5px;
+  }
+  #app #upg-content .upg-info-trigger {
+    min-height:44px;
+    padding:4px 3px;
+    font-size:9px;
+    letter-spacing:.2px;
+  }
+  #app #upg-content .upg-buy-action {
+    min-height:32px;
+    height:32px;
+    padding:4px 2px;
+    font-size:8px;
+    letter-spacing:0;
+  }
+}
+@media (max-width:360px) {
+  #app #upg-content .upg-info-trigger {
+    font-size:8px;
+    letter-spacing:0;
+  }
+}
