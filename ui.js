@@ -456,8 +456,8 @@
           btn.style.removeProperty('box-shadow');
         }
         const label=waveLocked ? 'LOCKED · WAVE '+unlockWave : m ? 'MAX' : '$'+formatMoney(c);
-        const currentEffect=k==='defensePercent'?' · '+getVal(k)+'%':'';
-        infoButton.innerHTML = '<span style="color:' + d.col + '">' + d.n + ' · LVL ' + Math.min(maxLevel||999,permanentLevel+l) + currentEffect + '</span><small>VIEW DETAILS</small>';
+        infoButton.textContent = d.n;
+        infoButton.style.color = d.col || '#c9f7ff';
         buyButton.textContent = label;
       }
     });
