@@ -166,3 +166,5 @@
   .skins-trade-offers,.skins-trade-inventory{grid-template-columns:1fr}.skins-search-row{flex-direction:column}.skins-search-row .btn{width:100%}
   .skins-trade-actions{flex-direction:column}.skins-content-heading{align-items:start;flex-direction:column}
 }
+.skins-exclusive-label{display:inline-flex;align-items:center;margin-top:8px;padding:4px 7px;border:1px solid rgba(255,207,95,.35);border-radius:4px;background:rgba(255,190,55,.08);color:#ffd36b;font:800 8px Orbitron,sans-serif;letter-spacing:1px}
+.skins-exclusive-note{margin:5px 0;color:#e5c779;font:700 8px Orbitron,sans-serif;line-height:1.5}
