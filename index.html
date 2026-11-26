@@ -370,11 +370,11 @@
 <script src="engine.js?v=20261126-skins-v1"></script>
 <script src="level-mode-config.js?v=20261121-desktop-core-upgrades-v1"></script>
 <script src="ui.js?v=20261126-skins-v1"></script>
-<script src="skins.js?v=20261126-skins-v2"></script>
+<script src="skins.js?v=20261126-skins-v3"></script>
 <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", function () {
-      navigator.serviceWorker.register("./sw.js?v=20261126-skins-v1", { updateViaCache: "none" }).catch(function (error) {
+      navigator.serviceWorker.register("./sw.js?v=20261126-skins-v2", { updateViaCache: "none" }).catch(function (error) {
         console.warn("Neon Tower offline support could not be enabled:", error);
       });
     });
