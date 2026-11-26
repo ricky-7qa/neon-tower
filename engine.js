@@ -318,11 +318,19 @@
     return Math.max(0, Number(bonuses && bonuses[stat]) || 0);
   };
   window.getNeonSkinExtraCoins = function(baseAmount, stat, carryKey) {
-    if (!run.skinBonusFractions) run.skinBonusFractions = {boss:0,wave:0};
+    if (!run.skinBonusFractions) run.skinBonusFractions = {minion:0,boss:0,wave:0};
     const percent = window.getNeonRunSkinBonus(stat);
     const total = (Number(run.skinBonusFractions[carryKey]) || 0) + Math.max(0, Number(baseAmount) || 0) * percent / 100;
     const extra = Math.floor(total);
     run.skinBonusFractions[carryKey] = total - extra;
+    return extra;
+  };
+  window.getNeonSkinExtraCash = function(baseAmount, stat, carryKey) {
+    if (!run.skinBonusFractions) run.skinBonusFractions = {minion:0,boss:0,wave:0};
+    const key = String(carryKey || 'minion');
+    const total = (Number(run.skinBonusFractions[key]) || 0) + Math.max(0, Number(baseAmount) || 0) * window.getNeonRunSkinBonus(stat) / 100;
+    const extra = Math.floor(total);
+    run.skinBonusFractions[key] = total - extra;
     return extra;
   };
   let targetEnemy = null;
@@ -1177,7 +1185,7 @@
     document.getElementById('hud').classList.add('active-hud');
     run = checkpoint.run;
     run.skinSnapshot = run.skinSnapshot || {equipped:{},bonuses:{fire_rate:0,enemy_cash:0,boss_coins:0,wave_coins:0}};
-    run.skinBonusFractions = run.skinBonusFractions || {boss:0,wave:0};
+    run.skinBonusFractions = run.skinBonusFractions || {minion:0,boss:0,wave:0};
     // Older checkpoints were saved mid-wave and did not preserve active enemies.
     // Recreate only enemies that had not already been defeated. New version-2
     // checkpoints are wave-start snapshots, so this normally equals the full count.
