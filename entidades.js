@@ -414,7 +414,6 @@
       const rewardScale = 5 * Math.pow(1.055, earlyRewardLevels) * Math.pow(1.045, advancedRewardLevels) * Math.pow(1.065, endgameRewardLevels);
       this.val=Math.floor(rewardScale*rewardM*(1+(this.type!=='Minion'?getWaveDecisionValue('bounty_hunter'):0)+getWaveDecisionValue('elite_cash')));
       }
-      if(this.type === 'Minion') this.val = Math.floor(this.val * (1 + (window.getNeonRunSkinBonus ? window.getNeonRunSkinBonus('enemy_cash') : 0) / 100));
       this.fireCd = (this.type === "Boss" ? 1.25 : 0.9) + Math.random() * 1.5;
       this.isAttackingTower = false;
       this.contactAngle = 0;
