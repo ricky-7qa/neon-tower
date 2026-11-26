@@ -1,12 +1,14 @@
-const CACHE_NAME = "neon-tower-pwa-v76";
+const CACHE_NAME = "neon-tower-pwa-v77";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./style.css?v=20261121-new-level-hard-centered",
-  "./engine.js?v=20261121-menu-mode-grid-v1",
+  "./style.css?v=20261126-skins-v1",
+  "./skins.css?v=20261126-skins-v1",
+  "./engine.js?v=20261126-skins-v1",
   "./level-mode-config.js?v=20261121-desktop-core-upgrades-v1",
-  "./entidades.js?v=20261121-desktop-core-upgrades-v1",
-  "./ui.js?v=20261121-desktop-core-upgrades-v1",
+  "./entidades.js?v=20261126-skins-v1",
+  "./ui.js?v=20261126-skins-v1",
+  "./skins.js?v=20261126-skins-v1",
   "./manifest.webmanifest",
   "./neon-tower-icon.svg"
 ];
