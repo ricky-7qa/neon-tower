@@ -21,6 +21,169 @@
     ctx.restore();
   }
 
+
+  function drawNeonSkinPlate(x,y,w,h,angle,accent) {
+    ctx.save(); ctx.translate(x,y); ctx.rotate(angle);
+    ctx.shadowBlur=12; ctx.shadowColor=accent;
+    ctx.fillStyle='rgba(8,20,34,0.96)'; ctx.strokeStyle=accent; ctx.lineWidth=2;
+    ctx.beginPath();
+    if(ctx.roundRect) ctx.roundRect(-w/2,-h/2,w,h,Math.min(5,h/3)); else ctx.rect(-w/2,-h/2,w,h);
+    ctx.fill(); ctx.stroke();
+    ctx.strokeStyle='rgba(230,250,255,0.5)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(-w*.27,0); ctx.lineTo(w*.27,0); ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawNeonSkinShard(x,y,size,angle,accent) {
+    ctx.save(); ctx.translate(x,y); ctx.rotate(angle);
+    ctx.shadowBlur=14; ctx.shadowColor=accent;
+    ctx.fillStyle='rgba(14,32,49,0.95)'; ctx.strokeStyle=accent; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(0,-size); ctx.lineTo(size*.62,-size*.1);
+    ctx.lineTo(size*.34,size); ctx.lineTo(-size*.34,size); ctx.lineTo(-size*.62,-size*.1); ctx.closePath();
+    ctx.fill(); ctx.stroke();
+    ctx.strokeStyle='rgba(255,255,255,.55)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(0,-size*.58); ctx.lineTo(0,size*.58); ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawTowerSkinDetails(towerInstance, skin) {
+    if(!skin) return;
+    const id=skin.skin_id, rarity=skin.rarity, plus=Number(skin.plus_level)>0;
+    const accent=rarity==='legendary'?'#ffd36b':rarity==='epic'?'#c17bff':rarity==='rare'?'#54b9ff':'#8de6ed';
+    const pulse=1+Math.sin((performance.now()/1000)*2.2)*.045;
+    ctx.save(); ctx.translate(towerInstance.x,towerInstance.y);
+    ctx.globalCompositeOperation='source-over';
+
+    if(id==='tower_foundry_mk1') {
+      drawNeonSkinPlate(-43,-14,18,30,-.18,accent); drawNeonSkinPlate(43,-14,18,30,.18,accent);
+      drawNeonSkinPlate(-26,43,22,10,-.3,accent); drawNeonSkinPlate(26,43,22,10,.3,accent);
+      ctx.strokeStyle=accent; ctx.lineWidth=2;
+      [-1,1].forEach(side=>{for(let v=0;v<3;v++){ctx.beginPath();ctx.moveTo(side*42-4,-9+v*7);ctx.lineTo(side*42+4,-9+v*7);ctx.stroke();}});
+    } else if(id==='tower_arc_warden') {
+      [-1,1].forEach(side=>{
+        ctx.save();ctx.translate(side*45,-6);ctx.rotate(side*.22);
+        ctx.strokeStyle=accent;ctx.lineWidth=4;ctx.shadowBlur=16;ctx.shadowColor=accent;
+        ctx.beginPath();ctx.moveTo(-7,22);ctx.lineTo(0,-16);ctx.lineTo(7,22);ctx.stroke();
+        ctx.beginPath();ctx.arc(0,0,13,0,Math.PI*2);ctx.stroke();
+        ctx.fillStyle='#e7ffff';ctx.beginPath();ctx.arc(0,0,3.5,0,Math.PI*2);ctx.fill();
+        ctx.restore();
+      });
+      ctx.strokeStyle=accent;ctx.lineWidth=2;ctx.setLineDash([3,5]);ctx.beginPath();ctx.arc(0,0,54,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+    } else if(id==='tower_void_architect') {
+      ctx.strokeStyle=accent;ctx.lineWidth=2;ctx.setLineDash([7,5]);ctx.beginPath();ctx.ellipse(0,0,60,48,pulse*.2,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+      drawNeonSkinShard(-57,-20,11,-.5,accent);drawNeonSkinShard(57,-20,11,.5,accent);
+      drawNeonSkinShard(-42,45,8,.35,accent);drawNeonSkinShard(42,45,8,-.35,accent);
+    } else if(id==='tower_solar_crown'||id==='exclusive_apex_founder') {
+      ctx.strokeStyle=accent;ctx.lineWidth=3;ctx.shadowBlur=20;ctx.shadowColor=accent;
+      ctx.beginPath();ctx.arc(0,0,59,Math.PI*1.12,Math.PI*1.88);ctx.stroke();
+      for(let i=0;i<7;i++){
+        const a=Math.PI*1.12+i*(Math.PI*.76/6),x=Math.cos(a)*57,y=Math.sin(a)*57;
+        ctx.save();ctx.translate(x,y);ctx.rotate(a+Math.PI/2);
+        ctx.beginPath();ctx.moveTo(0,-10);ctx.lineTo(5,2);ctx.lineTo(0,8);ctx.lineTo(-5,2);ctx.closePath();ctx.fillStyle=accent;ctx.fill();ctx.restore();
+      }
+    } else {
+      drawNeonSkinPlate(-44,0,14,26,-.25,accent);drawNeonSkinPlate(44,0,14,26,.25,accent);
+    }
+
+    if(rarity==='rare'||rarity==='epic'||rarity==='legendary'||plus) {
+      drawNeonSkinPlate(-52,22,12,22,-.48,accent);drawNeonSkinPlate(52,22,12,22,.48,accent);
+    }
+    if(rarity==='epic'||rarity==='legendary'||plus) {
+      drawNeonSkinShard(-61,-35,9,-.35,accent);drawNeonSkinShard(61,-35,9,.35,accent);
+      ctx.strokeStyle=accent;ctx.lineWidth=1.5;ctx.globalAlpha=.7;
+      ctx.beginPath();ctx.arc(0,0,67,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;
+    }
+    if(rarity==='legendary'||plus) {
+      const nodes=plus?8:6;
+      for(let i=0;i<nodes;i++){
+        const a=(performance.now()/1600)+i*Math.PI*2/nodes;
+        const x=Math.cos(a)*72,y=Math.sin(a)*58;
+        ctx.fillStyle=accent;ctx.shadowBlur=17;ctx.shadowColor=accent;
+        ctx.beginPath();ctx.arc(x,y,plus?4.5:3.5,0,Math.PI*2);ctx.fill();
+      }
+    }
+    ctx.restore();
+  }
+
+  function drawMinionSkinDetails(enemy, skin) {
+    if(!skin) return;
+    const id=skin.skin_id,rarity=skin.rarity,plus=Number(skin.plus_level)>0;
+    const accent=rarity==='legendary'?'#ffd36b':rarity==='epic'?'#c17bff':rarity==='rare'?'#54b9ff':'#8de6ed';
+    const age=Number(enemy.age)||0;
+    ctx.save();ctx.translate(enemy.x,enemy.y);
+    if(id==='minion_pulse_drone') {
+      [-1,1].forEach(side=>{
+        ctx.save();ctx.rotate(side*.22);
+        ctx.fillStyle='#152a3a';ctx.strokeStyle=accent;ctx.lineWidth=2;ctx.shadowBlur=9;ctx.shadowColor=accent;
+        ctx.beginPath();ctx.moveTo(side*enemy.r*.55,0);ctx.lineTo(side*(enemy.r+13),-8);ctx.lineTo(side*(enemy.r+11),8);ctx.closePath();ctx.fill();ctx.stroke();
+        ctx.restore();
+      });
+      ctx.strokeStyle=accent;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,-enemy.r*.6);ctx.lineTo(0,-enemy.r-12);ctx.stroke();
+      ctx.fillStyle=accent;ctx.beginPath();ctx.arc(0,-enemy.r-12,3,0,Math.PI*2);ctx.fill();
+    } else if(id==='minion_rift_stalker') {
+      [-1,1].forEach(side=>drawNeonSkinShard(side*(enemy.r+7),0,11,side*.4,accent));
+      ctx.strokeStyle=accent;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(-enemy.r*.65,-enemy.r*.55);ctx.lineTo(0,-enemy.r-9);ctx.lineTo(enemy.r*.65,-enemy.r*.55);ctx.stroke();
+      ctx.strokeStyle='rgba(255,255,255,.6)';ctx.lineWidth=1;ctx.beginPath();ctx.arc(0,0,enemy.r+4,Math.PI,Math.PI*2);ctx.stroke();
+    } else if(id==='minion_prism_wraith') {
+      ctx.strokeStyle=accent;ctx.lineWidth=1.7;ctx.setLineDash([3,4]);ctx.beginPath();ctx.arc(0,0,enemy.r+12,age*.7,age*.7+Math.PI*1.55);ctx.stroke();ctx.setLineDash([]);
+      for(let i=0;i<3;i++){const a=age*.8+i*Math.PI*2/3;drawNeonSkinShard(Math.cos(a)*(enemy.r+13),Math.sin(a)*(enemy.r+13),6,a,accent);}
+      ctx.beginPath();ctx.moveTo(0,-enemy.r-7);ctx.lineTo(0,-enemy.r-17);ctx.stroke();
+    } else if(id==='minion_nova_herald') {
+      ctx.strokeStyle=accent;ctx.lineWidth=2.5;ctx.shadowBlur=14;ctx.shadowColor=accent;
+      ctx.beginPath();ctx.moveTo(-enemy.r*.75,-enemy.r*.55);ctx.lineTo(-enemy.r*.55,-enemy.r-10);ctx.lineTo(0,-enemy.r*.8);ctx.lineTo(enemy.r*.55,-enemy.r-10);ctx.lineTo(enemy.r*.75,-enemy.r*.55);ctx.stroke();
+      for(let i=0;i<5;i++){const a=age*.4+i*Math.PI*2/5;ctx.fillStyle=accent;ctx.beginPath();ctx.arc(Math.cos(a)*(enemy.r+11),Math.sin(a)*(enemy.r+11),2.6,0,Math.PI*2);ctx.fill();}
+    }
+    if(rarity==='rare'||rarity==='epic'||rarity==='legendary'||plus){
+      ctx.strokeStyle=accent;ctx.lineWidth=1.7;ctx.beginPath();ctx.arc(0,0,enemy.r+5,Math.PI*1.05,Math.PI*1.95);ctx.stroke();
+    }
+    if(rarity==='epic'||rarity==='legendary'||plus){
+      drawNeonSkinShard(-enemy.r-10,-enemy.r*.5,6,-.4,accent);
+      drawNeonSkinShard(enemy.r+10,-enemy.r*.5,6,.4,accent);
+    }
+    if(rarity==='legendary'||plus){
+      const count=plus?6:4;
+      for(let i=0;i<count;i++){const a=age*.9+i*Math.PI*2/count;ctx.fillStyle=accent;ctx.shadowBlur=12;ctx.shadowColor=accent;ctx.beginPath();ctx.arc(Math.cos(a)*(enemy.r+18),Math.sin(a)*(enemy.r+18),2.6,0,Math.PI*2);ctx.fill();}
+    }
+    ctx.restore();
+  }
+
+  function drawBossSkinDetails(enemy, skin) {
+    if(!skin) return;
+    const id=skin.skin_id,rarity=skin.rarity,plus=Number(skin.plus_level)>0;
+    const accent=rarity==='legendary'?'#ffd36b':rarity==='epic'?'#c17bff':rarity==='rare'?'#54b9ff':'#8de6ed';
+    const age=Number(enemy.age)||0;
+    ctx.save();ctx.translate(enemy.x,enemy.y);
+    if(id==='boss_void_regent') {
+      [-1,1].forEach(side=>drawNeonSkinPlate(side*(enemy.r+7),4,18,34,side*.26,accent));
+      ctx.strokeStyle=accent;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-enemy.r*.6,-enemy.r*.55);ctx.lineTo(0,-enemy.r-12);ctx.lineTo(enemy.r*.6,-enemy.r*.55);ctx.stroke();
+    } else if(id==='boss_dread_crown') {
+      [-1,1].forEach(side=>drawNeonSkinShard(side*(enemy.r+8),-enemy.r*.35,13,side*.22,accent));
+      ctx.strokeStyle=accent;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-enemy.r*.7,-enemy.r*.55);ctx.lineTo(-enemy.r*.38,-enemy.r-15);ctx.lineTo(0,-enemy.r*.68);ctx.lineTo(enemy.r*.38,-enemy.r-15);ctx.lineTo(enemy.r*.7,-enemy.r*.55);ctx.stroke();
+      ctx.fillStyle=accent;ctx.beginPath();ctx.arc(0,-enemy.r-14,4,0,Math.PI*2);ctx.fill();
+    } else if(id==='boss_abyss_sovereign') {
+      ctx.strokeStyle=accent;ctx.lineWidth=2.5;ctx.setLineDash([7,5]);ctx.beginPath();ctx.ellipse(0,0,enemy.r+24,enemy.r+14,age*.12,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+      for(let i=0;i<4;i++){const a=age*.28+i*Math.PI/2;drawNeonSkinShard(Math.cos(a)*(enemy.r+26),Math.sin(a)*(enemy.r+18),10,a,accent);}
+      ctx.strokeStyle=accent;ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,0,enemy.r+10,Math.PI*1.12,Math.PI*1.88);ctx.stroke();
+    } else if(id==='boss_eclipse_titan'||id==='exclusive_boss_warden') {
+      ctx.strokeStyle=accent;ctx.lineWidth=4;ctx.shadowBlur=20;ctx.shadowColor=accent;
+      ctx.beginPath();ctx.arc(0,0,enemy.r+22,0,Math.PI*2);ctx.stroke();
+      ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,enemy.r+31,age*.15,age*.15+Math.PI*1.7);ctx.stroke();
+      for(let i=0;i<7;i++){const a=-Math.PI*.85+i*Math.PI*1.7/6;ctx.save();ctx.translate(Math.cos(a)*(enemy.r+18),Math.sin(a)*(enemy.r+18));ctx.rotate(a+Math.PI/2);ctx.beginPath();ctx.moveTo(0,-12);ctx.lineTo(7,4);ctx.lineTo(0,11);ctx.lineTo(-7,4);ctx.closePath();ctx.fillStyle=accent;ctx.fill();ctx.restore();}
+    }
+    if(rarity==='rare'||rarity==='epic'||rarity==='legendary'||plus){
+      [-1,1].forEach(side=>drawNeonSkinPlate(side*(enemy.r+15),enemy.r*.42,16,30,side*.4,accent));
+    }
+    if(rarity==='epic'||rarity==='legendary'||plus){
+      ctx.strokeStyle=accent;ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.beginPath();ctx.arc(0,0,enemy.r+37,age*.16,age*.16+Math.PI*1.6);ctx.stroke();ctx.setLineDash([]);
+      drawNeonSkinShard(-enemy.r-25,0,10,-.45,accent);drawNeonSkinShard(enemy.r+25,0,10,.45,accent);
+    }
+    if(rarity==='legendary'||plus){
+      const count=plus?10:7;
+      for(let i=0;i<count;i++){const a=age*.3+i*Math.PI*2/count;ctx.fillStyle=accent;ctx.shadowBlur=16;ctx.shadowColor=accent;ctx.beginPath();ctx.arc(Math.cos(a)*(enemy.r+43),Math.sin(a)*(enemy.r+43),4,0,Math.PI*2);ctx.fill();}
+    }
+    ctx.restore();
+  }
+
   class Tower {
     constructor() {
       this.x = game.cx || canvas.width/2; this.y = game.cy || canvas.height/2; this.r = 35;
@@ -90,7 +253,7 @@
           projectile.pierceRemaining=getWaveDecisionValue('piercing_shots');
           game.ents.p.push(projectile);
         }
-        this.cdBase=1/(parseFloat(getVal('speed'))*(1+getPerkValue('rapid')/100+Object.entries(run.perks?.overload||{}).reduce((sum,[rarity,count])=>sum+(perkDefs.find(p=>p.id==='overload').speedValues[rarity]||0)*count,0)/100+getWaveDecisionValue('overdrive')+getWaveDecisionValue('rapid_fire'))*(1+parseFloat(getVal('overclockDrive'))/100)*(hasSkill('overdrive')?1.25:1));
+        this.cdBase=1/(parseFloat(getVal('speed'))*(1+getPerkValue('rapid')/100+Object.entries(run.perks?.overload||{}).reduce((sum,[rarity,count])=>sum+(perkDefs.find(p=>p.id==='overload').speedValues[rarity]||0)*count,0)/100+getWaveDecisionValue('overdrive')+getWaveDecisionValue('rapid_fire'))*(1+parseFloat(getVal('overclockDrive'))/100)*(hasSkill('overdrive')?1.25:1)*(1+(window.getNeonRunSkinBonus?window.getNeonRunSkinBonus('fire_rate'):0)/100));
       }
 
       if(hasSkill('drone') && targetEnemy) {
@@ -141,6 +304,7 @@
       
       ctx.fillStyle = '#0ff'; ctx.beginPath(); ctx.arc(0, 0, this.r*0.4, 0, Math.PI*2); ctx.fill();
       ctx.restore();
+      drawTowerSkinDetails(this, window.getNeonRunSkinVisual ? window.getNeonRunSkinVisual('tower') : null);
       if(this.muzzleFlash>0) {
         ctx.save();
         ctx.translate(this.x,this.y); ctx.rotate(this.angle);
@@ -250,6 +414,7 @@
       const rewardScale = 5 * Math.pow(1.055, earlyRewardLevels) * Math.pow(1.045, advancedRewardLevels) * Math.pow(1.065, endgameRewardLevels);
       this.val=Math.floor(rewardScale*rewardM*(1+(this.type!=='Minion'?getWaveDecisionValue('bounty_hunter'):0)+getWaveDecisionValue('elite_cash')));
       }
+      if(this.type === 'Minion') this.val = Math.floor(this.val * (1 + (window.getNeonRunSkinBonus ? window.getNeonRunSkinBonus('enemy_cash') : 0) / 100));
       this.fireCd = (this.type === "Boss" ? 1.25 : 0.9) + Math.random() * 1.5;
       this.isAttackingTower = false;
       this.contactAngle = 0;
@@ -354,6 +519,8 @@
 
     draw() {
       drawTopDown3D(ctx, this.x, this.y, this.r, this.c, this.type);
+      if(this.type === 'Minion') drawMinionSkinDetails(this, window.getNeonRunSkinVisual ? window.getNeonRunSkinVisual('enemy_minion') : null);
+      if(this.type === 'Boss') drawBossSkinDetails(this, window.getNeonRunSkinVisual ? window.getNeonRunSkinVisual('enemy_boss') : null);
       if(this.hitFlash>0) {
         ctx.save();
         ctx.globalAlpha=Math.min(1,this.hitFlash/0.14);
