@@ -13,7 +13,8 @@
   <!-- Game favicon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' stroke='%230ff' stroke-width='10' fill='none'/><circle cx='50' cy='50' r='15' fill='%23ff3366'/></svg>">
   
-  <link rel="stylesheet" href="style.css?v=20261124-wallet-checkpoint-fix-v1">
+  <link rel="stylesheet" href="style.css?v=20261126-skins-v1">
+  <link rel="stylesheet" href="skins.css?v=20261126-skins-v1">
   <script>
     window.neonAnalyticsQueue = window.neonAnalyticsQueue || [];
     window.neonTrack = function(eventData) {
@@ -170,6 +171,7 @@
         <button class="btn btn-gold" onclick="switchTab('achievements'); closeMenuDrawer()">ACHIEVEMENTS</button>
         <button class="btn btn-gold" onclick="switchTab('profile'); closeMenuDrawer()">PLAYER PROFILE</button>
         <button class="btn btn-gold" onclick="switchTab('customization'); closeMenuDrawer()">CUSTOMIZATION</button>
+        <button class="btn btn-gold skins-menu-button" onclick="switchTab('skins'); closeMenuDrawer()">SKINS</button>
         <button class="btn btn-gold" onclick="switchTab('leaderboard'); closeMenuDrawer()">LEADERBOARD</button>
       </div>
       <div class="menu-footer-actions">
@@ -205,6 +207,23 @@
       <section class="customization-panel">
         <div class="public-profile-heading"><span class="eyebrow">NEON TOWER // IDENTITY</span><h2>CUSTOMIZATION</h2><p>Unlock banners and titles by completing campaign levels. Cosmetic items do not affect gameplay.</p></div>
         <div id="customization-content"></div>
+      </section>
+    </div>
+    <div id="tab-skins" class="scroll-area skins-area" style="display:none;">
+      <section class="skins-shell">
+        <header class="skins-heading">
+          <span class="eyebrow">NEON TOWER // ARMORY</span>
+          <h2>SKIN VAULT</h2>
+          <p>Collect rare designs, enhance duplicates, and customise your tower, minions, bosses and arena.</p>
+        </header>
+        <div id="skins-account-status" class="skins-account-status" role="status" aria-live="polite">CONNECTING TO SKIN VAULT...</div>
+        <nav class="skins-subnav" aria-label="Skin sections">
+          <button type="button" class="btn btn-gold" data-skin-tab="shop" onclick="setNeonSkinTab('shop')">BOXES</button>
+          <button type="button" class="btn" data-skin-tab="collection" onclick="setNeonSkinTab('collection')">COLLECTION</button>
+          <button type="button" class="btn" data-skin-tab="merge" onclick="setNeonSkinTab('merge')">MERGE</button>
+          <button type="button" class="btn" data-skin-tab="trading" onclick="setNeonSkinTab('trading')">TRADING</button>
+        </nav>
+        <div id="skins-panel" class="skins-panel"><div class="skins-loading">LOADING SKIN DATABASE...</div></div>
       </section>
     </div>
     <div id="tab-leaderboard" class="scroll-area leaderboard-area" style="display:none;">
@@ -346,14 +365,15 @@
     button.setAttribute('aria-label', 'Open menu');
   };
 </script>
-<script src="entidades.js?v=20261121-desktop-core-upgrades-v1"></script>
-<script src="engine.js?v=20261124-free-upgrade-toast-v1"></script>
+<script src="entidades.js?v=20261126-skins-v1"></script>
+<script src="engine.js?v=20261126-skins-v1"></script>
 <script src="level-mode-config.js?v=20261121-desktop-core-upgrades-v1"></script>
-<script src="ui.js?v=20261124-wallet-checkpoint-fix-v1"></script>
+<script src="ui.js?v=20261126-skins-v1"></script>
+<script src="skins.js?v=20261126-skins-v1"></script>
 <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", function () {
-      navigator.serviceWorker.register("./sw.js?v=20261121-menu-mode-grid-v2", { updateViaCache: "none" }).catch(function (error) {
+      navigator.serviceWorker.register("./sw.js?v=20261126-skins-v1", { updateViaCache: "none" }).catch(function (error) {
         console.warn("Neon Tower offline support could not be enabled:", error);
       });
     });
