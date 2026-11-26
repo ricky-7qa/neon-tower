@@ -999,6 +999,7 @@
   /** MAIN LOOP & RENDERING **/
   let pendingLevelModeId = null;
   let gameStartPending = false;
+  let resumeRunPending = false;
   async function startGame(levelId = null) {
     if(gameStartPending) return;
     if (Number.isInteger(Number(levelId)) && Number(levelId) > 0) pendingLevelModeId = Number(levelId);
@@ -1135,14 +1136,18 @@
     if (run.mode !== 'level' && typeof submitLeaderboardResult === 'function') submitLeaderboardResult(run);
   }
   async function resumeRun(mode = 'infinite') {
+    if (resumeRunPending) return;
+    resumeRunPending = true;
     const checkpoint = readRunCheckpoint(mode === 'level' ? 'level' : 'infinite');
     if (!checkpoint || ![1, 2].includes(Number(checkpoint.version)) || !checkpoint.run || !Number.isFinite(Number(checkpoint.run.wave))) {
       // A missing Level Mode checkpoint must never clear the separate Infinite Mode run.
+      resumeRunPending = false;
       refreshResumeUI();
       return;
     }
     if (!player.tutorialSeen) {
       document.getElementById('tutorial').classList.add('visible');
+      resumeRunPending = false;
       return;
     }
     const skinAccount = typeof window.getNeonSkinAccountContext === 'function' ? window.getNeonSkinAccountContext() : null;
@@ -1150,12 +1155,14 @@
       if (!skinAccount.cloudSaveReady) {
         const status = document.getElementById('cloud-sync-status');
         if (status) status.textContent = 'CLOUD SAVE IS STILL SYNCING. RESUME YOUR RUN WHEN SYNC IS COMPLETE.';
+        resumeRunPending = false;
         return;
       }
       if (typeof window.setNeonSkinRunState === 'function' && !(await window.setNeonSkinRunState(true))) {
         await window.setNeonSkinRunState(false);
         const status = document.getElementById('cloud-sync-status');
         if (status) status.textContent = 'SKIN VAULT COULD NOT SECURE THIS RUN. CHECK YOUR CONNECTION AND TRY AGAIN.';
+        resumeRunPending = false;
         return;
       }
     }
@@ -1236,6 +1243,7 @@
       // notification queue so reopening the same run does not show them twice.
       saveRunCheckpoint(!!checkpoint.pendingPerk, !!checkpoint.pendingDecision, [], true);
     }
+    resumeRunPending = false;
     requestAnimationFrame(loop);
     if (typeof window.startNeonLeaderboardRun === 'function') window.startNeonLeaderboardRun();
   }
