@@ -380,17 +380,31 @@
   }
   window.prepareNeonRunSkinSnapshot=prepareRunSnapshot;
 
-  async function setRunState(active){
+  async function setRunState(active, interrupted){
     const c=ctx();if(!c||!c.client||!c.session)return false;
     runActive=!!active;if(heartbeatTimer){clearInterval(heartbeatTimer);heartbeatTimer=null;}
     const send=async value=>{
       const current=ctx();if(!current||!current.client||!current.session)return;
-      const response=await current.client.functions.invoke('neon-skins',{body:{action:'set_run_state',active:!!value}});
+      const body={action:'set_run_state',active:!!value};
+      if(!value&&interrupted)body.interrupted=true;
+      const response=await current.client.functions.invoke('neon-skins',{body:body});
       if(response.error)throw response.error;
     };
     if(active)heartbeatTimer=window.setInterval(()=>{if(runActive)send(true).catch(error=>console.warn('Skin run heartbeat retry failed:',error));},25000);
     try{await send(active);return true;}
-    catch(error){console.warn('Could not update the skin run state:',error);return false;}
+    catch(error){
+      console.warn('Could not update the skin run state:',error);
+      if(!active&&interrupted){
+        let attempts=0;
+        const retry=async()=>{
+          if(runActive||attempts>=6)return;
+          attempts++;
+          try{await send(false);}catch(retryError){window.setTimeout(retry,1200);}
+        };
+        window.setTimeout(retry,800);
+      }
+      return false;
+    }
   }
   window.setNeonSkinRunState=setRunState;
   window.addEventListener('pagehide',function(){
