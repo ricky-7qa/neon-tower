@@ -347,6 +347,7 @@
       window.saveRunCheckpoint(pendingPerk, pendingDecision);
     }
     game.running = false;
+    if (typeof window.setNeonSkinRunState === 'function') window.setNeonSkinRunState(false, true);
     closeGameSettings();
     if (choicePanel) choicePanel.classList.remove('visible');
     document.getElementById('gameover').classList.remove('active-layer');
