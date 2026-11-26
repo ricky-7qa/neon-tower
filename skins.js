@@ -391,7 +391,7 @@
       if(response.error)throw response.error;
     };
     if(active)heartbeatTimer=window.setInterval(()=>{if(runActive)send(true).catch(error=>console.warn('Skin run heartbeat retry failed:',error));},25000);
-    try{await send(active);return true;}
+    try{await send(active);if(!active&&isOpen())load(true).catch(()=>{});return true;}
     catch(error){
       console.warn('Could not update the skin run state:',error);
       if(!active&&interrupted){
@@ -399,7 +399,7 @@
         const retry=async()=>{
           if(runActive||attempts>=6)return;
           attempts++;
-          try{await send(false);}catch(retryError){window.setTimeout(retry,1200);}
+          try{await send(false);if(isOpen())load(true).catch(()=>{});}catch(retryError){window.setTimeout(retry,1200);}
         };
         window.setTimeout(retry,800);
       }
