@@ -1,4 +1,4 @@
-const CACHE_NAME = "neon-tower-pwa-v77";
+const CACHE_NAME = "neon-tower-pwa-v79";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -8,7 +8,7 @@ const APP_SHELL = [
   "./level-mode-config.js?v=20261121-desktop-core-upgrades-v1",
   "./entidades.js?v=20261126-skins-v1",
   "./ui.js?v=20261126-skins-v1",
-  "./skins.js?v=20261126-skins-v1",
+  "./skins.js?v=20261126-skins-v2",
   "./manifest.webmanifest",
   "./neon-tower-icon.svg"
 ];
