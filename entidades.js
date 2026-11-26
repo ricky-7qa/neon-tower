@@ -561,10 +561,11 @@
         this.hp = 0;
         AudioSys.explosion(); run.kills++; player.totalKills++;
         run.combo++; run.comboTimer = 3;
-        run.cash += Math.floor(this.val * (1 + Math.min(run.combo, 10) * 0.1) *
+        const baseKillCash = Math.floor(this.val * (1 + Math.min(run.combo, 10) * 0.1) *
           (1 + parseFloat(getVal("cashBonus"))/100) *
           (1 + parseFloat(getVal("killContract"))/100) *
           (1 + getPerkValue('fortune')/100) * (1 + getWaveDecisionValue('blood_money_cash')));
+        run.cash += baseKillCash + (this.type === 'Minion' && window.getNeonSkinExtraCash ? window.getNeonSkinExtraCash(baseKillCash,'enemy_cash','minion') : 0);
         
         if(Math.random()<getWaveDecisionValue('treasure_hunt'))run.coins=(run.coins||0)+1;
         if (hasSkill("vampire") && tower) tower.hp = Math.min(tower.maxHp, tower.hp + tower.maxHp * 0.02);
