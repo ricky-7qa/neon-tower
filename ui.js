@@ -726,6 +726,7 @@
       setCloudSyncStatus('signed-out', 'NOT SIGNED IN — CLOUD SAVE DISABLED');
       if (cloudSaveTimer) { clearTimeout(cloudSaveTimer); cloudSaveTimer = null; }
     }
+    window.dispatchEvent(new Event('neon-skin-account-change'));
     const nameInput = document.getElementById('leaderboard-name');
     if (nameInput && leaderboardSession) {
       const accountName = String(leaderboardSession.user.user_metadata?.display_name || '').trim();
@@ -879,6 +880,16 @@
     }
   }
 
+  window.getNeonSkinAccountContext = function() {
+    return {
+      client: leaderboardClient,
+      session: leaderboardSession,
+      userId: leaderboardPlayerId,
+      cloudSaveReady: cloudSaveReady,
+      refreshCloudSave: pullLatestNeonCloudSave
+    };
+  };
+
   function subscribeToNeonCloudSave(userId) {
     if (!leaderboardClient || !userId) return;
     if (cloudRealtimeChannel) leaderboardClient.removeChannel(cloudRealtimeChannel);
@@ -1003,6 +1014,7 @@
           cloudSaveReady = true;
           cloudSaveLoadingUserId = '';
           persistNeonCloudSave();
+          window.dispatchEvent(new Event('neon-skin-cloud-ready'));
           subscribeToNeonCloudSave(userId);
           cloudSavePendingOffline = false;
           setCloudSyncStatus('syncing', 'NEWER LOCAL PROGRESS FOUND — SYNCING TO CLOUD...');
@@ -1058,6 +1070,7 @@
       cloudSavePendingOffline = false;
       setCloudSyncStatus('saved', 'CLOUD SYNCED — ALL PROGRESS SAVED');
       setAuthStatus('CLOUD SAVE SYNCED. YOUR PROGRESS IS LINKED TO THIS ACCOUNT.');
+      window.dispatchEvent(new Event('neon-skin-cloud-ready'));
       claimWeeklyRewards();
       await syncPublicPlayerProfile();
       if (document.getElementById('tab-profile')?.style.display !== 'none') await loadOwnPublicProfile();
@@ -1260,7 +1273,7 @@
   }
 
   function switchTab(t, skipProfileLoad = false) {
-    ['workshop', 'skills', 'achievements', 'player-stats', 'profile', 'customization', 'leaderboard', 'levels'].forEach(x => {
+    ['workshop', 'skills', 'achievements', 'player-stats', 'profile', 'customization', 'leaderboard', 'levels', 'skins'].forEach(x => {
       const tab = document.getElementById('tab-'+x);
       tab.style.display = (x===t?'flex':'none');
       if (x===t) tab.scrollTop = 0;
@@ -1270,6 +1283,7 @@
     if (t==='profile' && !skipProfileLoad) loadOwnPublicProfile();
     if (t==='customization') renderCustomization();
     if (t==='levels') renderLevelMode();
+    if (t==='skins' && typeof window.renderNeonSkinsTab === 'function') window.renderNeonSkinsTab(true);
   }
 
   function setLeaderboardStatus(message) {
