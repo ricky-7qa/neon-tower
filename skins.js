@@ -376,7 +376,7 @@
   async function prepareRunSnapshot(){
     const c=ctx();if(!c||!c.session)return emptySnapshot();
     if(!c.cloudSaveReady){setMessage('ACCOUNT SAVE IS STILL SYNCING. SKIN BONUSES MAY NOT BE READY FOR THIS RUN.');return emptySnapshot();}
-    try{return buildLoadout(await load(true));}catch(_){return emptySnapshot();}
+    return buildLoadout(await load(true));
   }
   window.prepareNeonRunSkinSnapshot=prepareRunSnapshot;
 
