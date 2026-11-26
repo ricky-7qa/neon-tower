@@ -124,8 +124,8 @@
   }
   function claimedToday(daily){return!!(daily&&daily.last_claim&&daily.last_claim===todayLisbon());}
   function runLockText(){
-    if(state&&state.run&&state.run.active)return'RUN ACTIVE · SHOP, MERGE, EQUIP AND TRADING ARE LOCKED.';
-    if(state&&state.run&&state.run.saved)return'SAVED RUN DETECTED · SHOP, MERGE AND EQUIPPING ARE LOCKED · TRADING IS AVAILABLE.';
+    if(state&&state.run&&state.run.active)return'RUN ACTIVE · BOXES AND DAILY REWARDS AVAILABLE · MERGE, EQUIP AND TRADING LOCKED.';
+    if(state&&state.run&&state.run.saved)return'SAVED RUN DETECTED · BOXES AND DAILY REWARDS AVAILABLE · MERGE AND EQUIPPING ARE LOCKED · TRADING IS AVAILABLE.';
     return'ARMORY ONLINE · ALL SKIN FEATURES AVAILABLE.';
   }
   function render(){
@@ -145,10 +145,10 @@
     if(status)status.textContent=lastMessage||runLockText();
     const wallet=Number(state.wallet_coins)||0;
     const title={shop:'BOXES',collection:'COLLECTION',merge:'MERGE',trading:'TRADING'}[activeTab];
-    const canShop=!!(state.run&&state.run.can_shop),canTrade=!!(state.run&&state.run.can_trade);
+    const canShop=!!(state.run&&state.run.can_shop),canOpenBoxes=!!state.cloud_save_ready,canClaimDaily=!!state.cloud_save_ready,canTrade=!!(state.run&&state.run.can_trade);
     host.innerHTML='<div class="skins-wallet-row"><span>GLOBAL COINS</span><strong>$'+wallet.toLocaleString('en-US')+'</strong><span class="skins-vault-status">'+(canShop?'VAULT UNLOCKED':state.run&&state.run.active?'RUN ACTIVE':'SAVED RUN')+'</span></div>'+
       '<div class="skins-content-heading"><h3>'+title+'</h3><span>FOUR CATEGORIES · FOUR RARITIES</span></div>'+
-      (activeTab==='shop'?renderShop(canShop):activeTab==='collection'?renderCollection(canShop):activeTab==='merge'?renderMerge(canShop):renderTrading(canTrade));
+      (activeTab==='shop'?renderShop(canShop,canOpenBoxes,canClaimDaily):activeTab==='collection'?renderCollection(canShop):activeTab==='merge'?renderMerge(canShop):renderTrading(canTrade));
     updateSubnav();
   }
   function updateSubnav(){
@@ -161,7 +161,7 @@
   window.setNeonSkinTab=setTab;
   window.renderNeonSkinsTab=function(force){if(force)load(true).catch(()=>{});render();};
 
-  function renderShop(canShop){
+  function renderShop(canShop,canOpenBoxes,canClaimDaily){
     const boxes=[
       {id:'basic',name:'BASIC BOX',price:500,desc:'A reliable start to your collection.'},
       {id:'premium',name:'PREMIUM BOX',price:2000,desc:'A stronger chance at high-rarity designs.'},
@@ -173,7 +173,7 @@
       const count=tickets[box.id]||0;
       html+='<article class="skins-box-card box-'+box.id+'"><div class="skins-box-illustration"><span class="box-cube"></span><span class="box-glow"></span></div>'+
         '<div class="skins-box-copy"><span class="skins-box-kicker">'+box.id.toUpperCase()+' CRATE</span><h4>'+box.name+'</h4><p>'+box.desc+'</p><small>'+ODDS[box.id]+'</small></div>'+
-        '<div class="skins-box-buy"><strong>'+(count?'FREE BOX × '+count:'$'+box.price.toLocaleString('en-US'))+'</strong><button class="btn '+(canShop?'btn-gold':'')+'" '+(canShop?'':'disabled')+' onclick="openNeonSkinBox(\''+box.id+'\')">OPEN BOX</button></div></article>';
+        '<div class="skins-box-buy"><strong>'+(count?'FREE BOX × '+count:'$'+box.price.toLocaleString('en-US'))+'</strong><button class="btn '+(canOpenBoxes?'btn-gold':'')+'" '+(canOpenBoxes?'':'disabled')+' onclick="openNeonSkinBox(\''+box.id+'\')">OPEN BOX</button></div></article>';
     });
     html+='</div>';
     const daily=state.daily||{},claimed=claimedToday(daily);
@@ -183,7 +183,7 @@
     const day=claimed?Math.max(1,Number(daily.streak)||1):nextStreak;
     html+='<section class="skins-daily-card"><div class="skins-daily-top"><div><span class="skins-box-kicker">PILOT LOGIN BONUS</span><h4>DAILY REWARDS</h4><p>Return each day to build your streak and collect coins or boxes.</p></div><span class="skins-streak">DAY '+day+' / 7</span></div>'+
       '<div class="skins-daily-track">'+DAILY.map((reward,index)=>'<div class="skins-daily-day '+(Number(daily.streak)>=index+1&&claimed?'is-done':'')+'"><span>DAY '+(index+1)+'</span><strong>'+reward+'</strong></div>').join('')+'</div>'+
-      '<button class="btn btn-gold" '+(!canShop||claimed?'disabled':'')+' onclick="claimNeonSkinDaily()">'+(claimed?'CLAIMED TODAY':'CLAIM DAILY REWARD')+'</button></section>';
+      '<button class="btn btn-gold" '+(!canClaimDaily||claimed?'disabled':'')+' onclick="claimNeonSkinDaily()">'+(claimed?'CLAIMED TODAY':'CLAIM DAILY REWARD')+'</button></section>';
     return html;
   }
   function renderCollection(canShop){
