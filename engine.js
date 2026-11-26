@@ -309,6 +309,22 @@
   /** SAVE SYSTEM **/
   let player = { coins: 0, highestWave: 1, totalKills: 0, bossKills: 0, playTime: 0, runsPlayed: 0, bestKills: 0, bestBosses: 0, bestDuration: 0, ws: {}, freeUpgradeChances: {ATTACK:0,DEFENSE:0,UTILITY:0}, speedControlLevel: 0, skills: ['start'], achievements: [], tutorialSeen: false, bannerId: 'default', titleId: 'none', startedAt: Date.now(), levelMode: { highestUnlocked: 1, completed: [], claimedRewards: [] } };
   let run = {stats:{},cash:0,coins:0,wave:1,kills:0,combo:0,comboTimer:0,graze:0};
+  window.getNeonRunSkinVisual = function(category) {
+    const equipped = run && run.skinSnapshot && run.skinSnapshot.equipped;
+    return equipped && equipped[category] || null;
+  };
+  window.getNeonRunSkinBonus = function(stat) {
+    const bonuses = run && run.skinSnapshot && run.skinSnapshot.bonuses;
+    return Math.max(0, Number(bonuses && bonuses[stat]) || 0);
+  };
+  window.getNeonSkinExtraCoins = function(baseAmount, stat, carryKey) {
+    if (!run.skinBonusFractions) run.skinBonusFractions = {boss:0,wave:0};
+    const percent = window.getNeonRunSkinBonus(stat);
+    const total = (Number(run.skinBonusFractions[carryKey]) || 0) + Math.max(0, Number(baseAmount) || 0) * percent / 100;
+    const extra = Math.floor(total);
+    run.skinBonusFractions[carryKey] = total - extra;
+    return extra;
+  };
   let targetEnemy = null;
   let gameSessionStartedAt = 0;
   let gameDurationTracked = false;
@@ -982,13 +998,24 @@
 
   /** MAIN LOOP & RENDERING **/
   let pendingLevelModeId = null;
-  function startGame(levelId = null) {
+  let gameStartPending = false;
+  async function startGame(levelId = null) {
+    if(gameStartPending) return;
     if (Number.isInteger(Number(levelId)) && Number(levelId) > 0) pendingLevelModeId = Number(levelId);
     const selectedLevelId = pendingLevelModeId;
     if (!player.tutorialSeen) {
       document.getElementById('tutorial').classList.add('visible');
       return;
     }
+    gameStartPending = true;
+    let skinSnapshot = {equipped:{},bonuses:{fire_rate:0,enemy_cash:0,boss_coins:0,wave_coins:0}};
+    try {
+      if (typeof window.prepareNeonRunSkinSnapshot === 'function') skinSnapshot = await window.prepareNeonRunSkinSnapshot() || skinSnapshot;
+      if (typeof window.setNeonSkinRunState === 'function') await window.setNeonSkinRunState(true);
+    } catch (skinError) {
+      console.warn('Skin loadout could not be prepared for this run:', skinError);
+    }
+    gameStartPending = false;
     clearRunCheckpoint(selectedLevelId ? 'level' : 'infinite');
     pendingLevelModeId = null;
     AudioSys.init();
@@ -999,6 +1026,8 @@
     document.getElementById('menu').classList.remove('active-layer'); document.getElementById('hud').classList.add('active-hud');
     const levelConfig = selectedLevelId && window.NEON_LEVEL_MODE_CONFIG?.levels?.find(level => level.id === selectedLevelId);
     run = { stats: {}, cash: 0, coins: 0, wave: 1, kills: 0, bossKills: 0, elapsed: 0, perks: {}, mode: levelConfig ? 'level' : 'infinite', levelId: levelConfig ? levelConfig.id : null };
+    run.skinSnapshot = skinSnapshot;
+    run.skinBonusFractions = {boss:0,wave:0};
     if (levelConfig) run.levelObjectives = levelConfig.objectives.map(objective => ({ ...objective, progress: 0, complete: false }));
     selectedGameSpeed = 1;
     const missionOptions = [
@@ -1051,6 +1080,7 @@
     if(!game || !game.running) return;
     if (run.mode === 'level') { finishLevelMode(false); return; }
     game.running = false;
+    if (typeof window.setNeonSkinRunState === 'function') window.setNeonSkinRunState(false);
     clearRunCheckpoint();
     trackGameDuration('completed');
     if (typeof window.neonTrack === 'function') {
@@ -1175,6 +1205,7 @@
   function finishLevelMode(completed) {
     if (!game || !game.running || run.mode !== 'level') return;
     game.running = false;
+    if (typeof window.setNeonSkinRunState === 'function') window.setNeonSkinRunState(false);
     clearRunCheckpoint();
     trackGameDuration('completed');
     const level = window.NEON_LEVEL_MODE_CONFIG?.levels?.find(item => item.id === run.levelId);
@@ -1334,6 +1365,59 @@
     }
   }
 
+  function drawNeonSkinBackground(dt) {
+    const skin = window.getNeonRunSkinVisual ? window.getNeonRunSkinVisual('background') : null;
+    if (!skin) return;
+    const id=skin.skin_id, rarity=skin.rarity, plus=Number(skin.plus_level)>0;
+    const accent=rarity==='legendary'?'rgba(255,206,105,.72)':rarity==='epic'?'rgba(193,123,255,.72)':rarity==='rare'?'rgba(84,185,255,.62)':'rgba(105,220,230,.48)';
+    const w=canvas.width,h=canvas.height,t=performance.now()/1000;
+    ctx.save(); ctx.globalAlpha=.82; ctx.strokeStyle=accent; ctx.fillStyle=accent; ctx.lineWidth=1.5;
+    const pad=Math.max(22,Math.min(w,h)*.07), depth=Math.max(28,Math.min(w,h)*.12);
+    if(id==='background_circuit_floor') {
+      for(let side=0;side<2;side++) {
+        const x=side===0?pad:w-pad;
+        for(let i=0;i<5;i++) {
+          const y=pad+i*(h-2*pad)/4,dir=side===0?1:-1;
+          ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+dir*depth*.45,y);ctx.lineTo(x+dir*depth*.45,y+depth*.28);ctx.stroke();
+          ctx.beginPath();ctx.arc(x+dir*depth*.45,y+depth*.28,3,0,Math.PI*2);ctx.fill();
+        }
+      }
+    } else if(id==='background_neon_nexus') {
+      for(let side=0;side<2;side++) {
+        const x=side===0?pad:w-pad,dir=side===0?1:-1;
+        for(let i=0;i<3;i++) {
+          const y=pad+depth+i*(h-2*pad-2*depth)/2;
+          ctx.strokeRect(x-dir*15,y-15,30,30);
+          ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-dir*depth,y+Math.sin(t+i)*8);ctx.stroke();
+          ctx.beginPath();ctx.arc(x-dir*depth,y+Math.sin(t+i)*8,4,0,Math.PI*2);ctx.fill();
+        }
+      }
+    } else if(id==='background_stellar_grid') {
+      for(let i=0;i<26;i++) {
+        const x=(i*173+37)%Math.max(1,w), y=(i*97+53)%Math.max(1,h);
+        if(x<pad*2||x>w-pad*2||y<pad*2||y>h-pad*2) {
+          ctx.globalAlpha=.25+(i%4)*.12;
+          ctx.beginPath();ctx.arc(x,y,1.3+(i%3),0,Math.PI*2);ctx.fill();
+          if(i%4===0){ctx.globalAlpha=.32;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+20,y+13);ctx.lineTo(x+39,y+6);ctx.stroke();}
+        }
+      }
+    } else if(id==='background_eclipse_arena'||id==='exclusive_endless_conqueror') {
+      [[pad,pad,1,1],[w-pad,pad,-1,1],[pad,h-pad,1,-1],[w-pad,h-pad,-1,-1]].forEach(([x,y,sx,sy])=>{
+        ctx.beginPath();ctx.moveTo(x,y+sy*depth);ctx.lineTo(x,y);ctx.lineTo(x+sx*depth,y);ctx.stroke();
+        ctx.beginPath();ctx.arc(x+sx*depth*.38,y+sy*depth*.38,depth*.23,t*.08,Math.PI*1.65+t*.08);ctx.stroke();
+        ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fill();
+      });
+    }
+    if(rarity==='epic'||rarity==='legendary'||plus) {
+      ctx.globalAlpha=.5;ctx.setLineDash([5,8]);ctx.strokeRect(pad*.6,pad*.6,w-pad*1.2,h-pad*1.2);ctx.setLineDash([]);
+    }
+    if(rarity==='legendary'||plus) {
+      ctx.globalAlpha=.45;
+      for(let i=0;i<8;i++){const a=t*.12+i*Math.PI/4;const x=w/2+Math.cos(a)*(w*.45),y=h/2+Math.sin(a)*(h*.42);ctx.beginPath();ctx.arc(x,y,3.5,0,Math.PI*2);ctx.fill();}
+    }
+    ctx.restore();
+  }
+
   function loop(ts) {
     if(!game.running) return; requestAnimationFrame(loop);
     if(game.paused) { game.last = ts; return; }
@@ -1356,6 +1440,7 @@
 
     ctx.clearRect(0,0,canvas.width,canvas.height);
     drawGrid(game.dt);
+    drawNeonSkinBackground(game.dt);
     
     if(game.shake > 0) {
       game.shake -= game.dt;
@@ -1371,7 +1456,8 @@
       run.bossAlreadyKilledInWave = false;
       if(tower) { const repairPct=parseFloat(getVal('waveRepair'))+parseFloat(getVal('repairBurst')); if(repairPct>0) tower.hp=Math.min(tower.maxHp,tower.hp+tower.maxHp*repairPct/100); }
       game.toSpawn = getWaveEnemyCount(run.wave);
-      run.coins += Math.max(1,Math.floor((Math.floor(run.wave/2)+2+Math.floor(parseFloat(getVal('coinCache'))))*0.4));
+      const baseWaveCoins = Math.max(1,Math.floor((Math.floor(run.wave/2)+2+Math.floor(parseFloat(getVal('coinCache'))))*0.4));
+      run.coins += baseWaveCoins + (window.getNeonSkinExtraCoins ? window.getNeonSkinExtraCoins(baseWaveCoins,'wave_coins','wave') : 0);
       const waveCashReward=Math.floor(parseFloat(getVal('waveBonus'))+Math.floor(run.wave*parseFloat(getVal('waveDividend'))/100));
       run.cash+=Math.floor(waveCashReward*(1+getWaveDecisionValue('double_reward'))*(1+getWaveDecisionValue('chaos_cash')));
       updateHUD(); AudioSys.coin(); checkAchievements();
