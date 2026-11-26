@@ -1009,11 +1009,34 @@
     }
     gameStartPending = true;
     let skinSnapshot = {equipped:{},bonuses:{fire_rate:0,enemy_cash:0,boss_coins:0,wave_coins:0}};
+    const skinAccount = typeof window.getNeonSkinAccountContext === 'function' ? window.getNeonSkinAccountContext() : null;
     try {
+      if (skinAccount && skinAccount.session && !skinAccount.cloudSaveReady) {
+        const status = document.getElementById('cloud-sync-status');
+        if (status) status.textContent = 'CLOUD SAVE IS STILL SYNCING. START YOUR RUN WHEN SYNC IS COMPLETE.';
+        gameStartPending = false;
+        return;
+      }
       if (typeof window.prepareNeonRunSkinSnapshot === 'function') skinSnapshot = await window.prepareNeonRunSkinSnapshot() || skinSnapshot;
-      if (typeof window.setNeonSkinRunState === 'function') await window.setNeonSkinRunState(true);
+      if (skinAccount && skinAccount.session && typeof window.setNeonSkinRunState === 'function') {
+        const lockReady = await window.setNeonSkinRunState(true);
+        if (!lockReady) {
+          await window.setNeonSkinRunState(false);
+          const status = document.getElementById('cloud-sync-status');
+          if (status) status.textContent = 'SKIN VAULT COULD NOT SECURE THIS RUN. CHECK YOUR CONNECTION AND TRY AGAIN.';
+          gameStartPending = false;
+          return;
+        }
+      }
     } catch (skinError) {
       console.warn('Skin loadout could not be prepared for this run:', skinError);
+      if (skinAccount && skinAccount.session) {
+        if (typeof window.setNeonSkinRunState === 'function') await window.setNeonSkinRunState(false);
+        const status = document.getElementById('cloud-sync-status');
+        if (status) status.textContent = 'SKIN VAULT COULD NOT LOAD. CHECK YOUR CONNECTION AND TRY AGAIN.';
+        gameStartPending = false;
+        return;
+      }
     }
     gameStartPending = false;
     clearRunCheckpoint(selectedLevelId ? 'level' : 'infinite');
@@ -1111,7 +1134,7 @@
     if (returnButton) returnButton.setAttribute('onclick', 'returnToMenu()');
     if (run.mode !== 'level' && typeof submitLeaderboardResult === 'function') submitLeaderboardResult(run);
   }
-  function resumeRun(mode = 'infinite') {
+  async function resumeRun(mode = 'infinite') {
     const checkpoint = readRunCheckpoint(mode === 'level' ? 'level' : 'infinite');
     if (!checkpoint || ![1, 2].includes(Number(checkpoint.version)) || !checkpoint.run || !Number.isFinite(Number(checkpoint.run.wave))) {
       // A missing Level Mode checkpoint must never clear the separate Infinite Mode run.
@@ -1122,6 +1145,20 @@
       document.getElementById('tutorial').classList.add('visible');
       return;
     }
+    const skinAccount = typeof window.getNeonSkinAccountContext === 'function' ? window.getNeonSkinAccountContext() : null;
+    if (skinAccount && skinAccount.session) {
+      if (!skinAccount.cloudSaveReady) {
+        const status = document.getElementById('cloud-sync-status');
+        if (status) status.textContent = 'CLOUD SAVE IS STILL SYNCING. RESUME YOUR RUN WHEN SYNC IS COMPLETE.';
+        return;
+      }
+      if (typeof window.setNeonSkinRunState === 'function' && !(await window.setNeonSkinRunState(true))) {
+        await window.setNeonSkinRunState(false);
+        const status = document.getElementById('cloud-sync-status');
+        if (status) status.textContent = 'SKIN VAULT COULD NOT SECURE THIS RUN. CHECK YOUR CONNECTION AND TRY AGAIN.';
+        return;
+      }
+    }
     AudioSys.init();
     resize(); // Recalculate the canvas after the device/layout selection and before restoring the run.
     gameSessionStartedAt = Date.now();
@@ -1131,6 +1168,8 @@
     document.getElementById('gameover').classList.remove('active-layer');
     document.getElementById('hud').classList.add('active-hud');
     run = checkpoint.run;
+    run.skinSnapshot = run.skinSnapshot || {equipped:{},bonuses:{fire_rate:0,enemy_cash:0,boss_coins:0,wave_coins:0}};
+    run.skinBonusFractions = run.skinBonusFractions || {boss:0,wave:0};
     // Older checkpoints were saved mid-wave and did not preserve active enemies.
     // Recreate only enemies that had not already been defeated. New version-2
     // checkpoints are wave-start snapshots, so this normally equals the full count.
