@@ -1044,7 +1044,6 @@
     setSkinRunGateStatus('');
     clearRunCheckpoint(selectedLevelId ? 'level' : 'infinite');
     pendingLevelModeId = null;
-    setSkinRunGateStatus('');
     AudioSys.init();
     resize(); // Recalculate the canvas after the device/layout selection and before starting the run.
     gameSessionStartedAt = Date.now();
@@ -1167,6 +1166,7 @@
         return;
       }
     }
+    setSkinRunGateStatus('');
     AudioSys.init();
     resize(); // Recalculate the canvas after the device/layout selection and before restoring the run.
     gameSessionStartedAt = Date.now();
