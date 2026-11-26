@@ -168,3 +168,6 @@
 }
 .skins-exclusive-label{display:inline-flex;align-items:center;margin-top:8px;padding:4px 7px;border:1px solid rgba(255,207,95,.35);border-radius:4px;background:rgba(255,190,55,.08);color:#ffd36b;font:800 8px Orbitron,sans-serif;letter-spacing:1px}
 .skins-exclusive-note{margin:5px 0;color:#e5c779;font:700 8px Orbitron,sans-serif;line-height:1.5}
+
+.skins-run-gate-status{display:none;margin:0 auto 8px;max-width:560px;color:#ffd36b;font:700 9px Orbitron,sans-serif;letter-spacing:.6px;line-height:1.55;text-align:center}
+.skins-run-gate-status:not(:empty){display:block;padding:7px 10px;border:1px solid rgba(255,205,90,.22);border-radius:6px;background:rgba(45,34,13,.4)}
