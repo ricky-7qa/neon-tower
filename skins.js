@@ -382,9 +382,10 @@
 
   async function setRunState(active, interrupted){
     const c=ctx();if(!c||!c.client||!c.session)return false;
+    const runAccountId=c.userId;
     runActive=!!active;if(heartbeatTimer){clearInterval(heartbeatTimer);heartbeatTimer=null;}
     const send=async value=>{
-      const current=ctx();if(!current||!current.client||!current.session)return;
+      const current=ctx();if(!current||!current.client||!current.session||current.userId!==runAccountId)return;
       const body={action:'set_run_state',active:!!value};
       if(!value&&interrupted)body.interrupted=true;
       const response=await current.client.functions.invoke('neon-skins',{body:body});
