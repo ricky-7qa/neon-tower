@@ -1000,6 +1000,10 @@
   let pendingLevelModeId = null;
   let gameStartPending = false;
   let resumeRunPending = false;
+  function setSkinRunGateStatus(message) {
+    const status = document.getElementById('skins-run-gate-status');
+    if (status) status.textContent = String(message || '');
+  }
   async function startGame(levelId = null) {
     if(gameStartPending) return;
     if (Number.isInteger(Number(levelId)) && Number(levelId) > 0) pendingLevelModeId = Number(levelId);
@@ -1013,8 +1017,7 @@
     const skinAccount = typeof window.getNeonSkinAccountContext === 'function' ? window.getNeonSkinAccountContext() : null;
     try {
       if (skinAccount && skinAccount.session && !skinAccount.cloudSaveReady) {
-        const status = document.getElementById('cloud-sync-status');
-        if (status) status.textContent = 'CLOUD SAVE IS STILL SYNCING. START YOUR RUN WHEN SYNC IS COMPLETE.';
+        setSkinRunGateStatus('CLOUD SAVE IS STILL SYNCING. START YOUR RUN WHEN SYNC IS COMPLETE.');
         gameStartPending = false;
         return;
       }
@@ -1023,8 +1026,7 @@
         const lockReady = await window.setNeonSkinRunState(true);
         if (!lockReady) {
           await window.setNeonSkinRunState(false);
-          const status = document.getElementById('cloud-sync-status');
-          if (status) status.textContent = 'SKIN VAULT COULD NOT SECURE THIS RUN. CHECK YOUR CONNECTION AND TRY AGAIN.';
+          setSkinRunGateStatus('SKIN VAULT COULD NOT SECURE THIS RUN. CHECK YOUR CONNECTION AND TRY AGAIN.');
           gameStartPending = false;
           return;
         }
@@ -1033,15 +1035,16 @@
       console.warn('Skin loadout could not be prepared for this run:', skinError);
       if (skinAccount && skinAccount.session) {
         if (typeof window.setNeonSkinRunState === 'function') await window.setNeonSkinRunState(false);
-        const status = document.getElementById('cloud-sync-status');
-        if (status) status.textContent = 'SKIN VAULT COULD NOT LOAD. CHECK YOUR CONNECTION AND TRY AGAIN.';
+        setSkinRunGateStatus('SKIN VAULT COULD NOT LOAD. CHECK YOUR CONNECTION AND TRY AGAIN.');
         gameStartPending = false;
         return;
       }
     }
     gameStartPending = false;
+    setSkinRunGateStatus('');
     clearRunCheckpoint(selectedLevelId ? 'level' : 'infinite');
     pendingLevelModeId = null;
+    setSkinRunGateStatus('');
     AudioSys.init();
     resize(); // Recalculate the canvas after the device/layout selection and before starting the run.
     gameSessionStartedAt = Date.now();
@@ -1153,15 +1156,13 @@
     const skinAccount = typeof window.getNeonSkinAccountContext === 'function' ? window.getNeonSkinAccountContext() : null;
     if (skinAccount && skinAccount.session) {
       if (!skinAccount.cloudSaveReady) {
-        const status = document.getElementById('cloud-sync-status');
-        if (status) status.textContent = 'CLOUD SAVE IS STILL SYNCING. RESUME YOUR RUN WHEN SYNC IS COMPLETE.';
+        setSkinRunGateStatus('CLOUD SAVE IS STILL SYNCING. RESUME YOUR RUN WHEN SYNC IS COMPLETE.');
         resumeRunPending = false;
         return;
       }
       if (typeof window.setNeonSkinRunState === 'function' && !(await window.setNeonSkinRunState(true))) {
         await window.setNeonSkinRunState(false);
-        const status = document.getElementById('cloud-sync-status');
-        if (status) status.textContent = 'SKIN VAULT COULD NOT SECURE THIS RUN. CHECK YOUR CONNECTION AND TRY AGAIN.';
+        setSkinRunGateStatus('SKIN VAULT COULD NOT SECURE THIS RUN. CHECK YOUR CONNECTION AND TRY AGAIN.');
         resumeRunPending = false;
         return;
       }
