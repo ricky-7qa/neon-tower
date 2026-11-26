@@ -58,6 +58,15 @@
     return '<div class="skin-art skin-art-'+category+' rarity-'+rarity+(Number(level)>0?' is-plus':'')+'" data-skin="'+id+'"><span class="skin-art-core"></span><span class="skin-art-detail"></span><span class="skin-art-spark"></span></div>';
   }
   function bonusText(def,level){return'+'+bonusPercent(def.rarity,level)+'% '+bonusLabel(def.bonus_stat);}
+  function milestoneNote(def) {
+    if (!def || !def.is_exclusive) return '';
+    const labels = {
+      wave_50:'UNLOCK: REACH WAVE 50',
+      kills_5000:'UNLOCK: ELIMINATE 5,000 ENEMIES',
+      bosses_100:'UNLOCK: DEFEAT 100 BOSSES'
+    };
+    return labels[def.unlock_milestone] || 'EXCLUSIVE MILESTONE SKIN';
+  }
   function buildLoadout(data){
     const result=emptySnapshot(), equipped=data&&data.equipped&&typeof data.equipped==='object'?data.equipped:{};
     Object.entries(equipped).forEach(([category,itemId])=>{
@@ -163,7 +172,11 @@
         '<div class="skins-box-buy"><strong>'+(count?'FREE BOX × '+count:'$'+box.price.toLocaleString('en-US'))+'</strong><button class="btn '+(canShop?'btn-gold':'')+'" '+(canShop?'':'disabled')+' onclick="openNeonSkinBox(\''+box.id+'\')">OPEN BOX</button></div></article>';
     });
     html+='</div>';
-    const daily=state.daily||{},claimed=claimedToday(daily),day=claimed?Math.max(1,Number(daily.streak)||1):Math.min(7,(Number(daily.streak)||0)+1);
+    const daily=state.daily||{},claimed=claimedToday(daily);
+    const today=todayLisbon().split('-').map(Number),previousDate=new Date(Date.UTC(today[0],today[1]-1,today[2]-1));
+    const yesterday=previousDate.getUTCFullYear()+'-'+String(previousDate.getUTCMonth()+1).padStart(2,'0')+'-'+String(previousDate.getUTCDate()).padStart(2,'0');
+    const nextStreak=daily.last_claim===yesterday?(Number(daily.streak)%7)+1:1;
+    const day=claimed?Math.max(1,Number(daily.streak)||1):nextStreak;
     html+='<section class="skins-daily-card"><div class="skins-daily-top"><div><span class="skins-box-kicker">PILOT LOGIN BONUS</span><h4>DAILY REWARDS</h4><p>Return each day to build your streak and collect coins or boxes.</p></div><span class="skins-streak">DAY '+day+' / 7</span></div>'+
       '<div class="skins-daily-track">'+DAILY.map((reward,index)=>'<div class="skins-daily-day '+(Number(daily.streak)>=index+1&&claimed?'is-done':'')+'"><span>DAY '+(index+1)+'</span><strong>'+reward+'</strong></div>').join('')+'</div>'+
       '<button class="btn btn-gold" '+(!canShop||claimed?'disabled':'')+' onclick="claimNeonSkinDaily()">'+(claimed?'CLAIMED TODAY':'CLAIM DAILY REWARD')+'</button></section>';
@@ -177,7 +190,8 @@
       const items=inventory.filter(item=>item.skin_id===def.skin_id),equippedItem=items.find(item=>item.item_id===equipped[activeCategory]);
       const best=items.slice().sort((a,b)=>Number(b.plus_level)-Number(a.plus_level))[0],level=best?Number(best.plus_level)||0:0;
       html+='<article class="skins-collection-card rarity-card-'+def.rarity+(items.length?' is-owned':' is-locked')+'"><div class="skins-card-top"><span class="skin-rarity rarity-'+def.rarity+'">'+rarityPlus(def.rarity,level)+'</span><span class="skins-owned-count">'+(items.length?'OWNED × '+items.length:'UNDISCOVERED')+'</span></div>'+
-        art(def.category,def.rarity,level,def.skin_id)+'<h4>'+safeText(def.name)+'</h4><p class="skins-card-description">'+safeText(descriptionOf(def))+'</p><div class="skins-card-bonus">'+bonusText(def,level)+'</div><div class="skins-card-actions"><button class="btn" onclick="previewNeonSkin(\''+def.skin_id+'\')">PREVIEW</button>';
+        (def.is_exclusive?'<span class="skins-exclusive-label">EXCLUSIVE</span>':'')+art(def.category,def.rarity,level,def.skin_id)+'<h4>'+safeText(def.name)+'</h4><p class="skins-card-description">'+safeText(descriptionOf(def))+'</p>'+
+        (def.is_exclusive&&!items.length?'<p class="skins-exclusive-note">'+safeText(milestoneNote(def))+'</p>':'')+'<div class="skins-card-bonus">'+bonusText(def,level)+'</div><div class="skins-card-actions"><button class="btn" onclick="previewNeonSkin(\''+def.skin_id+'\')">PREVIEW</button>';
       if(items.length)html+='<button class="btn '+(equippedItem?'btn-equipped':'btn-gold')+'" '+(canShop?'':'disabled')+' onclick="'+(equippedItem?'unequipNeonSkin(\''+activeCategory+'\')':'equipNeonSkin(\''+items[0].item_id+'\',\''+activeCategory+'\')')+'">'+(equippedItem?'EQUIPPED':'EQUIP')+'</button>';
       else html+='<button class="btn" disabled>NOT OWNED</button>';
       html+='</div>';
@@ -374,11 +388,9 @@
       const response=await current.client.functions.invoke('neon-skins',{body:{action:'set_run_state',active:!!value}});
       if(response.error)throw response.error;
     };
-    try{
-      await send(active);
-      if(active)heartbeatTimer=window.setInterval(()=>{if(runActive)send(true).catch(error=>console.warn('Skin run heartbeat failed:',error));},25000);
-      return true;
-    }catch(error){console.warn('Could not update the skin run state:',error);return false;}
+    if(active)heartbeatTimer=window.setInterval(()=>{if(runActive)send(true).catch(error=>console.warn('Skin run heartbeat retry failed:',error));},25000);
+    try{await send(active);return true;}
+    catch(error){console.warn('Could not update the skin run state:',error);return false;}
   }
   window.setNeonSkinRunState=setRunState;
   window.addEventListener('pagehide',function(){
@@ -387,7 +399,7 @@
       fetch('https://iioagfxyzfxyoifjclgw.supabase.co/functions/v1/neon-skins',{
         method:'POST',keepalive:true,
         headers:{'Content-Type':'application/json','apikey':'sb_publishable_Xop-cOuasc5PmiD3e4ed5A_hWr-mclf','Authorization':'Bearer '+c.session.access_token},
-        body:JSON.stringify({action:'set_run_state',active:false})
+        body:JSON.stringify({action:'set_run_state',active:false,interrupted:true})
       }).catch(()=>{});
     }catch(_){}
   });
@@ -399,7 +411,7 @@
   });
   window.addEventListener('neon-skin-cloud-ready',function(){load(true).catch(()=>{});});
   window.addEventListener('focus',function(){if(isOpen()&&ctx()&&ctx().cloudSaveReady)load(true).catch(()=>{});});
-  window.addEventListener('online',function(){if(ctx()&&ctx().cloudSaveReady)load(true).catch(()=>{});});
+  window.addEventListener('online',function(){if(runActive)setRunState(true).catch(()=>{});if(ctx()&&ctx().cloudSaveReady)load(true).catch(()=>{});});
   window.addEventListener('DOMContentLoaded',function(){if(ctx()&&ctx().cloudSaveReady)load(true).catch(()=>{});});
   if(ctx()&&ctx().cloudSaveReady)load(true).catch(()=>{});
 })();
