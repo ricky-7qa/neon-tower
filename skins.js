@@ -25,7 +25,7 @@
   function categoryLabel(id){const f=CATEGORIES.find(x=>x.id===id);return f?f.label:'SKIN';}
   function rarityPlus(rarity,level){return String(rarity||'common').toUpperCase()+(Number(level)>0?'+':'');}
   function bonusPercent(rarity,level){const values=BONUS[String(rarity||'').toLowerCase()];return values?values[Number(level)>0?1:0]:0;}
-  function bonusLabel(stat){return({fire_rate:'ATTACK SPEED',enemy_cash:'MINION REWARDS',boss_coins:'BOSS REWARDS',wave_coins:'WAVE REWARDS'})[stat]||String(stat||'BONUS').replace(/_/g,' ').toUpperCase();}
+  function bonusLabel(stat){return({fire_rate:'ATTACK SPEED',enemy_cash:'MINION CASH',boss_coins:'BOSS REWARDS',wave_coins:'WAVE REWARDS'})[stat]||String(stat||'BONUS').replace(/_/g,' ').toUpperCase();}
   function getDefinition(id){return(state&&state.definitions||[]).find(x=>x.skin_id===id)||null;}
   function getItem(id){return(state&&state.inventory||[]).find(x=>x.item_id===id)||null;}
   function definitionOf(item){return item&&(item.skin||getDefinition(item.skin_id));}
