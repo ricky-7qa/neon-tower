@@ -92,7 +92,7 @@
   function setMessage(message){lastMessage=String(message||'');const el=document.getElementById('skins-account-status');if(el)el.textContent=lastMessage;}
   async function load(force){
     const c=ctx();
-    if(!c||!c.client||!c.session||!c.userId||!c.cloudSaveReady)return null;
+    if(!c||!c.client||!c.session||!c.userId)return null;
     if(loading)return loading;
     if(!force&&state&&loadedUserId===c.userId)return state;
     const userId=c.userId;
@@ -104,7 +104,11 @@
       return data;
     })().catch(error=>{
       console.error('Skin Vault sync failed:',error);
-      setMessage('SKIN VAULT COULD NOT SYNC. CHECK YOUR CONNECTION AND REOPEN THIS TAB.');
+      setMessage('SKIN VAULT COULD NOT SYNC. '+safeText(error&&error.message||'CHECK YOUR CONNECTION AND RETRY.'));
+      if(isOpen()){
+        const host=document.getElementById('skins-panel');
+        if(host)host.innerHTML='<div class="skins-loading skins-load-error">SKIN VAULT COULD NOT CONNECT.<br><button class="btn btn-gold" onclick="renderNeonSkinsTab(true)">RETRY CONNECTION</button></div>';
+      }
       throw error;
     }).finally(()=>{loading=null;});
     return loading;
@@ -133,7 +137,7 @@
       host.innerHTML='<div class="skins-login-card"><div class="skins-login-icon">✦</div><h3>YOUR SKIN VAULT AWAITS</h3><p>Create a free account or log in to save skins, open boxes, claim rewards and trade with other pilots.</p><button class="btn btn-gold" onclick="switchTab(\'leaderboard\')">LOG IN / CREATE ACCOUNT</button></div>';
       updateSubnav();return;
     }
-    if(!c.cloudSaveReady||!state||loadedUserId!==c.userId){
+    if(!state||loadedUserId!==c.userId){
       if(status)status.textContent='SYNCING ACCOUNT INVENTORY...';
       host.innerHTML='<div class="skins-loading"><span class="skins-spinner"></span> CONNECTING TO THE SKIN VAULT...</div>';
       load(true).catch(()=>{});updateSubnav();return;
@@ -425,8 +429,8 @@
     if(isOpen())render();
   });
   window.addEventListener('neon-skin-cloud-ready',function(){load(true).catch(()=>{});});
-  window.addEventListener('focus',function(){if(isOpen()&&ctx()&&ctx().cloudSaveReady)load(true).catch(()=>{});});
-  window.addEventListener('online',function(){if(runActive)setRunState(true).catch(()=>{});if(ctx()&&ctx().cloudSaveReady)load(true).catch(()=>{});});
-  window.addEventListener('DOMContentLoaded',function(){if(ctx()&&ctx().cloudSaveReady)load(true).catch(()=>{});});
+  window.addEventListener('focus',function(){if(isOpen()&&ctx()&&ctx().session)load(true).catch(()=>{});});
+  window.addEventListener('online',function(){if(runActive)setRunState(true).catch(()=>{});if(ctx()&&ctx().session)load(true).catch(()=>{});});
+  window.addEventListener('DOMContentLoaded',function(){if(ctx()&&ctx().session)load(true).catch(()=>{});});
   if(ctx()&&ctx().cloudSaveReady)load(true).catch(()=>{});
 })();
